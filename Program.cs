@@ -1,3 +1,3 @@
 ﻿
-using var game = new Slayer_Knight.Game1();
+using var game = new SlayerKnight.Game1();
 game.Run();

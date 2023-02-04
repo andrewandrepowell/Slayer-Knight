@@ -1,25 +1,37 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Utility;
+using System;
+#if DEBUG
+using System.Runtime.InteropServices;
+#endif
 
-namespace Slayer_Knight;
+namespace SlayerKnight;
 
 public class Game1 : Game
 {
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
+    private KeyboardManager keyboardManager;
+    private KeyboardFeature keyboardFeature;
 
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
+#if DEBUG
+        AllocConsole();
+#endif
     }
 
     protected override void Initialize()
     {
         // TODO: Add your initialization logic here
-
+        keyboardManager = new KeyboardManager();
+        keyboardFeature = new KeyboardFeature() { Activated=true };
+        keyboardManager.Features.Add(keyboardFeature);
         base.Initialize();
     }
 
@@ -36,7 +48,13 @@ public class Game1 : Game
             Exit();
 
         // TODO: Add your update logic here
+        keyboardManager.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
+        if (keyboardFeature.InfoQueue.Count > 0)
+        {
+            var keyInfo = keyboardFeature.InfoQueue.Dequeue();
+            Console.WriteLine($"DEBUG: {keyInfo.Key} {keyInfo.State}");
+        }
         base.Update(gameTime);
     }
 
@@ -48,4 +66,11 @@ public class Game1 : Game
 
         base.Draw(gameTime);
     }
+
+#if DEBUG
+    // https://gamedev.stackexchange.com/questions/45107/input-output-console-window-in-xna#:~:text=Right%20click%20your%20game%20in%20the%20solution%20explorer,tab.%20Change%20the%20Output%20Type%20to%20Console%20Application.
+    // This opens a console window in the game.
+    [DllImport("kernel32")]
+    static extern bool AllocConsole();
+#endif
 }
