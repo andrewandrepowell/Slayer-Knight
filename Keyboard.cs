@@ -24,7 +24,7 @@ namespace Utility
     public class KeyboardFeature
     {
         public bool Activated { get; set; } = false;
-        public Queue<KeyInfo> InfoQueue { get; private set; } = new Queue<KeyInfo>();
+        public Queue<KeyInfo> InfoQueue { get; private set; } = new Queue<KeyInfo>(); // manager -> feature
     }
     public class KeyboardManager : UpdateInterface
     {
