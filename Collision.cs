@@ -30,10 +30,11 @@ namespace Utility
     {
         public object Parent { get; set; } = null;
         public Vector2 Position { get; set; } = new Vector2();
-        public Size2 Size { get; set; } = new Size2();
+        public Size Size { get; set; } = new Size();
         public bool Destroyed { get; private set; } = false;
         public bool Collidable { get; set; } = false;
-        public Texture2D CollisionMask { get; set; } = null;
+        public bool Static { get; set; } = true;
+        public Color[] CollisionMask { get; set; } = null;
         public List<Vector2> CollisionVertices { get; set; } = new List<Vector2>();
         public void Destroy() { Destroyed = true; }
         public Queue<CollisionInfo> InfoQueue { get; private set; } = new Queue<CollisionInfo>(); // manager -> feature
@@ -62,8 +63,10 @@ namespace Utility
                     normal0: out normal0, normal1: out normal1))
                     continue;
 
-                collidable0.InfoQueue.Enqueue(new CollisionInfo(other: collidable1, point: point0, correction: correction0, normal: normal0));
-                collidable1.InfoQueue.Enqueue(new CollisionInfo(other: collidable0, point: point1, correction: correction1, normal: normal1));
+                if (!collidable0.Static)
+                    collidable0.InfoQueue.Enqueue(new CollisionInfo(other: collidable1, point: point0, correction: correction0, normal: normal0));
+                if (!collidable1.Static)
+                    collidable1.InfoQueue.Enqueue(new CollisionInfo(other: collidable0, point: point1, correction: correction1, normal: normal1));
             }
         }
 
@@ -85,8 +88,8 @@ namespace Utility
                 return false;
 
             // Determine the bounding rectangles for this physics and the other physics.
-            Rectangle bounds0 = new Rectangle(location: collidable0.Position.ToPoint(), size: collidable0.CollisionMask.Bounds.Size);
-            Rectangle bounds1 = new Rectangle(location: collidable1.Position.ToPoint(), size: collidable1.CollisionMask.Bounds.Size);
+            Rectangle bounds0 = new Rectangle(location: collidable0.Position.ToPoint(), size: collidable0.Size);
+            Rectangle bounds1 = new Rectangle(location: collidable1.Position.ToPoint(), size: collidable1.Size);
 
             // Determine whether the bounding rectangles intersect.
             // If they don't, don't bother going further.
@@ -112,22 +115,8 @@ namespace Utility
                 height: intersection.Height);
 
             // Get the pixel data for the masks.
-            int colorLength = intersection.Width * intersection.Height;
-            Color[] colorData0 = new Color[colorLength];
-            Color[] colorData1 = new Color[colorLength];
-
-            collidable0.CollisionMask.GetData(
-                level: 0,
-                rect: intersection0,
-                data: colorData0,
-                startIndex: 0,
-                elementCount: colorLength);
-            collidable1.CollisionMask.GetData(
-                level: 0,
-                rect: intersection1,
-                data: colorData1,
-                startIndex: 0,
-                elementCount: colorLength);
+            Color[] colorData0 = collidable0.CollisionMask.Extract(size: collidable0.Size, region: intersection0);
+            Color[] colorData1 = collidable1.CollisionMask.Extract(size: collidable1.Size, region: intersection1);
 
             // Get the mask that represents all points of intersection.
             bool[] collisionMask = colorData0.Zip(colorData1, (c0, c1) => c0.A != 0 && c1.A != 0).ToArray();
@@ -292,18 +281,16 @@ namespace Utility
             return true;
         }
 
-        public static List<Vector2> GetVertices(Texture2D mask, Color startColor, Color includeColor, Color excludeColor)
+        public static List<Vector2> GetVertices(Color[] maskData, Size size, Color startColor, Color includeColor, Color excludeColor)
         {
             List<Vector2> includeVertices = new List<Vector2>();
             List<Vector2> excludeVertices = new List<Vector2>();
-            Color[] maskData = new Color[mask.Width * mask.Height];
             Vector2 startVertex = Vector2.Zero;
             bool startFound = false;
-            mask.GetData(maskData);
-            for (int row = 0; row < mask.Height; row++)
-                for (int col = 0; col < mask.Width; col++)
+            for (int row = 0; row < size.Height; row++)
+                for (int col = 0; col < size.Width; col++)
                 {
-                    Color pixelColor = maskData[col + row * mask.Width];
+                    Color pixelColor = maskData[col + row * size.Width];
                     if (pixelColor == startColor)
                     {
                         if (startFound)
