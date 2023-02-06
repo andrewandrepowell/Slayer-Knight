@@ -19,8 +19,13 @@ namespace Utility
             State = state;
         }
     }
+    public interface ControlInterface
+    {
+        public ControlFeature ControlFeatureObject { get; }
+    }
     public class ControlFeature
     {
+        public object Parent { get; set; } = null;
         public bool Activated { get; set; } = false;
         public Queue<ControlInfo> InfoQueue { get; private set; } = new Queue<ControlInfo>(); // manager -> feature
     }

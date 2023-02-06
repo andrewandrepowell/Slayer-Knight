@@ -39,8 +39,6 @@ namespace SlayerKnight
         private bool environmentMaskLoaded;
         private SpriteBatch spriteBatch;
         private ContentManager contentManager;
-        private CollisionManager collisionManager;
-        private OrthographicCamera orthographicCamera;
         private string environmentVisualAsset;
         private string environmentMaskAsset;
         private Size environmentGridSize;
@@ -49,11 +47,15 @@ namespace SlayerKnight
         private Color environmentIncludeColor;
         private Color environmentExcludeColor;
         public RoomFeature RoomFeatureObject { get; private set; }
+        public CollisionManager CollisionManagerObject { get; private set; }
+        public OrthographicCamera OrthographicCameraObject { get; private set; }
+        public List<UpdateInterface> UpdateObjects { get; private set; }
+        public List<DrawInterface> DrawObjects { get; private set; }
         public bool Started { get; private set; }
         public Queue<string> GoToQueue { get; private set; } // user -> feature
         public LevelFeature(
+            ContentManager contentManager,
             SpriteBatch spriteBatch,
-            ContentManager contentManager, 
             string roomIdentifier, 
             string environmentVisualAsset, 
             string environmentMaskAsset,
@@ -69,9 +71,11 @@ namespace SlayerKnight
                 UpdateObject = this,
                 DrawObject = this
             };
+            CollisionManagerObject = new CollisionManager();
+            OrthographicCameraObject = new OrthographicCamera(graphicsDevice: spriteBatch.GraphicsDevice);
+            UpdateObjects = new List<UpdateInterface>();
+            DrawObjects = new List<DrawInterface>();
             GoToQueue = new Queue<string>();
-            collisionManager = new CollisionManager();
-            orthographicCamera = new OrthographicCamera(graphicsDevice: spriteBatch.GraphicsDevice);
             environmentMaskLoaded = false;
             this.spriteBatch = spriteBatch;
             this.contentManager = contentManager;
@@ -131,7 +135,7 @@ namespace SlayerKnight
                                 size: environmentGridSize,
                                 mask: wallMask,
                                 vertices: gridVertices);
-                            collisionManager.Features.Add(wallFeature.CollisionFeatureObject);
+                            CollisionManagerObject.Features.Add(wallFeature.CollisionFeatureObject);
                         }
                     }
 
@@ -172,17 +176,24 @@ namespace SlayerKnight
 
             if (Started)
             {
-                collisionManager.Update(timeElapsed);
+                foreach (var updateObject in UpdateObjects)
+                    updateObject.Update(timeElapsed);
+
+                CollisionManagerObject.Update(timeElapsed);
             }    
         }
         public void Draw(Matrix? _ = null)
         {
             if (Started)
             {
-                Matrix transformMatrix = orthographicCamera.GetViewMatrix();
+                Matrix transformMatrix = OrthographicCameraObject.GetViewMatrix();
+
                 spriteBatch.Begin(transformMatrix: transformMatrix);
                 spriteBatch.Draw(texture: environmentVisualTexture, position: Vector2.Zero, color: Color.White);
                 spriteBatch.End();
+
+                foreach (var drawObject in DrawObjects)
+                    drawObject.Draw(transformMatrix);
             }
         }
     }
