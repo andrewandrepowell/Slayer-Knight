@@ -15,7 +15,6 @@ namespace Utility
         public RoomFeature Previous { get; set; } = null;
         public UpdateInterface UpdateObject { get; set; } = null;
         public DrawInterface DrawObject { get; set; } = null;
-        public RoomManager Manager { get; set; } = null;
         public Queue<string> GoToQueue { get; private set; } = new Queue<string>(); // feature -> manager
         public Queue<object> ActiveQueue { get; private set; } = new Queue<object>(); // manager -> feature
     }

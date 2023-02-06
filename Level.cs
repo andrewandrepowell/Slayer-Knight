@@ -2,12 +2,9 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
-using Newtonsoft.Json.Schema;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Utility;
 
 namespace SlayerKnight
@@ -33,13 +30,17 @@ namespace SlayerKnight
             };
         }
     }
+    internal interface LevelInterface
+    {
+        public LevelFeature LevelFeatureObject { get; }
+    }
     internal class LevelFeature : UpdateInterface, DrawInterface, RoomInterface
     {
         private bool environmentMaskLoaded;
         private SpriteBatch spriteBatch;
         private ContentManager contentManager;
         private CollisionManager collisionManager;
-        private List<WallFeature> wallFeatures;
+        private OrthographicCamera orthographicCamera;
         private string environmentVisualAsset;
         private string environmentMaskAsset;
         private Size environmentGridSize;
@@ -70,7 +71,7 @@ namespace SlayerKnight
             };
             GoToQueue = new Queue<string>();
             collisionManager = new CollisionManager();
-            wallFeatures = new List<WallFeature>();
+            orthographicCamera = new OrthographicCamera(graphicsDevice: spriteBatch.GraphicsDevice);
             environmentMaskLoaded = false;
             this.spriteBatch = spriteBatch;
             this.contentManager = contentManager;
@@ -130,8 +131,6 @@ namespace SlayerKnight
                                 size: environmentGridSize,
                                 mask: wallMask,
                                 vertices: gridVertices);
-
-                            wallFeatures.Add(wallFeature);
                             collisionManager.Features.Add(wallFeature.CollisionFeatureObject);
                         }
                     }
@@ -176,10 +175,11 @@ namespace SlayerKnight
                 collisionManager.Update(timeElapsed);
             }    
         }
-        public void Draw(Matrix? transformMatrix)
+        public void Draw(Matrix? _ = null)
         {
             if (Started)
             {
+                Matrix transformMatrix = orthographicCamera.GetViewMatrix();
                 spriteBatch.Begin(transformMatrix: transformMatrix);
                 spriteBatch.Draw(texture: environmentVisualTexture, position: Vector2.Zero, color: Color.White);
                 spriteBatch.End();
