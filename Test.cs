@@ -11,8 +11,7 @@ using Utility;
 
 namespace SlayerKnight
 {
-    internal enum TestState { Start, End };
-    internal class TestFeature : UpdateInterface, DrawInterface, ControlInterface, CollisionInterface
+    internal class TestComponentFeature : UpdateInterface, DrawInterface, ControlInterface, CollisionInterface, StartInterface
     {
         private ContentManager contentManager;
         private SpriteBatch spriteBatch;
@@ -25,8 +24,8 @@ namespace SlayerKnight
         public Size Size { get; private set; }
         public ControlFeature ControlFeatureObject { get; private set; }
         public CollisionFeature CollisionFeatureObject { get; private set; }
-        public Queue<TestState> StateQueue { get; private set; } // user -> feature
-        public TestFeature(
+        public Queue<StartAction> StartQueue { get; private set; } // user -> feature
+        public TestComponentFeature(
             ContentManager contentManager,
             SpriteBatch spriteBatch,
             string maskAsset)
@@ -35,7 +34,7 @@ namespace SlayerKnight
             ControlFeatureObject = new ControlFeature() { Parent = this };
             controlTimer = new TimerFeature() { Parent = this, Period = controlPeriod, Repeat = true };
             Position = Vector2.Zero;
-            StateQueue = new Queue<TestState>();
+            StartQueue = new Queue<StartAction>();
 
             maskTexture = contentManager.Load<Texture2D>(maskAsset);
             Color[] maskColor = new Color[maskTexture.Width * maskTexture.Height];
@@ -80,15 +79,15 @@ namespace SlayerKnight
 
         public void Update(float timeElapsed)
         {
-            if (StateQueue.Count > 0)
+            if (StartQueue.Count > 0)
             {
-                var state = StateQueue.Dequeue();
+                var state = StartQueue.Dequeue();
                 switch (state)
                 {
-                    case TestState.Start:
+                    case StartAction.Start:
                         start();
                         break;
-                    case TestState.End:
+                    case StartAction.End:
                         end();
                         break;
                 }

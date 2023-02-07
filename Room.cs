@@ -9,14 +9,15 @@ namespace Utility
     {
         public RoomFeature RoomFeatureObject { get; }
     }
-    public class RoomFeature
+    public class RoomFeature : StartInterface
     {
-        public string Identifier { get; set; } = "";
-        public RoomFeature Previous { get; set; } = null;
-        public UpdateInterface UpdateObject { get; set; } = null;
-        public DrawInterface DrawObject { get; set; } = null;
-        public Queue<string> GoToQueue { get; private set; } = new Queue<string>(); // feature -> manager
-        public Queue<object> ActiveQueue { get; private set; } = new Queue<object>(); // manager -> feature
+        public string Identifier { get; set; } = ""; // feature -> manager
+        public RoomFeature Previous { get; set; } = null; // manager -> feature
+        public UpdateInterface UpdateObject { get; set; } = null; // feature -> manager
+        public DrawInterface DrawObject { get; set; } = null; // feature -> manager
+        public bool Started { get; set; } = false; // manager -> feature
+        public Queue<string> GoToQueue { get; private set; } = new Queue<string>(capacity: 1); // feature -> manager
+        public Queue<StartAction> StartQueue => new Queue<StartAction>(capacity: 1); // manager -> feature
     }
     public class RoomManager : UpdateInterface, DrawInterface
     {
@@ -25,6 +26,9 @@ namespace Utility
         public Queue<string> GoToQueue { get; private set; } = new Queue<string>(); // user -> manager
         private void goTo(string nextIdentifier)
         {
+            // End the previous room.
+            Current.StartQueue.Enqueue(StartAction.End);
+
             // If the nextIdentifier is specified, then go to the specified room.
             if (nextIdentifier != null)
             {
@@ -43,8 +47,8 @@ namespace Utility
                 Current = Current.Previous;
             }
 
-            // Let the Current know it's active.
-            Current.ActiveQueue.Enqueue(null);
+            // Start the new current room.
+            Current.StartQueue.Enqueue(StartAction.Start);
         }
         public void Update(float timeElapsed)
         {
@@ -59,7 +63,7 @@ namespace Utility
             if (Current == null && Features.Count >= 1)
             {
                 Current = Features.First();
-                Current.ActiveQueue.Enqueue(null);
+                Current.StartQueue.Enqueue(StartAction.Start);
             }
 
             // Perform the following operations once a Current has been established.
@@ -71,16 +75,17 @@ namespace Utility
                     string nextIdentifier = Current.GoToQueue.Dequeue();
                     goTo(nextIdentifier);
                 }
+            }
 
-                // Update the Current.
-                Current.UpdateObject.Update(timeElapsed);
-            }      
+            // Update all the rooms.
+            foreach (var feature in Features)
+                feature.UpdateObject.Update(timeElapsed);
         }
         public void Draw(Matrix? transformMatrix)
         {
-            // Draw the CurrentRoom.
-            if (Current != null)
-                Current.DrawObject.Draw(transformMatrix);
+            // Draw all the rooms.
+            foreach (var feature in Features)
+                feature.DrawObject.Draw(transformMatrix);
         }
     }
 }

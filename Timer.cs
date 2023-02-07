@@ -13,7 +13,7 @@ namespace Utility
         public bool Repeat { get; set; } = false;
         public bool Activated { get; set; } = false;
         public float Period { get; set; } = 1.0f;
-        public Queue<object> RunQueue { get; private set; } = new Queue<object>(); // feature -> user
+        public Queue<object> RunQueue { get; private set; } = new Queue<object>(capacity: 1); // feature -> user
 
         public void Update(float timeElapsed)
         {

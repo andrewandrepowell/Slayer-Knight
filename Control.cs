@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Input;
 
 namespace Utility
@@ -25,9 +23,10 @@ namespace Utility
     }
     public class ControlFeature
     {
+        private const int MaxActions = 100;
         public object Parent { get; set; } = null;
         public bool Activated { get; set; } = false;
-        public Queue<ControlInfo> InfoQueue { get; private set; } = new Queue<ControlInfo>(); // manager -> feature
+        public Queue<ControlInfo> InfoQueue { get; private set; } = new Queue<ControlInfo>(capacity: MaxActions); // manager -> feature
     }
     public class ControlManager : UpdateInterface
     {
@@ -39,7 +38,7 @@ namespace Utility
         };
         public KeyboardFeature KeyboardFeatureObject { get; set; } = null;
         public Dictionary<Keys, ControlAction> KeyActionMap { get; private set; } = new Dictionary<Keys, ControlAction>();
-        public Queue<ControlFeature> Features { get; private set; } = new Queue<ControlFeature>();
+        public List<ControlFeature> Features { get; private set; } = new List<ControlFeature>();
         public void Update(float timeElapsed)
         {
             if (KeyboardFeatureObject != null)

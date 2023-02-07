@@ -26,7 +26,7 @@ namespace Utility
             Normal = normal;
         }
     }
-    public class CollisionFeature
+    public class CollisionFeature : DestroyInterface
     {
         public object Parent { get; set; } = null;
         public Vector2 Position { get; set; } = new Vector2();
@@ -36,8 +36,8 @@ namespace Utility
         public bool Static { get; set; } = true;
         public Color[] CollisionMask { get; set; } = null;
         public List<Vector2> CollisionVertices { get; set; } = new List<Vector2>();
-        public void Destroy() { Destroyed = true; }
-        public Queue<CollisionInfo> InfoQueue { get; private set; } = new Queue<CollisionInfo>(); // manager -> feature
+        public Queue<CollisionInfo> InfoQueue { get; private set; } = new Queue<CollisionInfo>(capacity: 1); // manager -> feature
+        public Queue<object> DestroyQueue { get; private set; } = new Queue<object>(capacity: 1); // user -> feature
     }
 
     public class CollisionManager : UpdateInterface

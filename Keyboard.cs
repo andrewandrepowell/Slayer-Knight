@@ -23,12 +23,13 @@ namespace Utility
     }
     public class KeyboardFeature
     {
+        private const int MaxKeys = 100;
         public bool Activated { get; set; } = false;
-        public Queue<KeyInfo> InfoQueue { get; private set; } = new Queue<KeyInfo>(); // manager -> feature
+        public Queue<KeyInfo> InfoQueue { get; private set; } = new Queue<KeyInfo>(capacity: MaxKeys); // manager -> feature
     }
     public class KeyboardManager : UpdateInterface
     {
-        private Keys[] previousPressedKeys = new Keys[0];
+        private Keys[] previousPressedKeys = Array.Empty<Keys>();
         public List<KeyboardFeature> Features { get; private set; } = new List<KeyboardFeature>();
         public void Update(float timeElapsed)
         {

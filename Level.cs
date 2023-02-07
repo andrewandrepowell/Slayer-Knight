@@ -34,7 +34,7 @@ namespace SlayerKnight
     {
         public LevelFeature LevelFeatureObject { get; }
     }
-    internal class LevelFeature : UpdateInterface, DrawInterface, RoomInterface
+    internal class LevelFeature : UpdateInterface, DrawInterface, RoomInterface, StartInterface
     {
         private bool environmentMaskLoaded;
         private SpriteBatch spriteBatch;
@@ -49,10 +49,9 @@ namespace SlayerKnight
         public RoomFeature RoomFeatureObject { get; private set; }
         public CollisionManager CollisionManagerObject { get; private set; }
         public OrthographicCamera OrthographicCameraObject { get; private set; }
-        public List<UpdateInterface> UpdateObjects { get; private set; }
-        public List<DrawInterface> DrawObjects { get; private set; }
-        public bool Started { get; private set; }
+        public bool Started { get; private set; } // feature -> user
         public Queue<string> GoToQueue { get; private set; } // user -> feature
+        public Queue<StartAction> StartQueue { get; private set; } // feature -> user
         public LevelFeature(
             ContentManager contentManager,
             SpriteBatch spriteBatch,
@@ -73,9 +72,8 @@ namespace SlayerKnight
             };
             CollisionManagerObject = new CollisionManager();
             OrthographicCameraObject = new OrthographicCamera(graphicsDevice: spriteBatch.GraphicsDevice);
-            UpdateObjects = new List<UpdateInterface>();
-            DrawObjects = new List<DrawInterface>();
-            GoToQueue = new Queue<string>();
+            GoToQueue = new Queue<string>(capacity: 1);
+            StartQueue = new Queue<StartAction>(capacity: 1);
             environmentMaskLoaded = false;
             this.spriteBatch = spriteBatch;
             this.contentManager = contentManager;
@@ -146,7 +144,10 @@ namespace SlayerKnight
                 // Prevent this operation from occurring again.
                 environmentMaskLoaded = true;
             }
+
+            // Let the world know the level has started.
             Started = true;
+            StartQueue.Enqueue(StartAction.Start);
         }
         private void end()
         {
@@ -155,45 +156,50 @@ namespace SlayerKnight
                 throw new Exception("There should never be a case where the level is ended but is not started."); 
 
             contentManager.UnloadAsset(environmentVisualAsset);
+
+            // Let the world know the level has ended.
             Started = false;
+            StartQueue.Enqueue(StartAction.End);
         }
         public void Update(float timeElapsed)
         {
             // If the level is activated, start the level.
-            if (RoomFeatureObject.ActiveQueue.Count > 0)
+            if (RoomFeatureObject.StartQueue.Count > 0)
             {
-                RoomFeatureObject.ActiveQueue.Dequeue();
-                start();
+                var action = RoomFeatureObject.StartQueue.Dequeue();
+                switch (action)
+                {
+                    case StartAction.Start:
+                        start();
+                        break;
+                    case StartAction.End:
+                        end();
+                        break;
+                }
             }
 
             // If a new room is selected, end the level and then go to next room.
             if (GoToQueue.Count > 0)
             {
-                var nextIdentifier = GoToQueue.Dequeue();
-                end();
-                RoomFeatureObject.GoToQueue.Enqueue(nextIdentifier);
+                RoomFeatureObject.GoToQueue.Enqueue(GoToQueue.Dequeue());
             }
 
             if (Started)
             {
-                foreach (var updateObject in UpdateObjects)
-                    updateObject.Update(timeElapsed);
-
                 CollisionManagerObject.Update(timeElapsed);
             }    
         }
         public void Draw(Matrix? _ = null)
         {
+        }
+        public void DrawEnvironmentVisual()
+        {
             if (Started)
             {
                 Matrix transformMatrix = OrthographicCameraObject.GetViewMatrix();
-
                 spriteBatch.Begin(transformMatrix: transformMatrix);
                 spriteBatch.Draw(texture: environmentVisualTexture, position: Vector2.Zero, color: Color.White);
                 spriteBatch.End();
-
-                foreach (var drawObject in DrawObjects)
-                    drawObject.Draw(transformMatrix);
             }
         }
     }
