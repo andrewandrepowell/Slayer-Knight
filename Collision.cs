@@ -30,7 +30,7 @@ namespace Utility
         public bool Static { get; }
         public Color[] CollisionMask { get; }
         public List<Vector2> CollisionVertices { get; }
-        public Channel<CollisionInfo> InfoChannel { get; }
+        public Channel<CollisionInfo> CollisionInfoChannel { get; }
     }
 
     public class CollisionManager : UpdateInterface
@@ -56,9 +56,9 @@ namespace Utility
                     continue;
 
                 if (!collidable0.Static)
-                    collidable0.InfoChannel.Enqueue(new CollisionInfo(other: collidable1, point: point0, correction: correction0, normal: normal0));
+                    collidable0.CollisionInfoChannel.Enqueue(new CollisionInfo(other: collidable1, point: point0, correction: correction0, normal: normal0));
                 if (!collidable1.Static)
-                    collidable1.InfoChannel.Enqueue(new CollisionInfo(other: collidable0, point: point1, correction: correction1, normal: normal1));
+                    collidable1.CollisionInfoChannel.Enqueue(new CollisionInfo(other: collidable0, point: point1, correction: correction1, normal: normal1));
             }
         }
 

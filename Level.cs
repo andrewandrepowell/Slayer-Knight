@@ -21,7 +21,6 @@ namespace SlayerKnight
             Size = size;
             CollisionMask = mask;
             CollisionVertices = vertices;
-            InfoChannel = new Channel<CollisionInfo>();
         }
         public Vector2 Position { get; private set; }
         public Size Size { get; private set; }
@@ -29,7 +28,7 @@ namespace SlayerKnight
         public bool Static { get => true; }
         public Color[] CollisionMask { get; private set; }
         public List<Vector2> CollisionVertices { get; private set; }
-        public Channel<CollisionInfo> InfoChannel { get; private set; }
+        public Channel<CollisionInfo> CollisionInfoChannel { get => throw new NotImplementedException(); }
         public bool Destroyed { get => false; }
         public Channel<object> DestroyChannel { get => throw new NotImplementedException(); }
     }

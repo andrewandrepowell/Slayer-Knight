@@ -25,7 +25,7 @@
 /processorParam:TextureFormat=Color
 /build:test/test_component_mask_asset.png
 
-#begin test/test_environmentmask_asset.png
+#begin test/test_environment_mask_asset.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,255,255,255
@@ -35,5 +35,17 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:test/test_environmentmask_asset.png
+/build:test/test_environment_mask_asset.png
+
+#begin test/test_environment_visual_asset.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,255,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:test/test_environment_visual_asset.png
 
