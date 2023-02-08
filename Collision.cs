@@ -7,18 +7,14 @@ using MonoGame.Extended;
 
 namespace Utility
 {
-    public interface CollisionInterface
-    {
-        public CollisionFeature CollisionFeatureObject { get; }
-    }
     public struct CollisionInfo
     {
-        public CollisionFeature Other { get; private set; }
+        public CollisionInterface Other { get; private set; }
         public Vector2 Point { get; private set; }
         public Vector2 Correction { get; private set; }
         public Vector2 Normal { get; private set; }
 
-        public CollisionInfo(CollisionFeature other, Vector2 point, Vector2 correction, Vector2 normal)
+        public CollisionInfo(CollisionInterface other, Vector2 point, Vector2 correction, Vector2 normal)
         {
             Other = other;
             Point = point;
@@ -26,52 +22,48 @@ namespace Utility
             Normal = normal;
         }
     }
-    public class CollisionFeature : DestroyInterface
+    public interface CollisionInterface : DestroyInterface
     {
-        public object Parent { get; set; } = null;
-        public Vector2 Position { get; set; } = new Vector2();
-        public Size Size { get; set; } = new Size();
-        public bool Destroyed { get; private set; } = false;
-        public bool Collidable { get; set; } = false;
-        public bool Static { get; set; } = true;
-        public Color[] CollisionMask { get; set; } = null;
-        public List<Vector2> CollisionVertices { get; set; } = new List<Vector2>();
-        public Queue<CollisionInfo> InfoQueue { get; private set; } = new Queue<CollisionInfo>(capacity: 1); // manager -> feature
-        public Queue<object> DestroyQueue { get; private set; } = new Queue<object>(capacity: 1); // user -> feature
+        public Vector2 Position { get; }
+        public Size Size { get; }
+        public bool Collidable { get; } 
+        public bool Static { get; }
+        public Color[] CollisionMask { get; }
+        public List<Vector2> CollisionVertices { get; }
+        public Channel<CollisionInfo> InfoChannel { get; }
     }
 
     public class CollisionManager : UpdateInterface
     {
-        public List<CollisionFeature> Features { get; private set; } = new List<CollisionFeature>();
-
+        public List<CollisionInterface> Features { get; private set; } = new List<CollisionInterface>();
         public void Update(float timeElapsed)
         {
             // Remove any destroyed collision features from the manager.
-            Features.Where((x) => x.Destroyed).ToList().ForEach((x) => Features.Remove(x));
+            foreach (var feature in Features.ToList().Where(x => x.Destroyed))
+                Features.Remove(feature);
 
             // For each collidable in the manager, check for collisions with other collidables in the manager.
             foreach (var combination in Features.GetPermutations(count: 2))
             {
-                Vector2 point0, point1, correction0, correction1, normal0, normal1;
-                CollisionFeature[] pair = combination.ToArray();
-                CollisionFeature collidable0 = pair[0], collidable1 = pair[1];
+                CollisionInterface[] pair = combination.ToArray();
+                CollisionInterface collidable0 = pair[0], collidable1 = pair[1];
 
                 if (!CheckForCollision(
                     collidable0: collidable0, collidable1: collidable1,
-                    correction0: out correction0, correction1: out correction1,
-                    point0: out point0, point1: out point1,
-                    normal0: out normal0, normal1: out normal1))
+                    correction0: out Vector2 correction0, correction1: out Vector2 correction1,
+                    point0: out Vector2 point0, point1: out Vector2 point1,
+                    normal0: out Vector2 normal0, normal1: out Vector2 normal1))
                     continue;
 
                 if (!collidable0.Static)
-                    collidable0.InfoQueue.Enqueue(new CollisionInfo(other: collidable1, point: point0, correction: correction0, normal: normal0));
+                    collidable0.InfoChannel.Enqueue(new CollisionInfo(other: collidable1, point: point0, correction: correction0, normal: normal0));
                 if (!collidable1.Static)
-                    collidable1.InfoQueue.Enqueue(new CollisionInfo(other: collidable0, point: point1, correction: correction1, normal: normal1));
+                    collidable1.InfoChannel.Enqueue(new CollisionInfo(other: collidable0, point: point1, correction: correction1, normal: normal1));
             }
         }
 
         private static bool CheckForCollision(
-            CollisionFeature collidable0, CollisionFeature collidable1, 
+            CollisionInterface collidable0, CollisionInterface collidable1, 
             out Vector2 correction0, out Vector2 correction1, 
             out Vector2 point0, out Vector2 point1,
             out Vector2 normal0, out Vector2 normal1)

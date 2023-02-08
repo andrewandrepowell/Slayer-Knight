@@ -3,6 +3,10 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Utility;
 using System;
+using Microsoft.Xna.Framework.Content;
+using System.Collections;
+using System.Collections.Generic;
+using MonoGame.Extended.Timers;
 #if DEBUG
 using System.Runtime.InteropServices;
 #endif
@@ -11,14 +15,13 @@ namespace SlayerKnight;
 
 public class Game1 : Game
 {
-    private GraphicsDeviceManager _graphics;
-    private SpriteBatch _spriteBatch;
-    private KeyboardManager keyboardManager;
-    private KeyboardFeature keyboardFeature;
+    private GraphicsDeviceManager graphics;
+    private SpriteBatch spriteBatch;
+    private TestLevelFeature testLevelFeature;
 
     public Game1()
     {
-        _graphics = new GraphicsDeviceManager(this);
+        graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
 #if DEBUG
@@ -28,18 +31,28 @@ public class Game1 : Game
 
     protected override void Initialize()
     {
-        // TODO: Add your initialization logic here
-        keyboardManager = new KeyboardManager();
-        keyboardFeature = new KeyboardFeature() { Activated=true };
-        keyboardManager.Features.Add(keyboardFeature);
+        graphics.SynchronizeWithVerticalRetrace = true;
+        graphics.GraphicsProfile = GraphicsProfile.HiDef;
+        graphics.PreferredBackBufferWidth = 1280;
+        graphics.PreferredBackBufferHeight = 720;
+        graphics.ApplyChanges();
+        spriteBatch = new SpriteBatch(GraphicsDevice);
+        testLevelFeature = new TestLevelFeature(
+            contentManager: Content,
+            spriteBatch: spriteBatch,
+            levelIdentifier: "testRoom",
+            testComponentMaskAsset: "test/test_component_mask_asset",
+            environmentVisualAsset: "test/test_environmentmask_asset",
+            environmentMaskAsset: "test/test_environmentmask_asset",
+            environmentGridSize: new MonoGame.Extended.Size(width: 100, height: 100),
+            environmentStartColor: new Color(r: 255, g: 255, b: 0, alpha: 255),
+            environmentIncludeColor: new Color(r: 255, g: 0, b: 0, alpha: 255),
+            environmentExcludeColor: new Color(r: 0, g: 255, b: 0, alpha: 255));
         base.Initialize();
     }
 
     protected override void LoadContent()
     {
-        _spriteBatch = new SpriteBatch(GraphicsDevice);
-
-        // TODO: use this.Content to load your game content here
     }
 
     protected override void Update(GameTime gameTime)
@@ -47,23 +60,15 @@ public class Game1 : Game
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
 
-        // TODO: Add your update logic here
-        keyboardManager.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
-
-        if (keyboardFeature.InfoQueue.Count > 0)
-        {
-            var keyInfo = keyboardFeature.InfoQueue.Dequeue();
-            Console.WriteLine($"DEBUG: {keyInfo.Key} {keyInfo.State}");
-        }
+        var timeElapsed = (float)gameTime.ElapsedGameTime.TotalSeconds;
+        testLevelFeature.Update(timeElapsed);
         base.Update(gameTime);
     }
 
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(Color.CornflowerBlue);
-
-        // TODO: Add your drawing code here
-
+        testLevelFeature.Draw();
         base.Draw(gameTime);
     }
 

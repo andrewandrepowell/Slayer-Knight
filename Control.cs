@@ -17,16 +17,10 @@ namespace Utility
             State = state;
         }
     }
-    public interface ControlInterface
-    {
-        public ControlFeature ControlFeatureObject { get; }
-    }
     public class ControlFeature
     {
-        private const int MaxActions = 100;
-        public object Parent { get; set; } = null;
         public bool Activated { get; set; } = false;
-        public Queue<ControlInfo> InfoQueue { get; private set; } = new Queue<ControlInfo>(capacity: MaxActions); // manager -> feature
+        public Channel<ControlInfo> InfoChannel { get; private set; } = new Channel<ControlInfo>(capacity: 100); // manager -> feature
     }
     public class ControlManager : UpdateInterface
     {
@@ -43,15 +37,15 @@ namespace Utility
         {
             if (KeyboardFeatureObject != null)
             {
-                while (KeyboardFeatureObject.InfoQueue.Count > 0)
+                while (KeyboardFeatureObject.InfoChannel.Count > 0)
                 {
-                    var keyboardInfo = KeyboardFeatureObject.InfoQueue.Dequeue();
+                    var keyboardInfo = KeyboardFeatureObject.InfoChannel.Dequeue();
                     ControlAction action;
                     if (KeyActionMap.TryGetValue(key: keyboardInfo.Key, value: out action))
                     {
                         ControlState state = keyStateControlStateMap[keyboardInfo.State];
                         foreach (var feature in Features.Where(x => x.Activated))
-                            feature.InfoQueue.Enqueue(new ControlInfo(action: action, state: state));
+                            feature.InfoChannel.Enqueue(new ControlInfo(action: action, state: state));
                     }
 
                 }

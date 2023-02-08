@@ -9,11 +9,11 @@ namespace Utility
     public class TimerFeature : UpdateInterface
     {
         private float current = 0.0f;
-        public object Parent { get; set; } = null;
         public bool Repeat { get; set; } = false;
         public bool Activated { get; set; } = false;
         public float Period { get; set; } = 1.0f;
-        public Queue<object> RunQueue { get; private set; } = new Queue<object>(capacity: 1); // feature -> user
+        public int Count { get; set; } = 0;
+        public Channel<object> RunChannel { get; private set; } = new Channel<object>();
 
         public void Update(float timeElapsed)
         {
@@ -22,16 +22,11 @@ namespace Utility
                 current += timeElapsed;
                 if (current >= Period)
                 {
-                    RunQueue.Enqueue(null);
-                    if (Repeat)
-                    {
-                        current -= Period;
-                    }
-                    else
-                    {
+                    RunChannel.Enqueue(null);
+                    current = 0;
+                    Count++;
+                    if (!Repeat)
                         Activated = false;
-                        current = 0;
-                    }
                 }
             }
             else

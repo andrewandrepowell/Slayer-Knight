@@ -3,17 +3,21 @@ using System.Collections.Generic;
 
 namespace Utility
 {
+    public interface IdentityInterface
+    {
+        public string Identifier { get; }
+    }
     public enum StartAction { Start, End }
     public interface StartInterface
     {
         public bool Started { get; }
-        public Queue<StartAction> StartQueue { get; } // user -> feature
+        public Channel<StartAction> StartChannel { get; }
 
     }
     public interface DestroyInterface
     {
-        public Queue<object> DestroyQueue { get; } // user -> feature
         public bool Destroyed { get; }
+        public Channel<object> DestroyChannel { get; }
     }
     public interface DrawInterface
     {
