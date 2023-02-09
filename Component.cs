@@ -7,6 +7,10 @@ using Utility;
 
 namespace SlayerKnight
 {
+    internal interface ComponentInterface : UpdateInterface, DrawInterface
+    {
+        public int DrawLevel { get; }
+    }
     internal static class ComponentManager
     {
         public static object GetComponentFeature(string identifier)

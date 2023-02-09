@@ -11,14 +11,15 @@ namespace Utility
     public interface StartInterface
     {
         public bool Started { get; }
-        public Channel<StartAction> StartChannel { get; }
-
+        public ChannelInterface<StartAction> StartChannel { get; }
     }
+
     public interface DestroyInterface
     {
         public bool Destroyed { get; }
-        public Channel<object> DestroyChannel { get; }
+        public ChannelInterface<object> DestroyChannel { get; }
     }
+
     public interface DrawInterface
     {
         void Draw(Matrix? transformMatrix = null);

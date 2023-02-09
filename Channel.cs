@@ -14,6 +14,9 @@ namespace Utility
         public T Dequeue();
         public int Count { get; }
     }
+    public interface ChannelInterface<T> : OutputInterface<T>, InputInterface<T>
+    {
+    }
     public class Broadcaster<T>: OutputInterface<T>
     {
         public List<Channel<T>> Channels { get; private set; } = new List<Channel<T>>();
@@ -23,7 +26,7 @@ namespace Utility
                 channel.Enqueue(item);
         }
     }
-    public class Channel<T> : IEnumerable<T>, IReadOnlyCollection<T>, ICollection, IEnumerable, InputInterface<T>, OutputInterface<T>
+    public class Channel<T> : ChannelInterface<T>, IEnumerable<T>, IReadOnlyCollection<T>, ICollection, IEnumerable
     {
         private T[] buffer;
         private int head;

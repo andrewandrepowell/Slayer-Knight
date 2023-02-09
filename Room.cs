@@ -7,18 +7,18 @@ namespace Utility
 {
     public interface RoomInterface : IdentityInterface, StartInterface, UpdateInterface, DrawInterface
     {
-        public Channel<string> GoToChannel { get; }
+        public ChannelInterface<string> GoToChannel { get; }
     }
     public class RoomManager : UpdateInterface, DrawInterface
     {
         private Dictionary<RoomInterface, RoomInterface> previousMap = new Dictionary<RoomInterface, RoomInterface>();
         public RoomInterface Current { get; private set; } = null;
         public List<RoomInterface> Features { get; private set; } = new List<RoomInterface>(); 
+
         private void goTo(string nextIdentifier, float timeElapsed)
         {
             // End the previous room.
             Current.StartChannel.Enqueue(StartAction.End);
-            Current.Update(timeElapsed);
 
             // If the nextIdentifier is specified, then go to the specified room.
             if (nextIdentifier != null)
@@ -40,8 +40,8 @@ namespace Utility
 
             // Start the new current room.
             Current.StartChannel.Enqueue(StartAction.Start);
-            Current.Update(timeElapsed);
         }
+
         public void Update(float timeElapsed)
         {
             if (Current == null)
@@ -50,7 +50,6 @@ namespace Utility
                 {
                     Current = Features.First();
                     Current.StartChannel.Enqueue(StartAction.Start);
-                    Current.Update(timeElapsed);
                 }
             }
             else
@@ -65,11 +64,15 @@ namespace Utility
                     Current.Update(timeElapsed);
                 }
             }
+
+            foreach (var feature in Features)
+                feature.Update(timeElapsed);
         }
+
         public void Draw(Matrix? transformMatrix = null)
         {
-            if (Current != null)
-                Current.Draw(transformMatrix);
+            foreach (var feature in Features)
+                feature.Draw(transformMatrix);
         }
     }
 }

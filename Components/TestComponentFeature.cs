@@ -24,7 +24,7 @@ namespace SlayerKnight.Components
 
         public List<Vector2> CollisionVertices => throw new NotImplementedException();
 
-        public Channel<CollisionInfo> CollisionInfoChannel => throw new NotImplementedException();
+        public ChannelInterface<CollisionInfo> CollisionInfoChannel => throw new NotImplementedException();
 
         public bool Destroyed => throw new NotImplementedException();
 
@@ -32,7 +32,7 @@ namespace SlayerKnight.Components
 
         public bool Started => throw new NotImplementedException();
 
-        public Channel<StartAction> StartChannel => throw new NotImplementedException();
+        public ChannelInterface<StartAction> StartChannel => throw new NotImplementedException();
 
         public void Draw(Matrix? transformMatrix = null)
         {

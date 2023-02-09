@@ -9,9 +9,9 @@ using Utility;
 
 namespace SlayerKnight
 {
-    internal class WallFeature : CollisionInterface
+    internal class WallComponentFeature : ComponentInterface, CollisionInterface
     {
-        public WallFeature(
+        public WallComponentFeature(
             Vector2 position,
             Size size,
             Color[] mask,
@@ -28,9 +28,14 @@ namespace SlayerKnight
         public bool Static { get => true; }
         public Color[] CollisionMask { get; private set; }
         public List<Vector2> CollisionVertices { get; private set; }
-        public Channel<CollisionInfo> CollisionInfoChannel { get => throw new NotImplementedException(); }
-        public bool Destroyed { get => false; }
-        public Channel<object> DestroyChannel { get => throw new NotImplementedException(); }
+        public ChannelInterface<CollisionInfo> CollisionInfoChannel { get => throw new NotImplementedException(); }
+        public int DrawLevel { get => 0; }
+        public void Update(float timeElapsed)
+        {
+        }
+        public void Draw(Matrix? transformMatrix = null)
+        {
+        }
     }
     internal class LevelFeature : RoomInterface
     {
@@ -39,6 +44,7 @@ namespace SlayerKnight
         private ContentManager contentManager;
         private CollisionManager collisionManager;
         private OrthographicCamera orthographicCamera;
+        private List<ComponentInterface> componentFeatures;
         private string environmentVisualAsset;
         private string environmentMaskAsset;
         private Size environmentGridSize;
@@ -47,8 +53,8 @@ namespace SlayerKnight
         private Color environmentIncludeColor;
         private Color environmentExcludeColor;
         public bool Started { get; private set; }
-        public Channel<string> GoToChannel { get; private set; }
-        public Channel<StartAction> StartChannel { get; private set; }
+        public ChannelInterface<string> GoToChannel { get; private set; }
+        public ChannelInterface<StartAction> StartChannel { get; private set; }
         public string Identifier { get; private set; }
         public LevelFeature(
             ContentManager contentManager,
@@ -67,6 +73,7 @@ namespace SlayerKnight
             StartChannel = new Channel<StartAction>();
             collisionManager = new CollisionManager();
             orthographicCamera = new OrthographicCamera(graphicsDevice: spriteBatch.GraphicsDevice);
+            componentFeatures = new List<ComponentInterface>();
             environmentMaskLoaded = false;
             this.spriteBatch = spriteBatch;
             this.contentManager = contentManager;
@@ -77,6 +84,23 @@ namespace SlayerKnight
             this.environmentIncludeColor = environmentIncludeColor;
             this.environmentExcludeColor = environmentExcludeColor;
         }
+        private void add(ComponentInterface component)
+        {
+            componentFeatures.Add(component);
+            if (component is CollisionInterface collisionFeature)
+                collisionManager.Features.Add(collisionFeature);
+        }
+        private void remove(ComponentInterface component)
+        {
+            componentFeatures.Remove(component);
+            if (component is CollisionInterface collisionFeature)
+                collisionManager.Features.Remove(collisionFeature);
+        }
+        private void clear()
+        {
+            componentFeatures.Clear();
+            collisionManager.Features.Clear();
+        }
         private void start()
         {
             // Can't start something that has already been started.
@@ -86,9 +110,7 @@ namespace SlayerKnight
             // Load static visual textures.
             environmentVisualTexture = contentManager.Load<Texture2D>(environmentVisualAsset);
 
-            // Initilize environmental mask collision features.
-            // This operation only needs to happen once.
-            if (!environmentMaskLoaded)
+            // Create wall component features.
             {
                 // Load the mask as a texture.
                 var maskTexture = contentManager.Load<Texture2D>(environmentMaskAsset);
@@ -120,23 +142,20 @@ namespace SlayerKnight
                         if (wallMask.Any(x => x.A != 0))
                         {
                             var gridVertices = CollisionManager.GetVertices(
-                                maskData: wallMask, size: environmentGridSize, 
+                                maskData: wallMask, size: environmentGridSize,
                                 startColor: environmentStartColor, includeColor: environmentIncludeColor, excludeColor: environmentExcludeColor);
-                            var wallFeature = new WallFeature(
+                            var wallFeature = new WallComponentFeature(
                                 position: wallPosition.ToVector2(),
                                 size: environmentGridSize,
                                 mask: wallMask,
                                 vertices: gridVertices);
-                            collisionManager.Features.Add(wallFeature);
+                            add(wallFeature);
                         }
                     }
 
                 // The environment mask asset is no long needed now that the 
                 // collision manager has been updated with all the grid features.
                 contentManager.UnloadAsset(environmentMaskAsset);
-
-                // Prevent this operation from occurring again.
-                environmentMaskLoaded = true;
             }
 
             // Let the world know the level has started.
@@ -149,6 +168,7 @@ namespace SlayerKnight
                 throw new Exception("There should never be a case where the level is ended but is not started."); 
 
             contentManager.UnloadAsset(environmentVisualAsset);
+            clear();
 
             // Let the world know the level has ended.
             Started = false;
@@ -170,19 +190,40 @@ namespace SlayerKnight
                 }
             }
 
-            if (Started)
-            {
-                collisionManager.Update(timeElapsed);
-            }    
+            // Remove any destroyed components.
+            foreach (var component in componentFeatures.OfType<DestroyInterface>())
+                if (component.Destroyed)
+                    remove(component as ComponentInterface);
+
+            // Update the components.
+            foreach (var component in componentFeatures)
+                component.Update(timeElapsed);
+
+            // Update the managers.
+            collisionManager.Update(timeElapsed);   
         }
         public void Draw(Matrix? _ = null)
         {
+            Matrix transformMatrix = orthographicCamera.GetViewMatrix();
+
             if (Started)
             {
-                Matrix transformMatrix = orthographicCamera.GetViewMatrix();
+                
+                // Draw the environment visual texture.
                 spriteBatch.Begin(transformMatrix: transformMatrix);
                 spriteBatch.Draw(texture: environmentVisualTexture, position: Vector2.Zero, color: Color.White);
                 spriteBatch.End();
+            }
+
+            // Draw all the other components.
+            if (componentFeatures.Count > 0)
+            {
+                int minDrawLevel = componentFeatures.Select(x => x.DrawLevel).Min();
+                int maxDrawLevel = componentFeatures.Select(x => x.DrawLevel).Max();
+                for (int curr = minDrawLevel; curr <= maxDrawLevel; curr++)
+                    foreach (var component in componentFeatures)
+                        if (component.DrawLevel == curr)
+                            component.Draw(transformMatrix);
             }
         }
     }

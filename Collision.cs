@@ -2,7 +2,6 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 
 namespace Utility
@@ -22,7 +21,7 @@ namespace Utility
             Normal = normal;
         }
     }
-    public interface CollisionInterface : DestroyInterface
+    public interface CollisionInterface 
     {
         public Vector2 Position { get; }
         public Size Size { get; }
@@ -30,7 +29,7 @@ namespace Utility
         public bool Static { get; }
         public Color[] CollisionMask { get; }
         public List<Vector2> CollisionVertices { get; }
-        public Channel<CollisionInfo> CollisionInfoChannel { get; }
+        public ChannelInterface<CollisionInfo> CollisionInfoChannel { get; }
     }
 
     public class CollisionManager : UpdateInterface
@@ -38,10 +37,6 @@ namespace Utility
         public List<CollisionInterface> Features { get; private set; } = new List<CollisionInterface>();
         public void Update(float timeElapsed)
         {
-            // Remove any destroyed collision features from the manager.
-            foreach (var feature in Features.ToList().Where(x => x.Destroyed))
-                Features.Remove(feature);
-
             // For each collidable in the manager, check for collisions with other collidables in the manager.
             foreach (var combination in Features.GetPermutations(count: 2))
             {
