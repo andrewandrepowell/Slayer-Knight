@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Utility;
+using SlayerKnight.Components;
+
 
 namespace SlayerKnight
 {
@@ -39,11 +41,11 @@ namespace SlayerKnight
     }
     internal class LevelFeature : RoomInterface
     {
-        private bool environmentMaskLoaded;
         private SpriteBatch spriteBatch;
         private ContentManager contentManager;
         private CollisionManager collisionManager;
         private OrthographicCamera orthographicCamera;
+        private ControlManager controlManager;
         private List<ComponentInterface> componentFeatures;
         private string environmentVisualAsset;
         private string environmentMaskAsset;
@@ -73,8 +75,8 @@ namespace SlayerKnight
             StartChannel = new Channel<StartAction>();
             collisionManager = new CollisionManager();
             orthographicCamera = new OrthographicCamera(graphicsDevice: spriteBatch.GraphicsDevice);
+            controlManager = new ControlManager();
             componentFeatures = new List<ComponentInterface>();
-            environmentMaskLoaded = false;
             this.spriteBatch = spriteBatch;
             this.contentManager = contentManager;
             this.environmentVisualAsset = environmentVisualAsset;
@@ -89,17 +91,22 @@ namespace SlayerKnight
             componentFeatures.Add(component);
             if (component is CollisionInterface collisionFeature)
                 collisionManager.Features.Add(collisionFeature);
+            if (component is ControlInterface controlFeature)
+                controlManager.Features.Add(controlFeature.ControlFeatureObject);
         }
         private void remove(ComponentInterface component)
         {
             componentFeatures.Remove(component);
             if (component is CollisionInterface collisionFeature)
                 collisionManager.Features.Remove(collisionFeature);
+            if (component is ControlInterface controlFeature)
+                controlManager.Features.Remove(controlFeature.ControlFeatureObject);
         }
         private void clear()
         {
             componentFeatures.Clear();
             collisionManager.Features.Clear();
+            controlManager.Features.Clear();
         }
         private void start()
         {
@@ -133,21 +140,31 @@ namespace SlayerKnight
                 for (int gridRow = 0; gridRow < gridRows; gridRow++)
                     for (int gridCol = 0; gridCol < gridCols; gridCol++)
                     {
-                        // Get the position and mask of the wall.
-                        var wallPosition = new Point(x: gridCol * environmentGridSize.Width, y: gridRow * environmentGridSize.Height);
-                        var wallMask = maskArray.Extract(size: maskSize, region: new Rectangle(location: wallPosition, size: environmentGridSize));
+                        // Get the position and mask of the grid.
+                        var gridPosition = new Point(x: gridCol * environmentGridSize.Width, y: gridRow * environmentGridSize.Height);
+                        var gridMask = maskArray.Extract(size: maskSize, region: new Rectangle(location: gridPosition, size: environmentGridSize));
+
+                        // Attempt to find component.
+                        ComponentInterface componentFeature = ComponentManager.GetComponentFeature(
+                            identifier: gridMask[0],
+                            contentManager: contentManager,
+                            spriteBatch: spriteBatch);
+                        if (componentFeature != null)
+                        {
+                            add(componentFeature);
+                        }
 
                         // If the mask has at least one visible pixel--i.e. alpha not equal to 0--then determine grid vertices, 
                         // and create wall feature..
-                        if (wallMask.Any(x => x.A != 0))
+                        else if (gridMask.Any(x => x.A != 0))
                         {
                             var gridVertices = CollisionManager.GetVertices(
-                                maskData: wallMask, size: environmentGridSize,
+                                maskData: gridMask, size: environmentGridSize,
                                 startColor: environmentStartColor, includeColor: environmentIncludeColor, excludeColor: environmentExcludeColor);
                             var wallFeature = new WallComponentFeature(
-                                position: wallPosition.ToVector2(),
+                                position: gridPosition.ToVector2(),
                                 size: environmentGridSize,
-                                mask: wallMask,
+                                mask: gridMask,
                                 vertices: gridVertices);
                             add(wallFeature);
                         }

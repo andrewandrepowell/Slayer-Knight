@@ -17,6 +17,10 @@ namespace Utility
             State = state;
         }
     }
+    public interface ControlInterface
+    {
+        public ControlFeature ControlFeatureObject { get; }
+    }
     public class ControlFeature
     {
         public bool Activated { get; set; } = false;
