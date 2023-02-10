@@ -25,7 +25,7 @@ namespace Utility
                 throw new ArgumentException($"Length of image {image.Length} should equal the product of size Width {size.Width} Height {size.Height}.");
             if (region.X < 0 || (region.X + region.Width) > size.Width || region.Y < 0 || (region.Y + region.Height) > size.Height)
                 throw new ArgumentException($"Region {region} should fit in image.");
-            Color[] extracted = new Color[image.Length];
+            Color[] extracted = new Color[region.Width * region.Height];
             int bottom = region.Y + region.Height;
             int right = region.X + region.Width;
             int index = 0;

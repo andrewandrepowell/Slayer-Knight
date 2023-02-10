@@ -46,6 +46,7 @@ namespace SlayerKnight
         private CollisionManager collisionManager;
         private OrthographicCamera orthographicCamera;
         private ControlManager controlManager;
+        private KeyboardManager keyboardManager;
         private List<ComponentInterface> componentFeatures;
         private string environmentVisualAsset;
         private string environmentMaskAsset;
@@ -61,6 +62,8 @@ namespace SlayerKnight
         public LevelFeature(
             ContentManager contentManager,
             SpriteBatch spriteBatch,
+            KeyboardManager keyboardManager,
+            ControlManager controlManager,
             string roomIdentifier, 
             string environmentVisualAsset, 
             string environmentMaskAsset,
@@ -75,10 +78,11 @@ namespace SlayerKnight
             StartChannel = new Channel<StartAction>();
             collisionManager = new CollisionManager();
             orthographicCamera = new OrthographicCamera(graphicsDevice: spriteBatch.GraphicsDevice);
-            controlManager = new ControlManager();
             componentFeatures = new List<ComponentInterface>();
             this.spriteBatch = spriteBatch;
             this.contentManager = contentManager;
+            this.keyboardManager = keyboardManager;
+            this.controlManager = controlManager;
             this.environmentVisualAsset = environmentVisualAsset;
             this.environmentMaskAsset = environmentMaskAsset;
             this.environmentGridSize = environmentGridSize;
@@ -91,8 +95,10 @@ namespace SlayerKnight
             componentFeatures.Add(component);
             if (component is CollisionInterface collisionFeature)
                 collisionManager.Features.Add(collisionFeature);
-            if (component is ControlInterface controlFeature)
-                controlManager.Features.Add(controlFeature.ControlFeatureObject);
+            if (component is ControlInterface controlHolder)
+                controlManager.Features.Add(controlHolder.ControlFeatureObject);
+            if (component is KeyboardInterface keyboardHolder)
+                keyboardManager.Features.Add(keyboardHolder.keyboardFeatureObject);
         }
         private void remove(ComponentInterface component)
         {
@@ -101,12 +107,13 @@ namespace SlayerKnight
                 collisionManager.Features.Remove(collisionFeature);
             if (component is ControlInterface controlFeature)
                 controlManager.Features.Remove(controlFeature.ControlFeatureObject);
+            if (component is KeyboardInterface keyboardHolder)
+                keyboardManager.Features.Remove(keyboardHolder.keyboardFeatureObject);
         }
         private void clear()
         {
-            componentFeatures.Clear();
-            collisionManager.Features.Clear();
-            controlManager.Features.Clear();
+            foreach (var component in componentFeatures.ToList())
+                remove(component);
         }
         private void start()
         {
@@ -117,7 +124,7 @@ namespace SlayerKnight
             // Load static visual textures.
             environmentVisualTexture = contentManager.Load<Texture2D>(environmentVisualAsset);
 
-            // Create wall component features.
+            // Generate features from environment mask.
             {
                 // Load the mask as a texture.
                 var maskTexture = contentManager.Load<Texture2D>(environmentMaskAsset);
@@ -141,18 +148,17 @@ namespace SlayerKnight
                     for (int gridCol = 0; gridCol < gridCols; gridCol++)
                     {
                         // Get the position and mask of the grid.
-                        var gridPosition = new Point(x: gridCol * environmentGridSize.Width, y: gridRow * environmentGridSize.Height);
-                        var gridMask = maskArray.Extract(size: maskSize, region: new Rectangle(location: gridPosition, size: environmentGridSize));
+                        var gridPosition = new Vector2(x: gridCol * environmentGridSize.Width, y: gridRow * environmentGridSize.Height);
+                        var gridMask = maskArray.Extract(size: maskSize, region: new Rectangle(location: gridPosition.ToPoint(), size: environmentGridSize));
 
-                        // Attempt to find component.
+                        // Attempt to generate component. If the component exists, add it to the component feature list.
                         ComponentInterface componentFeature = ComponentManager.GetComponentFeature(
                             identifier: gridMask[0],
                             contentManager: contentManager,
-                            spriteBatch: spriteBatch);
+                            spriteBatch: spriteBatch,
+                            position: gridPosition);
                         if (componentFeature != null)
-                        {
                             add(componentFeature);
-                        }
 
                         // If the mask has at least one visible pixel--i.e. alpha not equal to 0--then determine grid vertices, 
                         // and create wall feature..
@@ -162,7 +168,7 @@ namespace SlayerKnight
                                 maskData: gridMask, size: environmentGridSize,
                                 startColor: environmentStartColor, includeColor: environmentIncludeColor, excludeColor: environmentExcludeColor);
                             var wallFeature = new WallComponentFeature(
-                                position: gridPosition.ToVector2(),
+                                position: gridPosition,
                                 size: environmentGridSize,
                                 mask: gridMask,
                                 vertices: gridVertices);
@@ -217,7 +223,7 @@ namespace SlayerKnight
                 component.Update(timeElapsed);
 
             // Update the managers.
-            collisionManager.Update(timeElapsed);   
+            collisionManager.Update(timeElapsed);
         }
         public void Draw(Matrix? _ = null)
         {

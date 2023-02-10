@@ -41,7 +41,6 @@ public class Game1 : Game
             contentManager: Content,
             spriteBatch: spriteBatch,
             levelIdentifier: "testRoom",
-            testComponentMaskAsset: "test/test_component_mask_asset",
             environmentVisualAsset: "test/test_environment_visual_asset",
             environmentMaskAsset: "test/test_environment_mask_asset",
             environmentGridSize: new MonoGame.Extended.Size(width: 100, height: 100),

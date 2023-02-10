@@ -23,7 +23,7 @@ namespace Utility
                 if (current >= Period)
                 {
                     RunChannel.Enqueue(null);
-                    current = 0;
+                    current -= Period;
                     Count++;
                     if (!Repeat)
                         Activated = false;

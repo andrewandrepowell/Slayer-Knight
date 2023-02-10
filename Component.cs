@@ -19,13 +19,17 @@ namespace SlayerKnight
         public static ComponentInterface GetComponentFeature(
             Color identifier,
             ContentManager contentManager,
-            SpriteBatch spriteBatch)
+            SpriteBatch spriteBatch,
+            Vector2 position)
         {
             if (Components.TestComponentFeature.Identifier == identifier)
             {
                 var componentFeature = new Components.TestComponentFeature(
                     contentManager: contentManager,
-                    spriteBatch: spriteBatch);
+                    spriteBatch: spriteBatch)
+                {  
+                    Position = position 
+                };
                 return componentFeature;
             }
             return null;

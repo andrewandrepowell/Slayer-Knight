@@ -18,6 +18,10 @@ namespace Utility
             State = state;
         }
     }
+    public interface KeyboardInterface
+    {
+        public KeyboardFeature keyboardFeatureObject { get; }
+    }
     public class KeyboardFeature
     {
         public bool Activated { get; set; } = false; // feature -> manager

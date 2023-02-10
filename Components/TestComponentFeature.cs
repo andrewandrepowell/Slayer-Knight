@@ -26,7 +26,7 @@ namespace SlayerKnight.Components
         public bool Collidable { get; set; }
         public bool Static { get; set; }
         public Color[] CollisionMask { get; private set; }
-        public List<Vector2> CollisionVertices => throw new NotImplementedException();
+        public List<Vector2> CollisionVertices => null;
         public ChannelInterface<CollisionInfo> CollisionInfoChannel { get; private set; }
         public bool Destroyed { get; private set; }
         public ChannelInterface<object> DestroyChannel { get; private set; }
@@ -45,7 +45,7 @@ namespace SlayerKnight.Components
             Static = false;
             CollisionMask = new Color[testComponentMaskTexture.Width * testComponentMaskTexture.Height];
             testComponentMaskTexture.GetData(CollisionMask);
-            CollisionInfoChannel = new Channel<CollisionInfo>();
+            CollisionInfoChannel = new Channel<CollisionInfo>(capacity: 10);
             Destroyed = false;
             DestroyChannel = new Channel<object>();
             ControlFeatureObject = new ControlFeature() { Activated = true };
@@ -96,10 +96,11 @@ namespace SlayerKnight.Components
                 Position += new Vector2(x: xMove, y: yMove);
             }
 
-            if (CollisionInfoChannel.Count > 0)
+            while (CollisionInfoChannel.Count > 0)
             {
                 var info = CollisionInfoChannel.Dequeue();
-                Position += info.Correction;
+                if (CollisionInfoChannel.Count == 0)
+                    Position += info.Correction;
             }
 
             if (DestroyChannel.Count > 0)
@@ -108,6 +109,8 @@ namespace SlayerKnight.Components
                 contentManager.UnloadAsset(testComponentMaskAsset);
                 Destroyed = true;
             }
+
+            loopTimerFeature.Update(timeElapsed);
         }
     }
 }
