@@ -7,38 +7,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Utility;
 using SlayerKnight.Components;
-
+using System.Linq.Expressions;
 
 namespace SlayerKnight
-{
-    internal class WallComponentFeature : ComponentInterface, CollisionInterface
-    {
-        public WallComponentFeature(
-            Vector2 position,
-            Size size,
-            Color[] mask,
-            List<Vector2> vertices)
-        {
-            Position = position;
-            Size = size;
-            CollisionMask = mask;
-            CollisionVertices = vertices;
-        }
-        public Vector2 Position { get; private set; }
-        public Size Size { get; private set; }
-        public bool Collidable { get => true; }
-        public bool Static { get => true; }
-        public Color[] CollisionMask { get; private set; }
-        public List<Vector2> CollisionVertices { get; private set; }
-        public ChannelInterface<CollisionInfo> CollisionInfoChannel { get => throw new NotImplementedException(); }
-        public int DrawLevel { get => 0; }
-        public void Update(float timeElapsed)
-        {
-        }
-        public void Draw(Matrix? transformMatrix = null)
-        {
-        }
-    }
+{ 
     internal class LevelFeature : RoomInterface
     {
         private SpriteBatch spriteBatch;
@@ -110,11 +82,6 @@ namespace SlayerKnight
             if (component is KeyboardInterface keyboardHolder)
                 keyboardManager.Features.Remove(keyboardHolder.keyboardFeatureObject);
         }
-        private void clear()
-        {
-            foreach (var component in componentFeatures.ToList())
-                remove(component);
-        }
         private void start()
         {
             // Can't start something that has already been started.
@@ -157,7 +124,8 @@ namespace SlayerKnight
                             contentManager: contentManager,
                             spriteBatch: spriteBatch,
                             position: gridPosition,
-                            roomFeature: this);
+                            roomIdentifier: Identifier,
+                            goToOutput: GoToChannel);
                         if (componentFeature != null)
                             add(componentFeature);
 
@@ -191,8 +159,17 @@ namespace SlayerKnight
             if (!Started)
                 throw new Exception("There should never be a case where the level is ended but is not started."); 
 
+            // Unload assets.
             contentManager.UnloadAsset(environmentVisualAsset);
-            clear();
+
+            // Remove all the component features. 
+            // Don't remove components that implement the destroy interface immediately, instead set them to get destroyed and then get cleaned up later.  
+            foreach (var feature in componentFeatures.ToList())
+            {
+                if (feature is DestroyInterface destroyFeature)
+                    destroyFeature.DestroyChannel.Enqueue(null);
+                else remove(feature);   
+            }
 
             // Let the world know the level has ended.
             Started = false;
@@ -214,14 +191,14 @@ namespace SlayerKnight
                 }
             }
 
+            // Update the components.
+            foreach (var component in componentFeatures)
+                component.Update(timeElapsed);
+
             // Remove any destroyed components.
             foreach (var component in componentFeatures.OfType<DestroyInterface>())
                 if (component.Destroyed)
                     remove(component as ComponentInterface);
-
-            // Update the components.
-            foreach (var component in componentFeatures)
-                component.Update(timeElapsed);
 
             // Update the managers.
             collisionManager.Update(timeElapsed);
@@ -232,7 +209,6 @@ namespace SlayerKnight
 
             if (Started)
             {
-                
                 // Draw the environment visual texture.
                 spriteBatch.Begin(transformMatrix: transformMatrix);
                 spriteBatch.Draw(texture: environmentVisualTexture, position: Vector2.Zero, color: Color.White);

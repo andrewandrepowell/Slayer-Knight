@@ -59,10 +59,6 @@ namespace Utility
                     string nextIdentifier = Current.GoToChannel.Dequeue();
                     goTo(nextIdentifier, timeElapsed);
                 }
-                else
-                {
-                    Current.Update(timeElapsed);
-                }
             }
 
             foreach (var feature in Features)

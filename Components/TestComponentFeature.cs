@@ -21,7 +21,9 @@ namespace SlayerKnight.Components
         private Texture2D testComponentMaskTexture;
         private TimerFeature loopTimerFeature;
         private List<Vector2> correctionVectors;
-        private RoomInterface roomFeature;
+        private OutputInterface<string> goToOutput;
+        private string roomIdentifier;
+        private CollisionInfo? prevCollisionInfo;
         public static Color Identifier { get => new Color(r: 112, g: 146, b: 190, alpha: 255); }
         public Vector2 Position { get; set; }
         public Size Size { get; private set; }
@@ -37,7 +39,8 @@ namespace SlayerKnight.Components
         public TestComponentFeature(
             ContentManager contentManager,
             SpriteBatch spriteBatch,
-            RoomInterface roomFeature)
+            string roomIdentifier,
+            OutputInterface<string> goToOutput)
         {
             this.contentManager = contentManager;
             this.spriteBatch = spriteBatch;
@@ -54,7 +57,9 @@ namespace SlayerKnight.Components
             ControlFeatureObject = new ControlFeature() { Activated = true };
             loopTimerFeature = new TimerFeature() { Activated = true, Repeat = true, Period = loopTimerPeriod };
             correctionVectors = new List<Vector2>();
-            this.roomFeature = roomFeature;
+            this.goToOutput = goToOutput;
+            this.roomIdentifier = roomIdentifier;
+            prevCollisionInfo = null;
         }
         public void Draw(Matrix? transformMatrix = null)
         {
@@ -63,6 +68,14 @@ namespace SlayerKnight.Components
 
             spriteBatch.Begin(transformMatrix: transformMatrix);
             spriteBatch.Draw(texture: testComponentMaskTexture, position: Position, color: Color.White);
+            if (prevCollisionInfo != null)
+            {
+                spriteBatch.DrawPoint(position: prevCollisionInfo.Value.Point, color: Color.Red, size: 6);
+                spriteBatch.DrawLine(
+                    point1: prevCollisionInfo.Value.Point,
+                    point2: prevCollisionInfo.Value.Point + 64 * prevCollisionInfo.Value.Normal,
+                    color: Color.Blue, thickness: 4);
+            }
             spriteBatch.End();
         }
         public void Update(float timeElapsed)
@@ -106,13 +119,13 @@ namespace SlayerKnight.Components
 
                 if (changeRooms)
                 {
-                    if (roomFeature.Identifier == "first_level")
+                    if (roomIdentifier == "first_level")
                     {
-                        roomFeature.GoToChannel.Enqueue("second_level");
+                        goToOutput.Enqueue("second_level");
                     }
-                    else if (roomFeature.Identifier == "second_level")
+                    else if (roomIdentifier == "second_level")
                     {
-                        roomFeature.GoToChannel.Enqueue("first_level");
+                        goToOutput.Enqueue("first_level");
                     }
                 }
             }
@@ -123,6 +136,7 @@ namespace SlayerKnight.Components
                 {
                     var info = CollisionInfoChannel.Dequeue();
                     correctionVectors.Add(info.Correction);
+                    prevCollisionInfo = info;
                 }
                 if (correctionVectors.Count > 0)
                 {
