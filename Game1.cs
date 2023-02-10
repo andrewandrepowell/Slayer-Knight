@@ -39,14 +39,7 @@ public class Game1 : Game
         spriteBatch = new SpriteBatch(GraphicsDevice);
         testLevelFeature = new TestLevelFeature(
             contentManager: Content,
-            spriteBatch: spriteBatch,
-            levelIdentifier: "testRoom",
-            environmentVisualAsset: "test/test_environment_visual_asset",
-            environmentMaskAsset: "test/test_environment_mask_asset",
-            environmentGridSize: new MonoGame.Extended.Size(width: 100, height: 100),
-            environmentStartColor: new Color(r: 255, g: 255, b: 0, alpha: 255),
-            environmentIncludeColor: new Color(r: 255, g: 0, b: 0, alpha: 255),
-            environmentExcludeColor: new Color(r: 0, g: 255, b: 0, alpha: 255));
+            spriteBatch: spriteBatch);
         base.Initialize();
     }
 

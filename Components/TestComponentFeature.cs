@@ -14,7 +14,7 @@ namespace SlayerKnight.Components
 {
     internal class TestComponentFeature : ComponentInterface, CollisionInterface, ControlInterface
     {
-        const string testComponentMaskAsset = "test/test_component_mask_asset";
+        const string testComponentMaskAsset = "test/test_component_mask_asset_0";
         const float loopTimerPeriod = 1 / 30;
         private ContentManager contentManager;
         private SpriteBatch spriteBatch;

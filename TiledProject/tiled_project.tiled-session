@@ -1,0 +1,27 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+    },
+    "last.imagePath": "C:/Users/andre/source/repos/Slayer Knight/Content/test",
+    "map.height": 5,
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 100,
+    "map.tileWidth": 100,
+    "map.width": 10,
+    "openFiles": [
+    ],
+    "project": "tiled_project.tiled-project",
+    "recentFiles": [
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 100,
+        "width": 100
+    }
+}

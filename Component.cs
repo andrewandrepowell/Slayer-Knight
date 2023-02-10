@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Utility;
+using SlayerKnight.Components;
 
 namespace SlayerKnight
 {
@@ -22,7 +23,7 @@ namespace SlayerKnight
             SpriteBatch spriteBatch,
             Vector2 position)
         {
-            if (Components.TestComponentFeature.Identifier == identifier)
+            if (TestComponentFeature.Identifier == identifier)
             {
                 var componentFeature = new Components.TestComponentFeature(
                     contentManager: contentManager,
