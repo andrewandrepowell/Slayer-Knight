@@ -20,6 +20,7 @@ namespace SlayerKnight.Components
         private SpriteBatch spriteBatch;
         private Texture2D testComponentMaskTexture;
         private TimerFeature loopTimerFeature;
+        private List<Vector2> correctionVectors;
         public static Color Identifier { get => new Color(r: 112, g: 146, b: 190, alpha: 255); }
         public Vector2 Position { get; set; }
         public Size Size { get; private set; }
@@ -50,6 +51,7 @@ namespace SlayerKnight.Components
             DestroyChannel = new Channel<object>();
             ControlFeatureObject = new ControlFeature() { Activated = true };
             loopTimerFeature = new TimerFeature() { Activated = true, Repeat = true, Period = loopTimerPeriod };
+            correctionVectors = new List<Vector2>();
         }
         public void Draw(Matrix? transformMatrix = null)
         {
@@ -96,11 +98,19 @@ namespace SlayerKnight.Components
                 Position += new Vector2(x: xMove, y: yMove);
             }
 
-            while (CollisionInfoChannel.Count > 0)
             {
-                var info = CollisionInfoChannel.Dequeue();
-                if (CollisionInfoChannel.Count == 0)
-                    Position += info.Correction;
+                correctionVectors.Clear();
+                while (CollisionInfoChannel.Count > 0)
+                {
+                    var info = CollisionInfoChannel.Dequeue();
+                    correctionVectors.Add(info.Correction);
+                }
+                if (correctionVectors.Count > 0)
+                {
+                    Position += new Vector2(
+                        x: correctionVectors.Select(v => v.X).Average(),
+                        y: correctionVectors.Select(v => v.Y).Average()); ;
+                }
             }
 
             if (DestroyChannel.Count > 0)
