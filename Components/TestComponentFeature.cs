@@ -21,6 +21,7 @@ namespace SlayerKnight.Components
         private Texture2D testComponentMaskTexture;
         private TimerFeature loopTimerFeature;
         private List<Vector2> correctionVectors;
+        private RoomInterface roomFeature;
         public static Color Identifier { get => new Color(r: 112, g: 146, b: 190, alpha: 255); }
         public Vector2 Position { get; set; }
         public Size Size { get; private set; }
@@ -35,7 +36,8 @@ namespace SlayerKnight.Components
         public int DrawLevel { get => 0; }
         public TestComponentFeature(
             ContentManager contentManager,
-            SpriteBatch spriteBatch)
+            SpriteBatch spriteBatch,
+            RoomInterface roomFeature)
         {
             this.contentManager = contentManager;
             this.spriteBatch = spriteBatch;
@@ -52,6 +54,7 @@ namespace SlayerKnight.Components
             ControlFeatureObject = new ControlFeature() { Activated = true };
             loopTimerFeature = new TimerFeature() { Activated = true, Repeat = true, Period = loopTimerPeriod };
             correctionVectors = new List<Vector2>();
+            this.roomFeature = roomFeature;
         }
         public void Draw(Matrix? transformMatrix = null)
         {
@@ -73,7 +76,7 @@ namespace SlayerKnight.Components
             if (loopTimerFeature.RunChannel.Count > 0)
             {
                 loopTimerFeature.RunChannel.Dequeue();
-                float xMove = 0, yMove = 0;
+                float xMove = 0, yMove = 0; bool changeRooms = false;
                 while (ControlFeatureObject.InfoChannel.Count > 0)
                 {
                     var info = ControlFeatureObject.InfoChannel.Dequeue();
@@ -91,11 +94,27 @@ namespace SlayerKnight.Components
                         case ControlAction.MoveRight:
                             xMove += 4;
                             break;
+                        case ControlAction.Jump:
+                            if (info.State == ControlState.Released)
+                                changeRooms = true;
+                            break;
                     }
                 }
                 xMove = Math.Clamp(xMove, -4, 4);
                 yMove = Math.Clamp(yMove, -4, 4);
                 Position += new Vector2(x: xMove, y: yMove);
+
+                if (changeRooms)
+                {
+                    if (roomFeature.Identifier == "first_level")
+                    {
+                        roomFeature.GoToChannel.Enqueue("second_level");
+                    }
+                    else if (roomFeature.Identifier == "second_level")
+                    {
+                        roomFeature.GoToChannel.Enqueue("first_level");
+                    }
+                }
             }
 
             {

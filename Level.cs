@@ -156,7 +156,8 @@ namespace SlayerKnight
                             identifier: gridMask[0],
                             contentManager: contentManager,
                             spriteBatch: spriteBatch,
-                            position: gridPosition);
+                            position: gridPosition,
+                            roomFeature: this);
                         if (componentFeature != null)
                             add(componentFeature);
 

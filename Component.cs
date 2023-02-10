@@ -21,13 +21,15 @@ namespace SlayerKnight
             Color identifier,
             ContentManager contentManager,
             SpriteBatch spriteBatch,
+            RoomInterface roomFeature,
             Vector2 position)
         {
             if (TestComponentFeature.Identifier == identifier)
             {
-                var componentFeature = new Components.TestComponentFeature(
+                var componentFeature = new TestComponentFeature(
                     contentManager: contentManager,
-                    spriteBatch: spriteBatch)
+                    spriteBatch: spriteBatch,
+                    roomFeature: roomFeature)
                 {  
                     Position = position 
                 };

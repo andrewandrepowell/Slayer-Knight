@@ -18,6 +18,7 @@ namespace SlayerKnight
         private static Color environmentIncludeColor = new Color(r: 255, g: 0, b: 0, alpha: 255);
         private static Color environmentExcludeColor = new Color(r: 0, g: 255, b: 0, alpha: 255);
         private LevelFeature firstLevelFeature;
+        private LevelFeature secondLevelFeature;
         private RoomManager roomManager;
         private KeyboardManager keyboardManager;
         private KeyboardFeature keyboardFeature;
@@ -35,6 +36,7 @@ namespace SlayerKnight
             controlManager.KeyActionMap.Add(Keys.Right, ControlAction.MoveRight);
             controlManager.KeyActionMap.Add(Keys.Up, ControlAction.MoveUp);
             controlManager.KeyActionMap.Add(Keys.Down, ControlAction.MoveDown);
+            controlManager.KeyActionMap.Add(Keys.Space, ControlAction.Jump);
             firstLevelFeature = new LevelFeature(
                 contentManager: contentManager,
                 spriteBatch: spriteBatch,
@@ -47,8 +49,21 @@ namespace SlayerKnight
                 environmentStartColor: environmentStartColor,
                 environmentIncludeColor: environmentIncludeColor,
                 environmentExcludeColor: environmentExcludeColor);
+            secondLevelFeature = new LevelFeature(
+                contentManager: contentManager,
+                spriteBatch: spriteBatch,
+                controlManager: controlManager,
+                keyboardManager: keyboardManager,
+                roomIdentifier: "second_level",
+                environmentVisualAsset: "test/test_environment_visual_asset_1",
+                environmentMaskAsset: "test/test_environment_mask_asset_1",
+                environmentGridSize: environmentGridSize,
+                environmentStartColor: environmentStartColor,
+                environmentIncludeColor: environmentIncludeColor,
+                environmentExcludeColor: environmentExcludeColor);
             roomManager = new RoomManager();
             roomManager.Features.Add(firstLevelFeature);
+            roomManager.Features.Add(secondLevelFeature);
         }
         public void Draw(Matrix? transformMatrix = null)
         {
