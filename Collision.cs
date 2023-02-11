@@ -39,6 +39,12 @@ namespace Utility
     {
         public DirectlyManagedList<CollisionInterface, CollisionManager> Features { get; private set; }
         public CollisionManager() => Features = new DirectlyManagedList<CollisionInterface, CollisionManager>(manager: this);
+        public static Vector2 SynthesizeCorrections(IList<Vector2> corrections)
+        {
+            return new Vector2(
+                x: corrections.Where(v => v.Y == 0).Select(v => v.X).DefaultIfEmpty().Average(),
+                y: corrections.Where(v => v.X == 0).Select(v => v.Y).DefaultIfEmpty().Average());
+        }
         public static bool CheckForCollision(CollisionInterface collidable0)
         {
             bool collisionOccured = false;

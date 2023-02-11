@@ -141,11 +141,8 @@ namespace SlayerKnight.Components
                     prevCollisionInfo = info;
                 }
                 if (correctionVectors.Count > 0)
-                {
-                    Position += new Vector2(
-                        x: correctionVectors.Select(v => v.X).Average(),
-                        y: correctionVectors.Select(v => v.Y).Average()); ;
-                }
+                    Position += CollisionManager.SynthesizeCorrections(correctionVectors);
+                
             }
 
             if (DestroyChannel.Count > 0)
