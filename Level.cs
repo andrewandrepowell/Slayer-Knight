@@ -199,9 +199,6 @@ namespace SlayerKnight
             foreach (var component in componentFeatures.OfType<DestroyInterface>())
                 if (component.Destroyed)
                     remove(component as ComponentInterface);
-
-            // Update the managers.
-            collisionManager.Update(timeElapsed);
         }
         public void Draw(Matrix? _ = null)
         {

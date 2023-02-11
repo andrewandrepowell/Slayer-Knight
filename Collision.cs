@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using MonoGame.Extended;
+using System.Collections;
 
 namespace Utility
 {
@@ -12,7 +13,6 @@ namespace Utility
         public Vector2 Point { get; private set; }
         public Vector2 Correction { get; private set; }
         public Vector2 Normal { get; private set; }
-
         public CollisionInfo(CollisionInterface other, Vector2 point, Vector2 correction, Vector2 normal)
         {
             Other = other;
@@ -21,7 +21,7 @@ namespace Utility
             Normal = normal;
         }
     }
-    public interface CollisionInterface 
+    public interface CollisionInterface : DirectlyManagedInterface<CollisionManager>
     {
         public Vector2 Position { get; }
         public Size Size { get; }
@@ -31,30 +31,36 @@ namespace Utility
         public List<Vector2> CollisionVertices { get; }
         public ChannelInterface<CollisionInfo> CollisionInfoChannel { get; }
     }
-
-    public class CollisionManager : UpdateInterface
+    public static class CollisionManagerExtensions
     {
-        public List<CollisionInterface> Features { get; private set; } = new List<CollisionInterface>();
-        public void Update(float timeElapsed)
+        public static bool CheckForCollision(this CollisionInterface collidable0) => CollisionManager.CheckForCollision(collidable0);
+    }
+    public class CollisionManager
+    {
+        public DirectlyManagedList<CollisionInterface, CollisionManager> Features { get; private set; }
+        public CollisionManager() => Features = new DirectlyManagedList<CollisionInterface, CollisionManager>(manager: this);
+        public static bool CheckForCollision(CollisionInterface collidable0)
         {
-            // For each collidable in the manager, check for collisions with other collidables in the manager.
-            foreach (var combination in Features.GetPermutations(count: 2))
-            {
-                CollisionInterface[] pair = combination.ToArray();
-                CollisionInterface collidable0 = pair[0], collidable1 = pair[1];
+            bool collisionOccured = false;
 
-                if (!CheckForCollision(
+            // For each collidable in the manager, check for collisions with other collidables in the manager.
+            foreach (var collidable1 in collidable0.ManagerObject.Features)
+            {
+                if (collidable0 != collidable1 && CheckForCollision(
                     collidable0: collidable0, collidable1: collidable1,
                     correction0: out Vector2 correction0, correction1: out Vector2 correction1,
                     point0: out Vector2 point0, point1: out Vector2 point1,
                     normal0: out Vector2 normal0, normal1: out Vector2 normal1))
-                    continue;
-
-                if (!collidable0.Static)
-                    collidable0.CollisionInfoChannel.Enqueue(new CollisionInfo(other: collidable1, point: point0, correction: correction0, normal: normal0));
-                if (!collidable1.Static)
-                    collidable1.CollisionInfoChannel.Enqueue(new CollisionInfo(other: collidable0, point: point1, correction: correction1, normal: normal1));
+                {
+                    if (!collidable0.Static)
+                        collidable0.CollisionInfoChannel.Enqueue(new CollisionInfo(other: collidable1, point: point0, correction: correction0, normal: normal0));
+                    if (!collidable1.Static)
+                        collidable1.CollisionInfoChannel.Enqueue(new CollisionInfo(other: collidable0, point: point1, correction: correction1, normal: normal1));
+                    collisionOccured = true;
+                }
             }
+
+            return collisionOccured;
         }
 
         private static bool CheckForCollision(
@@ -321,9 +327,7 @@ namespace Utility
         // See Tim Cas' answer.
         private static double WrapMax(double x, double max) => (max + x % max) % max;
         private static int WrapMax(int x, int max) => (max + x % max) % max;
-        
         private static double WrapMinMax(double x, double min, double max) => min + WrapMax(x - min, max - min);
-
         private static Vector2 GetNormal(IList<Vector2> otherVertices, Vector2 otherPosition, Vector2 currentPoint)
         {
             if (otherVertices == null || otherVertices.Count < 3)

@@ -22,6 +22,7 @@ namespace SlayerKnight.Components
             CollisionMask = mask;
             CollisionVertices = vertices;
         }
+        CollisionManager DirectlyManagedInterface<CollisionManager>.ManagerObject { get; set; }
         public Vector2 Position { get; private set; }
         public Size Size { get; private set; }
         public bool Collidable { get => true; }

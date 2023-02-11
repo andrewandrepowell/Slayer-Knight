@@ -25,6 +25,7 @@ namespace SlayerKnight.Components
         private string roomIdentifier;
         private CollisionInfo? prevCollisionInfo;
         public static Color Identifier { get => new Color(r: 112, g: 146, b: 190, alpha: 255); }
+        CollisionManager DirectlyManagedInterface<CollisionManager>.ManagerObject { get; set; }
         public Vector2 Position { get; set; }
         public Size Size { get; private set; }
         public bool Collidable { get; set; }
@@ -116,6 +117,7 @@ namespace SlayerKnight.Components
                 xMove = Math.Clamp(xMove, -4, 4);
                 yMove = Math.Clamp(yMove, -4, 4);
                 Position += new Vector2(x: xMove, y: yMove);
+                this.CheckForCollision();
 
                 if (changeRooms)
                 {

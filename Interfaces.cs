@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using System.Collections.Generic;
 
 namespace Utility
 {
@@ -7,6 +6,7 @@ namespace Utility
     {
         public string Identifier { get; }
     }
+
     public enum StartAction { Start, End }
     public interface StartInterface
     {
