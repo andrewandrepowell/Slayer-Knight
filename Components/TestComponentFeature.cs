@@ -12,7 +12,7 @@ using Utility;
 
 namespace SlayerKnight.Components
 {
-    internal class TestComponentFeature : ComponentInterface, CollisionInterface, ControlInterface
+    internal class TestComponentFeature : ComponentInterface, PhysicsInterface, ControlInterface
     {
         const string testComponentMaskAsset = "test/test_component_mask_asset_0";
         const float loopTimerPeriod = 1 / 30;
@@ -23,7 +23,8 @@ namespace SlayerKnight.Components
         private List<Vector2> correctionVectors;
         private OutputInterface<string> goToOutput;
         private string roomIdentifier;
-        private CollisionInfo? prevCollisionInfo;
+        private PhysicsInfo? prevPhysicsInfo;
+        private PhysicsManager physicsManager;
         public static Color Identifier { get => new Color(r: 112, g: 146, b: 190, alpha: 255); }
         CollisionManager DirectlyManagedInterface<CollisionManager>.ManagerObject { get; set; }
         public Vector2 Position { get; set; }
@@ -37,6 +38,12 @@ namespace SlayerKnight.Components
         public ChannelInterface<object> DestroyChannel { get; private set; }
         public ControlFeature ControlFeatureObject { get; private set; }
         public int DrawLevel { get => 0; }
+        public bool PhysicsApplied { get; set; }
+        public Vector2 Movement { get; set; }
+        public Vector2 Gravity { get; set; }
+        public ChannelInterface<PhysicsInfo> PhysicsInfoChannel { get; private set; }
+        public float MaxGravspeed { get; set; }
+
         public TestComponentFeature(
             ContentManager contentManager,
             SpriteBatch spriteBatch,
@@ -60,7 +67,13 @@ namespace SlayerKnight.Components
             correctionVectors = new List<Vector2>();
             this.goToOutput = goToOutput;
             this.roomIdentifier = roomIdentifier;
-            prevCollisionInfo = null;
+            prevPhysicsInfo = null;
+            PhysicsApplied = true;
+            Movement = Vector2.Zero;
+            Gravity = new Vector2(x: 0, y: 1);
+            PhysicsInfoChannel = new Channel<PhysicsInfo>(capacity: 10);
+            MaxGravspeed = 8;
+            physicsManager = new PhysicsManager(this);
         }
         public void Draw(Matrix? transformMatrix = null)
         {
@@ -69,12 +82,12 @@ namespace SlayerKnight.Components
 
             spriteBatch.Begin(transformMatrix: transformMatrix);
             spriteBatch.Draw(texture: testComponentMaskTexture, position: Position, color: Color.White);
-            if (prevCollisionInfo != null)
+            if (prevPhysicsInfo != null)
             {
-                spriteBatch.DrawPoint(position: prevCollisionInfo.Value.Point, color: Color.Red, size: 6);
+                spriteBatch.DrawPoint(position: prevPhysicsInfo.Value.Point, color: Color.Red, size: 6);
                 spriteBatch.DrawLine(
-                    point1: prevCollisionInfo.Value.Point,
-                    point2: prevCollisionInfo.Value.Point + 64 * prevCollisionInfo.Value.Normal,
+                    point1: prevPhysicsInfo.Value.Point,
+                    point2: prevPhysicsInfo.Value.Point + 64 * prevPhysicsInfo.Value.Normal,
                     color: Color.Blue, thickness: 4);
             }
             spriteBatch.End();
@@ -97,7 +110,7 @@ namespace SlayerKnight.Components
                     switch (info.Action)
                     {
                         case ControlAction.MoveUp:
-                            yMove -= 4;
+                            yMove -= 16;
                             break;
                         case ControlAction.MoveDown:
                             yMove += 4;
@@ -115,9 +128,8 @@ namespace SlayerKnight.Components
                     }
                 }
                 xMove = Math.Clamp(xMove, -4, 4);
-                yMove = Math.Clamp(yMove, -4, 4);
-                Position += new Vector2(x: xMove, y: yMove);
-                this.CheckForCollision();
+                yMove = Math.Clamp(yMove, -8, 4);
+                Movement = new Vector2(x: xMove, y: yMove);
 
                 if (changeRooms)
                 {
@@ -132,17 +144,9 @@ namespace SlayerKnight.Components
                 }
             }
 
+            while (PhysicsInfoChannel.Count > 0)
             {
-                correctionVectors.Clear();
-                while (CollisionInfoChannel.Count > 0)
-                {
-                    var info = CollisionInfoChannel.Dequeue();
-                    correctionVectors.Add(info.Correction);
-                    prevCollisionInfo = info;
-                }
-                if (correctionVectors.Count > 0)
-                    Position += CollisionManager.SynthesizeCorrections(correctionVectors);
-                
+                PhysicsInfoChannel.Dequeue();
             }
 
             if (DestroyChannel.Count > 0)
@@ -153,6 +157,7 @@ namespace SlayerKnight.Components
             }
 
             loopTimerFeature.Update(timeElapsed);
+            physicsManager.Update(timeElapsed);
         }
     }
 }

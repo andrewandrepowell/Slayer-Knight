@@ -3,6 +3,7 @@ using MonoGame.Extended;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 using Utility;
@@ -13,17 +14,24 @@ namespace SlayerKnight
     {
         public bool SelfCollided { get; private set; }
         public CollisionInterface Other { get; private set; }
-        public PhysicsInfo(CollisionInterface other, bool selfCollided)
+        public Vector2 Point { get; private set; }
+        public Vector2 Normal { get; private set; }
+        public PhysicsInfo(CollisionInterface other, bool selfCollided, Vector2 point, Vector2 normal)
         {
             Other = other;
             SelfCollided = selfCollided;
+            Point = point;
+            Normal = normal;
         }
     };
     internal interface PhysicsInterface : CollisionInterface
     {
+        public bool PhysicsApplied { get; set; }
         public Vector2 Movement { get; set; }
         public Vector2 Gravity { get; set; }
-        public ChannelInterface<PhysicsInfo> PhysicsInfoChannel { get; set; }
+        public float MaxGravspeed { get; set; }
+        
+        public ChannelInterface<PhysicsInfo> PhysicsInfoChannel { get; }
     }
     internal class PhysicsManager : UpdateInterface
     {
@@ -48,6 +56,9 @@ namespace SlayerKnight
 
         public void Update(float timeElapsed)
         {
+            // The physics applied flag simply activates the timer.  
+            timerFeature.Activated = physicsFeature.PhysicsApplied;
+
             // Update the normal direction from ground if user decides to change gravity.
             if (curGravity != physicsFeature.Gravity)
             {
@@ -62,7 +73,11 @@ namespace SlayerKnight
                 var info = physicsFeature.CollisionInfoChannel.Dequeue();
 
                 // Create physics info so that the user can react to the collision.
-                physicsFeature.PhysicsInfoChannel.Enqueue(new PhysicsInfo(other: info.Other, selfCollided: false));
+                physicsFeature.PhysicsInfoChannel.Enqueue(new PhysicsInfo(
+                    other: info.Other, 
+                    selfCollided: false, 
+                    normal: info.Normal,
+                    point: info.Point));
             }
 
             // Apply physics for each
@@ -76,6 +91,11 @@ namespace SlayerKnight
 
                 // Update current velocity based on gravity.
                 curGravocity += physicsFeature.Gravity;
+
+                // Limit the speed based on the gravity to the maximum speed based on gravity.
+                var curGravspeed = curGravocity.Length();
+                if (curGravspeed > physicsFeature.MaxGravspeed)
+                    curGravocity = physicsFeature.MaxGravspeed * -defNormal;
 
                 // Update current velocity based on movement.
                 curMovement = physicsFeature.Movement;
@@ -132,7 +152,11 @@ namespace SlayerKnight
                     }
 
                     // Create physics info so that the user can react to the collision.
-                    physicsFeature.PhysicsInfoChannel.Enqueue(new PhysicsInfo(other: info.Other, selfCollided: true));
+                    physicsFeature.PhysicsInfoChannel.Enqueue(new PhysicsInfo(
+                        other: info.Other, 
+                        selfCollided: true, 
+                        point: info.Point,
+                        normal: info.Normal));
                 }
 
                 // Apply correction to position if there are only collisions based on physics.
