@@ -17,10 +17,10 @@ namespace SlayerKnight.Components
         public static Color Identifier { get => new Color(r: 70, g: 150, b: 50, alpha: 255); }
         CollisionManager DirectlyManagedInterface<CollisionManager>.ManagerObject { get; set; }
         public int DrawLevel { get => 0; }
-        public Vector2 Position { get; private set; }
+        public Vector2 Position { get; set; }
         public Size Size { get; private set; }
-        public bool Collidable { get => true; }
-        public bool Static { get => true; }
+        public bool Collidable { get => true; set => throw new NotImplementedException(); }
+        public bool Static { get => true; set => throw new NotImplementedException(); }
         public Color[] CollisionMask { get; private set; }
         public List<Vector2> CollisionVertices { get => null; }
         public ChannelInterface<CollisionInfo> CollisionInfoChannel { get; private set; }

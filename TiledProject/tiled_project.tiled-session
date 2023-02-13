@@ -3,10 +3,23 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "test_environment_mask_asset_0.tmx",
     "expandedProjectPaths": [
+        "."
     ],
     "fileStates": {
+        "test_environment_mask_asset_0.tmx": {
+            "scale": 0.75,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 536.6666666666667,
+                "y": 246
+            }
+        },
+        "test_tileset_mask_asset_0.tsx": {
+            "scaleInDock": 0.75,
+            "scaleInEditor": 1
+        }
     },
     "last.imagePath": "C:/Users/andre/source/repos/Slayer Knight/Content/test",
     "map.height": 5,
@@ -15,9 +28,13 @@
     "map.tileWidth": 100,
     "map.width": 10,
     "openFiles": [
+        "test_tileset_mask_asset_0.tsx",
+        "test_environment_mask_asset_0.tmx"
     ],
     "project": "tiled_project.tiled-project",
     "recentFiles": [
+        "test_tileset_mask_asset_0.tsx",
+        "test_environment_mask_asset_0.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {

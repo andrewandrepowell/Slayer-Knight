@@ -23,10 +23,10 @@ namespace Utility
     }
     public interface CollisionInterface : DirectlyManagedInterface<CollisionManager>
     {
-        public Vector2 Position { get; }
+        public Vector2 Position { get; set; }
         public Size Size { get; }
-        public bool Collidable { get; } 
-        public bool Static { get; }
+        public bool Collidable { get; set; } 
+        public bool Static { get; set; }
         public Color[] CollisionMask { get; }
         public List<Vector2> CollisionVertices { get; }
         public ChannelInterface<CollisionInfo> CollisionInfoChannel { get; }
