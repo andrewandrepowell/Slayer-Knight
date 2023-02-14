@@ -62,7 +62,16 @@ namespace SlayerKnight
             // Update the normal direction from ground if user decides to change gravity.
             if (curGravity != physicsFeature.Gravity)
             {
-                defNormal = -Vector2.Normalize(physicsFeature.Gravity);
+                if (physicsFeature.Gravity == Vector2.Zero)
+                {
+                    defNormal = Vector2.Zero;
+                    curGravocity = Vector2.Zero;
+                }
+                else
+                {
+                    defNormal = -Vector2.Normalize(physicsFeature.Gravity);
+                    curGravocity = -defNormal;
+                }
                 curGravity = physicsFeature.Gravity;
             }
 
@@ -132,9 +141,9 @@ namespace SlayerKnight
                         // Correct current vertical movement.
                         // The idea is, so long as there isn't something in the way, vertical movement is free to occur.
                         Vector2 verMovement;
-                        if (Vector2.Dot(physicsFeature.Movement.Y * defNormal, info.Normal) >= 0)
+                        if (Vector2.Dot(-physicsFeature.Movement.Y * defNormal, info.Normal) >= 0)
                         {
-                            verMovement = physicsFeature.Movement.Y * defNormal;
+                            verMovement = -physicsFeature.Movement.Y * defNormal;
                         }
                         else
                         {
@@ -148,7 +157,7 @@ namespace SlayerKnight
                     // Velocity based on gravity is reset once the ground is touched.
                     if (Vector2.Dot(curGravocity, info.Normal) < 0)
                     {
-                        curGravocity = Vector2.Zero;
+                        curGravocity = -defNormal;
                     }
 
                     // Create physics info so that the user can react to the collision.

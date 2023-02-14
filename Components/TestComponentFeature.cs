@@ -70,7 +70,7 @@ namespace SlayerKnight.Components
             prevPhysicsInfo = null;
             PhysicsApplied = true;
             Movement = Vector2.Zero;
-            Gravity = new Vector2(x: 0, y: 1);
+            Gravity = new Vector2(x: 0, y: .5f);
             PhysicsInfoChannel = new Channel<PhysicsInfo>(capacity: 10);
             MaxGravspeed = 8;
             physicsManager = new PhysicsManager(this);
@@ -128,7 +128,7 @@ namespace SlayerKnight.Components
                     }
                 }
                 xMove = Math.Clamp(xMove, -4, 4);
-                yMove = Math.Clamp(yMove, -8, 4);
+                yMove = Math.Clamp(yMove, -16, 4);
                 Movement = new Vector2(x: xMove, y: yMove);
 
                 if (changeRooms)
