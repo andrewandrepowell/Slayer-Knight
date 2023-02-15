@@ -7,6 +7,20 @@ using System.Collections;
 
 namespace Utility
 {
+    public struct SynthesizedCollisionInfo
+    {
+        public ICollection<CollisionInterface> Others { get; private set; }
+        public Vector2 Point { get; private set; }
+        public Vector2 Correction { get; private set; }
+        public Vector2 Normal { get; private set; }
+        public SynthesizedCollisionInfo(ICollection<CollisionInterface> others, Vector2 point, Vector2 correction, Vector2 normal)
+        {
+            Others = others;
+            Point = point;
+            Correction = correction;
+            Normal = normal;
+        }
+    }
     public struct CollisionInfo
     {
         public CollisionInterface Other { get; private set; }
@@ -44,6 +58,30 @@ namespace Utility
             return new Vector2(
                 x: corrections.Where(v => v.Y == 0).Select(v => v.X).DefaultIfEmpty().Average(),
                 y: corrections.Where(v => v.X == 0).Select(v => v.Y).DefaultIfEmpty().Average());
+        }
+        public static SynthesizedCollisionInfo SynthesizeInfos(ICollection<CollisionInfo> infos)
+        {
+            if (infos.Count == 0)
+                throw new Exception("infos needs items before proceeding.");
+
+            if (infos.Count == 1)
+                return new SynthesizedCollisionInfo(
+                    others: new CollisionInterface[] { infos.First().Other },
+                    point: infos.First().Point,
+                    correction: infos.First().Correction,
+                    normal: infos.First().Normal);
+
+            return new SynthesizedCollisionInfo(
+                others: infos.Select(i => i.Other).ToArray(),
+                point: new Vector2(
+                    x: infos.Select(i => i.Point.X).Average(),
+                    y: infos.Select(i => i.Point.Y).Average()),
+                correction: new Vector2(
+                    x: infos.Where(i => i.Correction.Y == 0).Select(i => i.Correction.X).DefaultIfEmpty().Average(),
+                    y: infos.Where(i => i.Correction.X == 0).Select(i => i.Correction.Y).DefaultIfEmpty().Average()),
+                normal: Vector2.Normalize(new Vector2(
+                    x: infos.Select(i => i.Normal.X).Sum(),
+                    y: infos.Select(i => i.Normal.Y).Sum())));
         }
         public static bool CheckForCollision(CollisionInterface collidable0)
         {

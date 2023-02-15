@@ -38,7 +38,7 @@ namespace SlayerKnight
         private const float updatePeriod = 1 / 30;
         private PhysicsInterface physicsFeature;
         private TimerFeature timerFeature;
-        private List<Vector2> correctionVectors;
+        private List<CollisionInfo> synthesisInfos;
         private Vector2 curGravity;
         private Vector2 curMovement;
         private Vector2 defNormal;
@@ -47,7 +47,7 @@ namespace SlayerKnight
         {
             this.physicsFeature = physicsFeature;
             timerFeature = new TimerFeature() { Period = updatePeriod };
-            correctionVectors = new List<Vector2>();
+            synthesisInfos = new List<CollisionInfo>();
             curGravity = Vector2.Zero;
             curMovement = Vector2.Zero;
             defNormal = Vector2.Zero;
@@ -112,17 +112,18 @@ namespace SlayerKnight
                 // Check for collisions.
                 physicsFeature.CheckForCollision();
 
-                // In case there are any collisions, clear the list of correction vectors.
-                correctionVectors.Clear();
+                // In case there are any collisions, clear the list of infos intended for synthesis.
+                synthesisInfos.Clear();
 
-                // Go through each collision as a result of the change of position.
+                // Collect all the collisions infos.
                 while (physicsFeature.CollisionInfoChannel.Count > 0)
-                {
-                    // Acknowledge the collision and store info.
-                    var info = physicsFeature.CollisionInfoChannel.Dequeue();
+                    synthesisInfos.Add(physicsFeature.CollisionInfoChannel.Dequeue());            
 
-                    // Collect the correction vectors.
-                    correctionVectors.Add(info.Correction);
+                // Synthesize infos and send the physic infos to physics feature if any collisions occurred.
+                if (synthesisInfos.Count > 0)
+                {
+                    // Synthesize all the collisions infos.
+                    var info = CollisionManager.SynthesizeInfos(synthesisInfos);
 
                     // Correct current movement.
                     {
@@ -160,17 +161,17 @@ namespace SlayerKnight
                         curGravocity = -defNormal;
                     }
 
-                    // Create physics info so that the user can react to the collision.
-                    physicsFeature.PhysicsInfoChannel.Enqueue(new PhysicsInfo(
-                        other: info.Other, 
-                        selfCollided: true, 
-                        point: info.Point,
-                        normal: info.Normal));
-                }
+                    // Send physic infos to physics feature.
+                    foreach (var other in info.Others)
+                        physicsFeature.PhysicsInfoChannel.Enqueue(new PhysicsInfo(
+                            other: other, 
+                            selfCollided: true, 
+                            point: info.Point,
+                            normal: info.Normal));
 
-                // Apply correction to position if there are only collisions based on physics.
-                if (correctionVectors.Count > 0)
-                    physicsFeature.Position += CollisionManager.SynthesizeCorrections(correctionVectors);
+                    // Correction position so that physics feature doesn't overlap with other collisions features.
+                    physicsFeature.Position += info.Correction;
+                }
             }
 
             timerFeature.Update(timeElapsed);
