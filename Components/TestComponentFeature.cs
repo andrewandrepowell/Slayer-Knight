@@ -43,6 +43,7 @@ namespace SlayerKnight.Components
         public Vector2 Gravity { get; set; }
         public ChannelInterface<PhysicsInfo> PhysicsInfoChannel { get; private set; }
         public float MaxGravspeed { get; set; }
+        public bool Grounded { get; set; }
 
         public TestComponentFeature(
             ContentManager contentManager,
@@ -116,10 +117,10 @@ namespace SlayerKnight.Components
                             yMove += 4;
                             break;
                         case ControlAction.MoveLeft:
-                            xMove -= 4;
+                            xMove -= 6;
                             break;
                         case ControlAction.MoveRight:
-                            xMove += 4;
+                            xMove += 6;
                             break;
                         case ControlAction.Jump:
                             if (info.State == ControlState.Released)
@@ -127,7 +128,7 @@ namespace SlayerKnight.Components
                             break;
                     }
                 }
-                xMove = Math.Clamp(xMove, -4, 4);
+                xMove = Math.Clamp(xMove, -6, 6);
                 yMove = Math.Clamp(yMove, -16, 4);
                 Movement = new Vector2(x: xMove, y: yMove);
 

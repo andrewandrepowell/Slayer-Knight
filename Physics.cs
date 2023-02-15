@@ -30,6 +30,7 @@ namespace SlayerKnight
         public Vector2 Movement { get; set; }
         public Vector2 Gravity { get; set; }
         public float MaxGravspeed { get; set; }
+        public bool Grounded { get; set; }
         
         public ChannelInterface<PhysicsInfo> PhysicsInfoChannel { get; }
     }
@@ -43,6 +44,7 @@ namespace SlayerKnight
         private Vector2 curMovement;
         private Vector2 defNormal;
         private Vector2 curGravocity;
+        private int grdCounter;
         public PhysicsManager(PhysicsInterface physicsFeature)
         {
             this.physicsFeature = physicsFeature;
@@ -52,12 +54,16 @@ namespace SlayerKnight
             curMovement = Vector2.Zero;
             defNormal = Vector2.Zero;
             curGravocity = Vector2.Zero;
+            grdCounter = 0;
         }
 
         public void Update(float timeElapsed)
         {
             // The physics applied flag simply activates the timer.  
             timerFeature.Activated = physicsFeature.PhysicsApplied;
+
+            // Grounded is simply when the ground counter is not zero.
+            physicsFeature.Grounded = grdCounter > 0;
 
             // Update the normal direction from ground if user decides to change gravity.
             if (curGravity != physicsFeature.Gravity)
@@ -73,6 +79,7 @@ namespace SlayerKnight
                     curGravocity = -defNormal;
                 }
                 curGravity = physicsFeature.Gravity;
+                grdCounter = 0;
             }
 
             // Service collisions based on other collisions features colliding into the physics feature.
@@ -106,8 +113,14 @@ namespace SlayerKnight
                 if (curGravspeed > physicsFeature.MaxGravspeed)
                     curGravocity = physicsFeature.MaxGravspeed * -defNormal;
 
-                // Update current velocity based on movement.
-                curMovement = physicsFeature.Movement;
+                // Update current velocity based on movement. 
+                // This operation only occurs when in the air.
+                if (grdCounter == 0)
+                    curMovement = physicsFeature.Movement;
+                else
+                    grdCounter--;
+
+                Console.WriteLine($"DEBUG: {physicsFeature.Movement}");
 
                 // Check for collisions.
                 physicsFeature.CheckForCollision();
@@ -117,7 +130,7 @@ namespace SlayerKnight
 
                 // Collect all the collisions infos.
                 while (physicsFeature.CollisionInfoChannel.Count > 0)
-                    synthesisInfos.Add(physicsFeature.CollisionInfoChannel.Dequeue());            
+                    synthesisInfos.Add(physicsFeature.CollisionInfoChannel.Dequeue());
 
                 // Synthesize infos and send the physic infos to physics feature if any collisions occurred.
                 if (synthesisInfos.Count > 0)
@@ -128,11 +141,13 @@ namespace SlayerKnight
                     // Correct current movement.
                     {
                         // Correct current horizontal movement.
-                        // The idea is, so long as the incline isn't too steep, the horizontal movement will rotate with the incline. 
+                        // The idea is, so long as the incline isn't too steep, the horizontal movement will rotate with the incline.
+                        // This state also determines whether the physics feature is considered grounded or not.
                         Vector2 horMovement;
                         if (Vector2.Dot(defNormal, info.Normal) > 0.25f)
                         {
-                            horMovement = physicsFeature.Movement.X * info.Normal.GetPerpendicular(); // horizontal movement rotates with ground.   
+                            horMovement = physicsFeature.Movement.X * info.Normal.GetPerpendicular(); // horizontal movement rotates with ground.
+                            grdCounter = 10; // increasing ground counter implies the physics feature is grounded.
                         }
                         else
                         {
