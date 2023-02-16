@@ -12,7 +12,7 @@ using Utility;
 
 namespace SlayerKnight.Components
 {
-    internal class TestComponentFeature : ComponentInterface, PhysicsInterface, ControlInterface
+    internal class TestComponentFeature : ComponentInterface, PhysicsInterface, ControlInterface, DestroyInterface
     {
         const string testComponentMaskAsset = "test/test_component_mask_asset_0";
         const float loopTimerPeriod = 1 / 30;
@@ -20,11 +20,11 @@ namespace SlayerKnight.Components
         private SpriteBatch spriteBatch;
         private Texture2D testComponentMaskTexture;
         private TimerFeature loopTimerFeature;
-        private List<Vector2> correctionVectors;
         private OutputInterface<string> goToOutput;
         private string roomIdentifier;
         private PhysicsInfo? prevPhysicsInfo;
         private PhysicsManager physicsManager;
+        private bool startDestroy;
         public static Color Identifier { get => new Color(r: 112, g: 146, b: 190, alpha: 255); }
         CollisionManager DirectlyManagedInterface<CollisionManager>.ManagerObject { get; set; }
         public Vector2 Position { get; set; }
@@ -35,7 +35,13 @@ namespace SlayerKnight.Components
         public List<Vector2> CollisionVertices => null;
         public ChannelInterface<CollisionInfo> CollisionInfoChannel { get; private set; }
         public bool Destroyed { get; private set; }
-        public ChannelInterface<object> DestroyChannel { get; private set; }
+        public void Destroy() 
+        { 
+            if (startDestroy) 
+                throw new Exception("Already destroyed.");
+            contentManager.UnloadAsset(testComponentMaskAsset);
+            Destroyed = true;
+        }
         public ControlFeature ControlFeatureObject { get; private set; }
         public int DrawLevel { get => 0; }
         public bool PhysicsApplied { get; set; }
@@ -62,10 +68,9 @@ namespace SlayerKnight.Components
             testComponentMaskTexture.GetData(CollisionMask);
             CollisionInfoChannel = new Channel<CollisionInfo>(capacity: 10);
             Destroyed = false;
-            DestroyChannel = new Channel<object>();
+            startDestroy = false;
             ControlFeatureObject = new ControlFeature() { Activated = true };
             loopTimerFeature = new TimerFeature() { Activated = true, Repeat = true, Period = loopTimerPeriod };
-            correctionVectors = new List<Vector2>();
             this.goToOutput = goToOutput;
             this.roomIdentifier = roomIdentifier;
             prevPhysicsInfo = null;
@@ -111,7 +116,7 @@ namespace SlayerKnight.Components
                     switch (info.Action)
                     {
                         case ControlAction.MoveUp:
-                            yMove -= 16;
+                            yMove -= 20;
                             break;
                         case ControlAction.MoveDown:
                             yMove += 4;
@@ -129,7 +134,7 @@ namespace SlayerKnight.Components
                     }
                 }
                 xMove = Math.Clamp(xMove, -6, 6);
-                yMove = Math.Clamp(yMove, -16, 4);
+                yMove = Math.Clamp(yMove, -20, 4);
                 Movement = new Vector2(x: xMove, y: yMove);
 
                 if (changeRooms)
@@ -150,11 +155,9 @@ namespace SlayerKnight.Components
                 PhysicsInfoChannel.Dequeue();
             }
 
-            if (DestroyChannel.Count > 0)
+            if (startDestroy && !Destroyed)
             {
-                DestroyChannel.Dequeue();
-                contentManager.UnloadAsset(testComponentMaskAsset);
-                Destroyed = true;
+                
             }
 
             loopTimerFeature.Update(timeElapsed);

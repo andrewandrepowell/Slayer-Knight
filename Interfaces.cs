@@ -11,13 +11,14 @@ namespace Utility
     public interface StartInterface
     {
         public bool Started { get; }
-        public ChannelInterface<StartAction> StartChannel { get; }
+        public void Start();
+        public void End();
     }
 
     public interface DestroyInterface
     {
         public bool Destroyed { get; }
-        public ChannelInterface<object> DestroyChannel { get; }
+        public void Destroy();
     }
 
     public interface DrawInterface

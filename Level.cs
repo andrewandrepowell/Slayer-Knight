@@ -29,7 +29,6 @@ namespace SlayerKnight
         private Color environmentExcludeColor;
         public bool Started { get; private set; }
         public ChannelInterface<string> GoToChannel { get; private set; }
-        public ChannelInterface<StartAction> StartChannel { get; private set; }
         public string Identifier { get; private set; }
         public LevelFeature(
             ContentManager contentManager,
@@ -47,7 +46,6 @@ namespace SlayerKnight
             Identifier = roomIdentifier;
             Started = false;
             GoToChannel = new Channel<string>();
-            StartChannel = new Channel<StartAction>();
             collisionManager = new CollisionManager();
             orthographicCamera = new OrthographicCamera(graphicsDevice: spriteBatch.GraphicsDevice);
             componentFeatures = new List<ComponentInterface>();
@@ -82,7 +80,7 @@ namespace SlayerKnight
             if (component is KeyboardInterface keyboardHolder)
                 keyboardManager.Features.Remove(keyboardHolder.keyboardFeatureObject);
         }
-        private void start()
+        public void Start()
         {
             // Can't start something that has already been started.
             if (Started)
@@ -153,7 +151,7 @@ namespace SlayerKnight
             // Let the world know the level has started.
             Started = true;
         }
-        private void end()
+        public void End()
         {
             // Can't end something that hasn't been started.
             if (!Started)
@@ -167,7 +165,7 @@ namespace SlayerKnight
             foreach (var feature in componentFeatures.ToList())
             {
                 if (feature is DestroyInterface destroyFeature)
-                    destroyFeature.DestroyChannel.Enqueue(null);
+                    destroyFeature.Destroy();
                 else remove(feature);   
             }
 
@@ -176,27 +174,12 @@ namespace SlayerKnight
         }
         public void Update(float timeElapsed)
         {
-            // If the level is activated, start the level.
-            if (StartChannel.Count > 0)
-            {
-                var action = StartChannel.Dequeue();
-                switch (action)
-                {
-                    case StartAction.Start:
-                        start();
-                        break;
-                    case StartAction.End:
-                        end();
-                        break;
-                }
-            }
-
             // Update the components.
             foreach (var component in componentFeatures)
                 component.Update(timeElapsed);
 
             // Remove any destroyed components.
-            foreach (var component in componentFeatures.OfType<DestroyInterface>())
+            foreach (var component in componentFeatures.ToList().OfType<DestroyInterface>())
                 if (component.Destroyed)
                     remove(component as ComponentInterface);
         }

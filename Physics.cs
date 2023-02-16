@@ -120,7 +120,7 @@ namespace SlayerKnight
                 else
                     grdCounter--;
 
-                Console.WriteLine($"DEBUG: {physicsFeature.Movement}");
+                Console.WriteLine($"DEBUG: {physicsFeature.Movement} {curGravocity}");
 
                 // Check for collisions.
                 physicsFeature.CheckForCollision();
@@ -148,6 +148,8 @@ namespace SlayerKnight
                         {
                             horMovement = physicsFeature.Movement.X * info.Normal.GetPerpendicular(); // horizontal movement rotates with ground.
                             grdCounter = 10; // increasing ground counter implies the physics feature is grounded.
+                            curGravocity = -defNormal; // velocity based on gravity is reset back to negative default normal.
+                            Console.WriteLine("?????????????????");
                         }
                         else
                         {
@@ -168,12 +170,6 @@ namespace SlayerKnight
 
                         // Combination of horizontal and vertical movement defines the current movement.
                         curMovement = horMovement + verMovement;
-                    }
-
-                    // Velocity based on gravity is reset once the ground is touched.
-                    if (Vector2.Dot(curGravocity, info.Normal) < 0)
-                    {
-                        curGravocity = -defNormal;
                     }
 
                     // Send physic infos to physics feature.

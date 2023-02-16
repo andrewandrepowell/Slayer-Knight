@@ -18,7 +18,7 @@ namespace Utility
         private void goTo(string nextIdentifier, float timeElapsed)
         {
             // End the previous room.
-            Current.StartChannel.Enqueue(StartAction.End);
+            Current.End();
 
             // If the nextIdentifier is specified, then go to the specified room.
             if (nextIdentifier != null)
@@ -39,7 +39,7 @@ namespace Utility
             }
 
             // Start the new current room.
-            Current.StartChannel.Enqueue(StartAction.Start);
+            Current.Start();
         }
 
         public void Update(float timeElapsed)
@@ -49,7 +49,7 @@ namespace Utility
                 if (Features.Count >= 1)
                 {
                     Current = Features.First();
-                    Current.StartChannel.Enqueue(StartAction.Start);
+                    Current.Start();
                 }
             }
             else
