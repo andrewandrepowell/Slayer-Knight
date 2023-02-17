@@ -20,8 +20,7 @@ namespace SlayerKnight.Components
         private SpriteBatch spriteBatch;
         private Texture2D testComponentMaskTexture;
         private TimerFeature loopTimerFeature;
-        private OutputInterface<string> goToOutput;
-        private string roomIdentifier;
+        private LevelInterface levelFeature;
         private PhysicsInfo? prevPhysicsInfo;
         private PhysicsManager physicsManager;
         private bool startDestroy;
@@ -54,8 +53,7 @@ namespace SlayerKnight.Components
         public TestComponentFeature(
             ContentManager contentManager,
             SpriteBatch spriteBatch,
-            string roomIdentifier,
-            OutputInterface<string> goToOutput)
+            LevelInterface levelFeature)
         {
             this.contentManager = contentManager;
             this.spriteBatch = spriteBatch;
@@ -71,8 +69,7 @@ namespace SlayerKnight.Components
             startDestroy = false;
             ControlFeatureObject = new ControlFeature() { Activated = true };
             loopTimerFeature = new TimerFeature() { Activated = true, Repeat = true, Period = loopTimerPeriod };
-            this.goToOutput = goToOutput;
-            this.roomIdentifier = roomIdentifier;
+            this.levelFeature = levelFeature;
             prevPhysicsInfo = null;
             PhysicsApplied = true;
             Movement = Vector2.Zero;
@@ -139,13 +136,13 @@ namespace SlayerKnight.Components
 
                 if (changeRooms)
                 {
-                    if (roomIdentifier == "first_level")
+                    if (levelFeature.Identifier == "first_level")
                     {
-                        goToOutput.Enqueue("second_level");
+                        levelFeature.GoTo("second_level");
                     }
-                    else if (roomIdentifier == "second_level")
+                    else if (levelFeature.Identifier == "second_level")
                     {
-                        goToOutput.Enqueue("first_level");
+                        levelFeature.GoTo("first_level");
                     }
                 }
             }

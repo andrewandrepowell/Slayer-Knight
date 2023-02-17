@@ -12,7 +12,7 @@
             "scale": 0.75,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 536.6666666666667,
+                "x": 452.6666666666667,
                 "y": 246
             }
         },
@@ -21,12 +21,12 @@
             "scaleInEditor": 1
         }
     },
-    "last.imagePath": "C:/Users/andre/source/repos/Slayer Knight/Content/test",
-    "map.height": 5,
+    "last.imagePath": "C:/Users/andre/source/repos/Slayer Knight/Content/kingdom",
+    "map.height": 300,
     "map.lastUsedFormat": "tmx",
-    "map.tileHeight": 100,
-    "map.tileWidth": 100,
-    "map.width": 10,
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "map.width": 400,
     "openFiles": [
         "test_tileset_mask_asset_0.tsx",
         "test_environment_mask_asset_0.tmx"
@@ -38,7 +38,9 @@
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
-        "height": 100,
-        "width": 100
-    }
+        "height": 48,
+        "width": 32
+    },
+    "tileset.transparentColor": "#ffffff",
+    "tileset.useTransparentColor": true
 }

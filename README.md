@@ -14,3 +14,7 @@ dotnet add package MonoGame.GlowEffect --version 1.0.4
 
 - https://www.mapeditor.org
 - https://www.codeandweb.com/texturepacker
+- https://stackoverflow.com/questions/7591466/xna-resize-window-without-increasing-resolution
+- https://www.patreon.com/Anokolisa
+- https://itch.io/game-assets/genre-platformer/tag-2d/tag-tileset
+- https://anokolisa.itch.io/sidescroller-pixelart-sprites-asset-pack-forest-16x16

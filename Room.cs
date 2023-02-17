@@ -5,15 +5,27 @@ using System.Linq;
 
 namespace Utility
 {
-    public interface RoomInterface : IdentityInterface, StartInterface, UpdateInterface, DrawInterface
+    public static class RoomExtensions
     {
-        public ChannelInterface<string> GoToChannel { get; }
+        public static void GoTo(this RoomInterface room, string identifier) => room.ManagerObject.GoTo(identifier);
+    }
+    public interface RoomInterface : IdentityInterface, StartInterface, UpdateInterface, DrawInterface, DirectlyManagedInterface<RoomManager>
+    {
     }
     public class RoomManager : UpdateInterface, DrawInterface
     {
-        private Dictionary<RoomInterface, RoomInterface> previousMap = new Dictionary<RoomInterface, RoomInterface>();
-        public RoomInterface Current { get; private set; } = null;
-        public List<RoomInterface> Features { get; private set; } = new List<RoomInterface>(); 
+        private Dictionary<RoomInterface, RoomInterface> previousMap;
+        private Channel<string> goToChannel;
+        public RoomInterface Current { get; private set; }
+        public DirectlyManagedList<RoomInterface, RoomManager> Features { get; private set; }
+        public RoomManager()
+        {
+            previousMap = new Dictionary<RoomInterface, RoomInterface>();
+            goToChannel = new Channel<string>();
+            Current = null;
+            Features = new DirectlyManagedList<RoomInterface, RoomManager>(this);
+        }
+        public void GoTo(string identifier) => goToChannel.Enqueue(identifier);
 
         private void goTo(string nextIdentifier, float timeElapsed)
         {
@@ -23,7 +35,7 @@ namespace Utility
             // If the nextIdentifier is specified, then go to the specified room.
             if (nextIdentifier != null)
             {
-                RoomInterface nextRoom = Features.Find(x => x.Identifier == nextIdentifier);
+                RoomInterface nextRoom = Features.Where(x => x.Identifier == nextIdentifier).First();
                 if (nextRoom == null)
                     throw new Exception($"Current {Current} with Identifier {Current.Identifier} attempted to go to nonexistent nextRoom with Identifier {nextIdentifier}.");
                 previousMap[nextRoom] = Current;
@@ -54,9 +66,9 @@ namespace Utility
             }
             else
             {
-                if (Current.GoToChannel.Count > 0)
+                if (goToChannel.Count > 0)
                 {
-                    string nextIdentifier = Current.GoToChannel.Dequeue();
+                    string nextIdentifier = goToChannel.Dequeue();
                     goTo(nextIdentifier, timeElapsed);
                 }
             }

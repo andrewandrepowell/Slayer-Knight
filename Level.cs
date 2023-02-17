@@ -11,7 +11,12 @@ using System.Linq.Expressions;
 
 namespace SlayerKnight
 { 
-    internal class LevelFeature : RoomInterface
+    internal interface LevelInterface : RoomInterface
+    {
+        public void Add(ComponentInterface component);
+        public void Remove(ComponentInterface component);
+    }
+    internal class LevelFeature : LevelInterface
     {
         private SpriteBatch spriteBatch;
         private ContentManager contentManager;
@@ -29,8 +34,8 @@ namespace SlayerKnight
         private Color environmentIncludeColor;
         private Color environmentExcludeColor;
         public bool Started { get; private set; }
-        public ChannelInterface<string> GoToChannel { get; private set; }
         public string Identifier { get; private set; }
+        RoomManager DirectlyManagedInterface<RoomManager>.ManagerObject { get; set; }
         public LevelFeature(
             ContentManager contentManager,
             SpriteBatch spriteBatch,
@@ -46,7 +51,6 @@ namespace SlayerKnight
         {
             Identifier = roomIdentifier;
             Started = false;
-            GoToChannel = new Channel<string>();
             collisionManager = new CollisionManager();
             orthographicCamera = new OrthographicCamera(graphicsDevice: spriteBatch.GraphicsDevice);
             componentFeatures = new List<ComponentInterface>();
@@ -62,7 +66,7 @@ namespace SlayerKnight
             this.environmentIncludeColor = environmentIncludeColor;
             this.environmentExcludeColor = environmentExcludeColor;
         }
-        private void add(ComponentInterface component)
+        public void Add(ComponentInterface component)
         {
             componentFeatures.Add(component);
             if (component is CollisionInterface collisionFeature)
@@ -72,7 +76,7 @@ namespace SlayerKnight
             if (component is KeyboardInterface keyboardHolder)
                 keyboardManager.Features.Add(keyboardHolder.keyboardFeatureObject);
         }
-        private void remove(ComponentInterface component)
+        public void Remove(ComponentInterface component)
         {
             componentFeatures.Remove(component);
             if (component is CollisionInterface collisionFeature)
@@ -124,10 +128,9 @@ namespace SlayerKnight
                             contentManager: contentManager,
                             spriteBatch: spriteBatch,
                             position: gridPosition,
-                            roomIdentifier: Identifier,
-                            goToOutput: GoToChannel);
+                            levelFeature: this);
                         if (componentFeature != null)
-                            add(componentFeature);
+                            Add(componentFeature);
 
                         // If the mask has at least one visible pixel--i.e. alpha not equal to 0--then determine grid vertices, 
                         // and create wall feature..
@@ -141,7 +144,7 @@ namespace SlayerKnight
                                 size: environmentGridSize,
                                 mask: gridMask,
                                 vertices: gridVertices);
-                            add(wallFeature);
+                            Add(wallFeature);
                         }
                     }
 
@@ -168,7 +171,7 @@ namespace SlayerKnight
             {
                 if (feature is DestroyInterface destroyFeature)
                     destroyFeature.Destroy();
-                else remove(feature);   
+                else Remove(feature);   
             }
 
             // Let the world know the level has ended.
@@ -186,7 +189,7 @@ namespace SlayerKnight
                 if (component.Destroyed)
                     destroyFeatures.Add(component);
             foreach (var destroy in destroyFeatures)
-               remove(destroy as ComponentInterface);
+               Remove(destroy as ComponentInterface);
         }
         public void Draw(Matrix? _ = null)
         {

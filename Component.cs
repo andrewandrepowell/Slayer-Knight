@@ -22,16 +22,14 @@ namespace SlayerKnight
             ContentManager contentManager,
             SpriteBatch spriteBatch,
             Vector2 position,
-            string roomIdentifier,
-            OutputInterface<string> goToOutput)
+            LevelInterface levelFeature)
         {
             if (TestComponentFeature.Identifier == identifier)
             {
                 var componentFeature = new TestComponentFeature(
                     contentManager: contentManager,
                     spriteBatch: spriteBatch,
-                    roomIdentifier: roomIdentifier,
-                    goToOutput: goToOutput)
+                    levelFeature: levelFeature)
                 {  
                     Position = position 
                 };
