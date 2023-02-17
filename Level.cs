@@ -20,6 +20,7 @@ namespace SlayerKnight
         private ControlManager controlManager;
         private KeyboardManager keyboardManager;
         private List<ComponentInterface> componentFeatures;
+        private List<DestroyInterface> destroyFeatures;
         private string environmentVisualAsset;
         private string environmentMaskAsset;
         private Size environmentGridSize;
@@ -49,6 +50,7 @@ namespace SlayerKnight
             collisionManager = new CollisionManager();
             orthographicCamera = new OrthographicCamera(graphicsDevice: spriteBatch.GraphicsDevice);
             componentFeatures = new List<ComponentInterface>();
+            destroyFeatures = new List<DestroyInterface>();
             this.spriteBatch = spriteBatch;
             this.contentManager = contentManager;
             this.keyboardManager = keyboardManager;
@@ -179,9 +181,12 @@ namespace SlayerKnight
                 component.Update(timeElapsed);
 
             // Remove any destroyed components.
-            foreach (var component in componentFeatures.ToList().OfType<DestroyInterface>())
+            destroyFeatures.Clear();
+            foreach (var component in componentFeatures.OfType<DestroyInterface>())
                 if (component.Destroyed)
-                    remove(component as ComponentInterface);
+                    destroyFeatures.Add(component);
+            foreach (var destroy in destroyFeatures)
+               remove(destroy as ComponentInterface);
         }
         public void Draw(Matrix? _ = null)
         {
