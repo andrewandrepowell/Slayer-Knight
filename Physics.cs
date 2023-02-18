@@ -94,11 +94,8 @@ namespace SlayerKnight
             }
 
             // Apply physics for each
-            while (timerFeature.RunChannel.Count > 0)
+            while (timerFeature.GetNext())
             {
-                // Acknowledge timer.
-                timerFeature.RunChannel.Dequeue();
-
                 // Update the position based on current velocity based on gravity and movement.
                 physicsFeature.Position += (curGravocity + curMovement);
 

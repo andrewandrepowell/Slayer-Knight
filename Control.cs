@@ -21,22 +21,42 @@ namespace Utility
     {
         public ControlFeature ControlFeatureObject { get; }
     }
-    public class ControlFeature
+    public class ControlFeature : DirectlyManagedInterface<ControlManager>
     {
         public bool Activated { get; set; } = false;
-        public Channel<ControlInfo> InfoChannel { get; private set; } = new Channel<ControlInfo>(capacity: 100); // manager -> feature
+        ControlManager DirectlyManagedInterface<ControlManager>.ManagerObject { get; set; }
+        public bool GetNext(out ControlInfo info) => (this as DirectlyManagedInterface<ControlManager>).ManagerObject.GetNext(this, out info);
     }
-    public class ControlManager : UpdateInterface
+    public class ControlManager : UpdateInterface, ManagerInterface<ControlFeature>
     {
-        readonly static Dictionary<KeyState, ControlState> keyStateControlStateMap = new Dictionary<KeyState, ControlState>() 
+        readonly private static Dictionary<KeyState, ControlState> mapKeyStateControlState = new Dictionary<KeyState, ControlState>() 
         {
             { KeyState.Pressed, ControlState.Pressed },
             { KeyState.Held, ControlState.Held },
             { KeyState.Released, ControlState.Released }
         };
-        public KeyboardFeature KeyboardFeatureObject { get; set; } = null;
-        public Dictionary<Keys, ControlAction> KeyActionMap { get; private set; } = new Dictionary<Keys, ControlAction>();
-        public List<ControlFeature> Features { get; private set; } = new List<ControlFeature>();
+        private Dictionary<ControlFeature, Channel<ControlInfo>> mapFeatureChannel;
+        public KeyboardFeature KeyboardFeatureObject { get; set; }
+        public Dictionary<Keys, ControlAction> KeyActionMap { get; private set; }
+        public DirectlyManagedList<ControlFeature, ControlManager> Features { get; private set; }
+        public bool GetNext(ControlFeature feature, out ControlInfo info)
+        {
+            var channel = mapFeatureChannel[feature];
+            info = default;
+            if (channel.Count > 0)
+            {
+                info = channel.Dequeue();
+                return true;
+            }
+            return false;
+        }
+        public ControlManager()
+        {
+            mapFeatureChannel = new Dictionary<ControlFeature, Channel<ControlInfo>>();
+            KeyboardFeatureObject = default;
+            KeyActionMap = new Dictionary<Keys, ControlAction>();
+            Features = new DirectlyManagedList<ControlFeature, ControlManager>(this);
+        }
         public void Update(float timeElapsed)
         {
             if (KeyboardFeatureObject != null)
@@ -46,13 +66,23 @@ namespace Utility
                     ControlAction action;
                     if (KeyActionMap.TryGetValue(key: keyboardInfo.Key, value: out action))
                     {
-                        ControlState state = keyStateControlStateMap[keyboardInfo.State];
-                        foreach (var feature in Features.Where(x => x.Activated))
-                            feature.InfoChannel.Enqueue(new ControlInfo(action: action, state: state));
+                        ControlState state = mapKeyStateControlState[keyboardInfo.State];
+                        foreach ((var feature, var channel) in mapFeatureChannel.Where(x => x.Key.Activated))
+                            channel.Enqueue(new ControlInfo(action: action, state: state));
                     }
 
                 }
             }
+        }
+
+        void ManagerInterface<ControlFeature>.SetupFeature(ControlFeature feature)
+        {
+            mapFeatureChannel.Add(feature, new Channel<ControlInfo>(capacity: 100));
+        }
+
+        void ManagerInterface<ControlFeature>.DestroyFeature(ControlFeature feature)
+        {
+            mapFeatureChannel.Remove(feature);
         }
     }
 }

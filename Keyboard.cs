@@ -55,7 +55,7 @@ namespace Utility
             // Acquire keys, determine states, push keys and state through queue.
             var keyboardState = KeyboardExtended.GetState();
             var pressedKeys = keyboardState.GetPressedKeys();
-            foreach ((var feature, var channel) in mapFeatureChannel)
+            foreach ((var feature, var channel) in mapFeatureChannel.Where(x => x.Key.Activated))
             {
                 foreach (var key in pressedKeys.Where(x => !previousPressedKeys.Contains(x)))
                     channel.Enqueue(new KeyInfo(key: key, state: KeyState.Pressed));

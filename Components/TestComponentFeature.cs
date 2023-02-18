@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,7 +37,7 @@ namespace SlayerKnight.Components
         public bool Destroyed { get; private set; }
         public void Destroy() 
         { 
-            if (startDestroy) 
+            if (Destroyed) 
                 throw new Exception("Already destroyed.");
             contentManager.UnloadAsset(testComponentMaskAsset);
             Destroyed = true;
@@ -100,16 +101,10 @@ namespace SlayerKnight.Components
             if (Destroyed)
                 return;
 
-            while (ControlFeatureObject.InfoChannel.Count > 4)
-                ControlFeatureObject.InfoChannel.Dequeue();
-
-            if (loopTimerFeature.RunChannel.Count > 0)
             {
-                loopTimerFeature.RunChannel.Dequeue();
                 float xMove = 0, yMove = 0; bool changeRooms = false;
-                while (ControlFeatureObject.InfoChannel.Count > 0)
+                while (ControlFeatureObject.GetNext(out var info))
                 {
-                    var info = ControlFeatureObject.InfoChannel.Dequeue();
                     switch (info.Action)
                     {
                         case ControlAction.MoveUp:
@@ -132,17 +127,21 @@ namespace SlayerKnight.Components
                 }
                 xMove = Math.Clamp(xMove, -6, 6);
                 yMove = Math.Clamp(yMove, -20, 4);
-                Movement = new Vector2(x: xMove, y: yMove);
 
-                if (changeRooms)
+                if (loopTimerFeature.GetNext())
                 {
-                    if (levelFeature.Identifier == "first_level")
+                    Movement = new Vector2(x: xMove, y: yMove);
+
+                    if (changeRooms)
                     {
-                        levelFeature.GoTo("second_level");
-                    }
-                    else if (levelFeature.Identifier == "second_level")
-                    {
-                        levelFeature.GoTo("first_level");
+                        if (levelFeature.Identifier == "first_level")
+                        {
+                            levelFeature.GoTo("second_level");
+                        }
+                        else if (levelFeature.Identifier == "second_level")
+                        {
+                            levelFeature.GoTo("first_level");
+                        }
                     }
                 }
             }
@@ -150,11 +149,6 @@ namespace SlayerKnight.Components
             while (PhysicsInfoChannel.Count > 0)
             {
                 PhysicsInfoChannel.Dequeue();
-            }
-
-            if (startDestroy && !Destroyed)
-            {
-                
             }
 
             loopTimerFeature.Update(timeElapsed);
