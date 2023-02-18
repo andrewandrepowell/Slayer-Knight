@@ -12,7 +12,7 @@ namespace Utility
     public interface RoomInterface : IdentityInterface, StartInterface, UpdateInterface, DrawInterface, DirectlyManagedInterface<RoomManager>
     {
     }
-    public class RoomManager : UpdateInterface, DrawInterface
+    public class RoomManager : UpdateInterface, DrawInterface, ManagerInterface<RoomInterface>
     {
         private Dictionary<RoomInterface, RoomInterface> previousMap;
         private Channel<string> goToChannel;
@@ -81,6 +81,14 @@ namespace Utility
         {
             foreach (var feature in Features)
                 feature.Draw(transformMatrix);
+        }
+
+        void ManagerInterface<RoomInterface>.SetupFeature(RoomInterface feature)
+        {
+        }
+
+        void ManagerInterface<RoomInterface>.DestroyFeature(RoomInterface feature)
+        {
         }
     }
 }

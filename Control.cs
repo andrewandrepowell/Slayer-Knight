@@ -41,9 +41,8 @@ namespace Utility
         {
             if (KeyboardFeatureObject != null)
             {
-                while (KeyboardFeatureObject.InfoChannel.Count > 0)
+                while (KeyboardFeatureObject.GetNext(out var keyboardInfo))
                 {
-                    var keyboardInfo = KeyboardFeatureObject.InfoChannel.Dequeue();
                     ControlAction action;
                     if (KeyActionMap.TryGetValue(key: keyboardInfo.Key, value: out action))
                     {

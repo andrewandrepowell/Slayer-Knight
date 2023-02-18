@@ -22,11 +22,11 @@
         }
     },
     "last.imagePath": "C:/Users/andre/source/repos/Slayer Knight/Content/kingdom",
-    "map.height": 300,
+    "map.height": 60,
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 16,
     "map.tileWidth": 16,
-    "map.width": 400,
+    "map.width": 160,
     "openFiles": [
         "test_tileset_mask_asset_0.tsx",
         "test_environment_mask_asset_0.tmx"

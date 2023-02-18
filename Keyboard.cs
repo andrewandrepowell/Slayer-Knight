@@ -22,30 +22,59 @@ namespace Utility
     {
         public KeyboardFeature keyboardFeatureObject { get; }
     }
-    public class KeyboardFeature
+    public class KeyboardFeature : DirectlyManagedInterface<KeyboardManager>
     {
-        public bool Activated { get; set; } = false; // feature -> manager
-        public Channel<KeyInfo> InfoChannel { get; private set; } = new Channel<KeyInfo>(capacity: 100); // manager -> feature
+        public bool Activated { get; set; } = false; 
+        KeyboardManager DirectlyManagedInterface<KeyboardManager>.ManagerObject { get; set; } = default;
+        public bool GetNext(out KeyInfo info) => (this as DirectlyManagedInterface<KeyboardManager>).ManagerObject.GetNext(this, out info);
     }
-    public class KeyboardManager : UpdateInterface
+    public class KeyboardManager : UpdateInterface, ManagerInterface<KeyboardFeature>
     {
-        private Keys[] previousPressedKeys = Array.Empty<Keys>();
-        public List<KeyboardFeature> Features { get; private set; } = new List<KeyboardFeature>();
+        private Keys[] previousPressedKeys;
+        private Dictionary<KeyboardFeature, Channel<KeyInfo>> mapFeatureChannel;
+        public bool GetNext(KeyboardFeature feature, out KeyInfo info)
+        {
+            var channel = mapFeatureChannel[feature];
+            info = default;
+            if (channel.Count > 0)
+            {
+                info = channel.Dequeue();
+                return true;
+            }
+            return false;
+        }
+        public DirectlyManagedList<KeyboardFeature, KeyboardManager> Features { get; private set; }
+        public KeyboardManager()
+        {
+            previousPressedKeys = Array.Empty<Keys>();
+            mapFeatureChannel = new Dictionary<KeyboardFeature, Channel<KeyInfo>>();
+            Features = new DirectlyManagedList<KeyboardFeature, KeyboardManager>(this);
+        }
         public void Update(float timeElapsed)
         {
             // Acquire keys, determine states, push keys and state through queue.
             var keyboardState = KeyboardExtended.GetState();
             var pressedKeys = keyboardState.GetPressedKeys();
-            foreach (var feature in Features.Where(x => x.Activated))
+            foreach ((var feature, var channel) in mapFeatureChannel)
             {
                 foreach (var key in pressedKeys.Where(x => !previousPressedKeys.Contains(x)))
-                    feature.InfoChannel.Enqueue(new KeyInfo(key: key, state: KeyState.Pressed));
+                    channel.Enqueue(new KeyInfo(key: key, state: KeyState.Pressed));
                 foreach (var key in pressedKeys.Where(x => previousPressedKeys.Contains(x)))
-                    feature.InfoChannel.Enqueue(new KeyInfo(key: key, state: KeyState.Held));
+                    channel.Enqueue(new KeyInfo(key: key, state: KeyState.Held));
                 foreach (var key in previousPressedKeys.Where(x => !pressedKeys.Contains(x)))
-                    feature.InfoChannel.Enqueue(new KeyInfo(key: key, state: KeyState.Released));
+                    channel.Enqueue(new KeyInfo(key: key, state: KeyState.Released));
             }
             previousPressedKeys = pressedKeys;
+        }
+
+        public void SetupFeature(KeyboardFeature feature)
+        {
+            mapFeatureChannel.Add(feature, new Channel<KeyInfo>(capacity: 100));
+        }
+
+        public void DestroyFeature(KeyboardFeature feature)
+        {
+            mapFeatureChannel.Remove(feature);
         }
     }
 }

@@ -83,11 +83,8 @@ namespace SlayerKnight
             }
 
             // Service collisions based on other collisions features colliding into the physics feature.
-            while (physicsFeature.CollisionInfoChannel.Count > 0)
+            while (physicsFeature.GetNext(out var info))
             {
-                // Acknowledge the collision and store info.
-                var info = physicsFeature.CollisionInfoChannel.Dequeue();
-
                 // Create physics info so that the user can react to the collision.
                 physicsFeature.PhysicsInfoChannel.Enqueue(new PhysicsInfo(
                     other: info.Other, 
@@ -129,8 +126,8 @@ namespace SlayerKnight
                 synthesisInfos.Clear();
 
                 // Collect all the collisions infos.
-                while (physicsFeature.CollisionInfoChannel.Count > 0)
-                    synthesisInfos.Add(physicsFeature.CollisionInfoChannel.Dequeue());
+                while (physicsFeature.GetNext(out var info))
+                    synthesisInfos.Add(info);
 
                 // Synthesize infos and send the physic infos to physics feature if any collisions occurred.
                 if (synthesisInfos.Count > 0)

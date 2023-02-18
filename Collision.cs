@@ -3,7 +3,6 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using MonoGame.Extended;
-using System.Collections;
 
 namespace Utility
 {
@@ -43,16 +42,23 @@ namespace Utility
         public bool Static { get; set; }
         public Color[] CollisionMask { get; }
         public List<Vector2> CollisionVertices { get; }
-        public ChannelInterface<CollisionInfo> CollisionInfoChannel { get; }
     }
     public static class CollisionManagerExtensions
     {
-        public static bool CheckForCollision(this CollisionInterface collidable0) => CollisionManager.CheckForCollision(collidable0);
+        public static bool CheckForCollision(this CollisionInterface collidable0) => 
+            collidable0.ManagerObject.CheckForCollision(collidable0);
+        public static bool GetNext(this CollisionInterface collidable0, out CollisionInfo info) =>
+            collidable0.ManagerObject.GetNextCollision(collidable0, out info);
     }
-    public class CollisionManager
+    public class CollisionManager : ManagerInterface<CollisionInterface>
     {
+        private Dictionary<CollisionInterface, Channel<CollisionInfo>> mapFeatureChannel;
         public DirectlyManagedList<CollisionInterface, CollisionManager> Features { get; private set; }
-        public CollisionManager() => Features = new DirectlyManagedList<CollisionInterface, CollisionManager>(manager: this);
+        public CollisionManager()
+        {
+            mapFeatureChannel = new Dictionary<CollisionInterface, Channel<CollisionInfo>>();
+            Features = new DirectlyManagedList<CollisionInterface, CollisionManager>(manager: this);
+        }
         public static Vector2 SynthesizeCorrections(IList<Vector2> corrections)
         {
             return new Vector2(
@@ -83,12 +89,27 @@ namespace Utility
                     x: infos.Select(i => i.Normal.X).Sum(),
                     y: infos.Select(i => i.Normal.Y).Sum())));
         }
-        public static bool CheckForCollision(CollisionInterface collidable0)
+        public bool GetNextCollision(CollisionInterface collidable0, out CollisionInfo info)
+        {
+            info = default;
+            var channel = mapFeatureChannel[collidable0];
+            if (channel.Count > 0)
+            {
+                info = channel.Dequeue();
+                return true;
+            }
+            return false;
+        }
+        public bool CheckForCollision(CollisionInterface collidable0)
         {
             bool collisionOccured = false;
+            var channel0 = mapFeatureChannel[collidable0];
+
+            if (collidable0.ManagerObject != this)
+                throw new Exception("The collision manager object associated with the collidable feature isn't the current collision manager.");
 
             // For each collidable in the manager, check for collisions with other collidables in the manager.
-            foreach (var collidable1 in collidable0.ManagerObject.Features)
+            foreach ((var collidable1, var channel1) in mapFeatureChannel)
             {
                 if (collidable0 != collidable1 && CheckForCollision(
                     collidable0: collidable0, collidable1: collidable1,
@@ -97,9 +118,9 @@ namespace Utility
                     normal0: out Vector2 normal0, normal1: out Vector2 normal1))
                 {
                     if (!collidable0.Static)
-                        collidable0.CollisionInfoChannel.Enqueue(new CollisionInfo(other: collidable1, point: point0, correction: correction0, normal: normal0));
+                        channel0.Enqueue(new CollisionInfo(other: collidable1, point: point0, correction: correction0, normal: normal0));
                     if (!collidable1.Static)
-                        collidable1.CollisionInfoChannel.Enqueue(new CollisionInfo(other: collidable0, point: point1, correction: correction1, normal: normal1));
+                        channel1.Enqueue(new CollisionInfo(other: collidable0, point: point1, correction: correction1, normal: normal1));
                     collisionOccured = true;
                 }
             }
@@ -407,5 +428,11 @@ namespace Utility
             Vector2 collisionNormal = Vector2.Normalize(-direction.GetPerpendicular());
             return collisionNormal;
         }
+
+        void ManagerInterface<CollisionInterface>.SetupFeature(CollisionInterface feature) =>
+            mapFeatureChannel.Add(feature, new Channel<CollisionInfo>(capacity: 10));
+        
+        void ManagerInterface<CollisionInterface>.DestroyFeature(CollisionInterface feature) =>
+            mapFeatureChannel.Remove(feature); 
     }
 }
