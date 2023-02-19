@@ -9,7 +9,7 @@ namespace Utility
     {
         public static void GoTo(this RoomInterface room, string identifier) => room.ManagerObject.GoTo(identifier);
     }
-    public interface RoomInterface : IdentityInterface, StartInterface, UpdateInterface, DrawInterface, DirectlyManagedInterface<RoomManager>
+    public interface RoomInterface : IdentityInterface, StartInterface, UpdateInterface, DrawInterface, FeatureInterface<RoomManager>
     {
     }
     public class RoomManager : UpdateInterface, DrawInterface, ManagerInterface<RoomInterface>
@@ -17,7 +17,7 @@ namespace Utility
         private Dictionary<RoomInterface, RoomInterface> previousMap;
         private Channel<string> goToChannel;
         public RoomInterface Current { get; private set; }
-        public DirectlyManagedList<RoomInterface, RoomManager> Features { get; private set; }
+        public IList<RoomInterface> Features { get; private set; }
         public RoomManager()
         {
             previousMap = new Dictionary<RoomInterface, RoomInterface>();

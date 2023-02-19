@@ -26,7 +26,7 @@ namespace SlayerKnight.Components
         private PhysicsManager physicsManager;
         private bool startDestroy;
         public static Color Identifier { get => new Color(r: 112, g: 146, b: 190, alpha: 255); }
-        CollisionManager DirectlyManagedInterface<CollisionManager>.ManagerObject { get; set; }
+        CollisionManager FeatureInterface<CollisionManager>.ManagerObject { get; set; }
         public Vector2 Position { get; set; }
         public Size Size { get; private set; }
         public bool Collidable { get; set; }

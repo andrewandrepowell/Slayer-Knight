@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "kingdom_environment_visual_asset_0.tmx",
+    "activeFile": "kingdom_tileset_visual_asset_0.tsx",
     "expandedProjectPaths": [
         "."
     ],
@@ -12,9 +12,13 @@
             "scale": 0.25,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 1676,
-                "y": 1030
+                "x": 1724,
+                "y": 1178
             }
+        },
+        "kingdom_tileset_mask_asset_0.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "kingdom_tileset_visual_asset_0.tsx": {
             "scaleInDock": 2,
@@ -43,14 +47,16 @@
         "test_tileset_mask_asset_0.tsx",
         "test_environment_mask_asset_0.tmx",
         "kingdom_tileset_visual_asset_0.tsx",
-        "kingdom_environment_visual_asset_0.tmx"
+        "kingdom_environment_visual_asset_0.tmx",
+        "kingdom_tileset_mask_asset_0.tsx"
     ],
     "project": "tiled_project.tiled-project",
     "recentFiles": [
         "test_tileset_mask_asset_0.tsx",
         "test_environment_mask_asset_0.tmx",
-        "kingdom_tileset_visual_asset_0.tsx",
-        "kingdom_environment_visual_asset_0.tmx"
+        "kingdom_tileset_mask_asset_0.tsx",
+        "kingdom_environment_visual_asset_0.tmx",
+        "kingdom_tileset_visual_asset_0.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {

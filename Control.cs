@@ -21,11 +21,11 @@ namespace Utility
     {
         public ControlFeature ControlFeatureObject { get; }
     }
-    public class ControlFeature : DirectlyManagedInterface<ControlManager>
+    public class ControlFeature : FeatureInterface<ControlManager>
     {
         public bool Activated { get; set; } = false;
-        ControlManager DirectlyManagedInterface<ControlManager>.ManagerObject { get; set; }
-        public bool GetNext(out ControlInfo info) => (this as DirectlyManagedInterface<ControlManager>).ManagerObject.GetNext(this, out info);
+        ControlManager FeatureInterface<ControlManager>.ManagerObject { get; set; }
+        public bool GetNext(out ControlInfo info) => (this as FeatureInterface<ControlManager>).ManagerObject.GetNext(this, out info);
     }
     public class ControlManager : UpdateInterface, ManagerInterface<ControlFeature>
     {
@@ -38,7 +38,7 @@ namespace Utility
         private Dictionary<ControlFeature, Channel<ControlInfo>> mapFeatureChannel;
         public KeyboardFeature KeyboardFeatureObject { get; set; }
         public Dictionary<Keys, ControlAction> KeyActionMap { get; private set; }
-        public DirectlyManagedList<ControlFeature, ControlManager> Features { get; private set; }
+        public IList<ControlFeature> Features { get; private set; }
         public bool GetNext(ControlFeature feature, out ControlInfo info)
         {
             var channel = mapFeatureChannel[feature];

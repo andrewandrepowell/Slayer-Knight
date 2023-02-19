@@ -34,7 +34,7 @@ namespace Utility
             Normal = normal;
         }
     }
-    public interface CollisionInterface : DirectlyManagedInterface<CollisionManager>
+    public interface CollisionInterface : FeatureInterface<CollisionManager>
     {
         public Vector2 Position { get; set; }
         public Size Size { get; }
@@ -53,7 +53,7 @@ namespace Utility
     public class CollisionManager : ManagerInterface<CollisionInterface>
     {
         private Dictionary<CollisionInterface, Channel<CollisionInfo>> mapFeatureChannel;
-        public DirectlyManagedList<CollisionInterface, CollisionManager> Features { get; private set; }
+        public IList<CollisionInterface> Features { get; private set; }
         public CollisionManager()
         {
             mapFeatureChannel = new Dictionary<CollisionInterface, Channel<CollisionInfo>>();

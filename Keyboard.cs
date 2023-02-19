@@ -22,11 +22,11 @@ namespace Utility
     {
         public KeyboardFeature keyboardFeatureObject { get; }
     }
-    public class KeyboardFeature : DirectlyManagedInterface<KeyboardManager>
+    public class KeyboardFeature : FeatureInterface<KeyboardManager>
     {
         public bool Activated { get; set; } = false; 
-        KeyboardManager DirectlyManagedInterface<KeyboardManager>.ManagerObject { get; set; } = default;
-        public bool GetNext(out KeyInfo info) => (this as DirectlyManagedInterface<KeyboardManager>).ManagerObject.GetNext(this, out info);
+        KeyboardManager FeatureInterface<KeyboardManager>.ManagerObject { get; set; } = default;
+        public bool GetNext(out KeyInfo info) => (this as FeatureInterface<KeyboardManager>).ManagerObject.GetNext(this, out info);
     }
     public class KeyboardManager : UpdateInterface, ManagerInterface<KeyboardFeature>
     {
@@ -43,7 +43,7 @@ namespace Utility
             }
             return false;
         }
-        public DirectlyManagedList<KeyboardFeature, KeyboardManager> Features { get; private set; }
+        public IList<KeyboardFeature> Features { get; private set; }
         public KeyboardManager()
         {
             previousPressedKeys = Array.Empty<Keys>();

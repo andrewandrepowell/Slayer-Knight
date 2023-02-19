@@ -1,7 +1,19 @@
 ﻿using Microsoft.Xna.Framework;
+using System.Collections.Generic;
 
 namespace Utility
 {
+    public interface FeatureInterface<T>
+    {
+        public T ManagerObject { get; set; }
+    }
+
+    public interface ManagerInterface<T>
+    {
+        public IList<T> Features { get; }
+        public void SetupFeature(T feature);
+        public void DestroyFeature(T feature);
+    }
     public interface IdentityInterface
     {
         public string Identifier { get; }

@@ -35,7 +35,7 @@ namespace SlayerKnight
         private Color environmentExcludeColor;
         public bool Started { get; private set; }
         public string Identifier { get; private set; }
-        RoomManager DirectlyManagedInterface<RoomManager>.ManagerObject { get; set; }
+        RoomManager FeatureInterface<RoomManager>.ManagerObject { get; set; }
         public LevelFeature(
             ContentManager contentManager,
             SpriteBatch spriteBatch,

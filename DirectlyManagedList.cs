@@ -4,19 +4,8 @@ using System.Collections.Generic;
 
 namespace Utility
 {
-    public interface DirectlyManagedInterface<T> 
-    {
-        public T ManagerObject { get; set; }
-    }
-
-    public interface ManagerInterface<T>
-    {
-        public void SetupFeature(T feature);
-        public void DestroyFeature(T feature);
-    }
-
     public class DirectlyManagedList<T1, T2> : IList<T1> 
-        where T1 : DirectlyManagedInterface<T2> 
+        where T1 : FeatureInterface<T2> 
         where T2 : ManagerInterface<T1>
     {
         private List<T1> featureList;
