@@ -3,43 +3,59 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "test_environment_mask_asset_0.tmx",
+    "activeFile": "kingdom_environment_visual_asset_0.tmx",
     "expandedProjectPaths": [
         "."
     ],
     "fileStates": {
+        "kingdom_environment_visual_asset_0.tmx": {
+            "scale": 0.25,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1676,
+                "y": 1030
+            }
+        },
+        "kingdom_tileset_visual_asset_0.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 4
+        },
         "test_environment_mask_asset_0.tmx": {
             "scale": 0.75,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 452.6666666666667,
-                "y": 246
+                "x": 499.3333333333333,
+                "y": 249.99999999999997
             }
         },
         "test_tileset_mask_asset_0.tsx": {
-            "scaleInDock": 0.75,
+            "scaleInDock": 4,
             "scaleInEditor": 1
         }
     },
     "last.imagePath": "C:/Users/andre/source/repos/Slayer Knight/Content/kingdom",
-    "map.height": 60,
+    "map.height": 120,
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 16,
     "map.tileWidth": 16,
-    "map.width": 160,
+    "map.width": 240,
     "openFiles": [
         "test_tileset_mask_asset_0.tsx",
-        "test_environment_mask_asset_0.tmx"
+        "test_environment_mask_asset_0.tmx",
+        "kingdom_tileset_visual_asset_0.tsx",
+        "kingdom_environment_visual_asset_0.tmx"
     ],
     "project": "tiled_project.tiled-project",
     "recentFiles": [
         "test_tileset_mask_asset_0.tsx",
-        "test_environment_mask_asset_0.tmx"
+        "test_environment_mask_asset_0.tmx",
+        "kingdom_tileset_visual_asset_0.tsx",
+        "kingdom_environment_visual_asset_0.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
-        "height": 48,
-        "width": 32
+        "height": 16,
+        "width": 16
     },
     "tileset.transparentColor": "#ffffff",
     "tileset.useTransparentColor": true
