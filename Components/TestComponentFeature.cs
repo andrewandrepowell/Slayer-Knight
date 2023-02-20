@@ -102,6 +102,11 @@ namespace SlayerKnight.Components
                 return;
 
             {
+                var screenBounds = spriteBatch.GraphicsDevice.Viewport.Bounds;
+                levelFeature.CameraObject.Position = Position - screenBounds.Center.ToVector2();
+            }
+
+            {
                 float xMove = 0, yMove = 0; bool changeRooms = false;
                 while (ControlFeatureObject.GetNext(out var info))
                 {

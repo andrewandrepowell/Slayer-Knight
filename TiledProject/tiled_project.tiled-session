@@ -3,33 +3,37 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "kingdom_tileset_visual_asset_0.tsx",
+    "activeFile": "kingdom_environment_visual_asset_0.tmx",
     "expandedProjectPaths": [
         "."
     ],
     "fileStates": {
         "kingdom_environment_visual_asset_0.tmx": {
-            "scale": 0.25,
-            "selectedLayer": 0,
+            "scale": 1,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 1724,
-                "y": 1178
+                "x": 391.5,
+                "y": 930
             }
         },
         "kingdom_tileset_mask_asset_0.tsx": {
-            "scaleInDock": 1,
+            "scaleInDock": 4,
             "scaleInEditor": 1
         },
         "kingdom_tileset_visual_asset_0.tsx": {
             "scaleInDock": 2,
             "scaleInEditor": 4
         },
+        "kingdom_tileset_visual_asset_1.tsx": {
+            "scaleInDock": 1.5,
+            "scaleInEditor": 1
+        },
         "test_environment_mask_asset_0.tmx": {
             "scale": 0.75,
             "selectedLayer": 0,
             "viewCenter": {
                 "x": 499.3333333333333,
-                "y": 249.99999999999997
+                "y": 250.66666666666669
             }
         },
         "test_tileset_mask_asset_0.tsx": {
@@ -48,15 +52,17 @@
         "test_environment_mask_asset_0.tmx",
         "kingdom_tileset_visual_asset_0.tsx",
         "kingdom_environment_visual_asset_0.tmx",
-        "kingdom_tileset_mask_asset_0.tsx"
+        "kingdom_tileset_mask_asset_0.tsx",
+        "kingdom_tileset_visual_asset_1.tsx"
     ],
     "project": "tiled_project.tiled-project",
     "recentFiles": [
         "test_tileset_mask_asset_0.tsx",
         "test_environment_mask_asset_0.tmx",
+        "kingdom_tileset_visual_asset_0.tsx",
+        "kingdom_tileset_visual_asset_1.tsx",
         "kingdom_tileset_mask_asset_0.tsx",
-        "kingdom_environment_visual_asset_0.tmx",
-        "kingdom_tileset_visual_asset_0.tsx"
+        "kingdom_environment_visual_asset_0.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {

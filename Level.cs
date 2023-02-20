@@ -13,6 +13,7 @@ namespace SlayerKnight
 { 
     internal interface LevelInterface : RoomInterface
     {
+        public OrthographicCamera CameraObject { get; }
         public void Add(ComponentInterface component);
         public void Remove(ComponentInterface component);
     }
@@ -21,7 +22,6 @@ namespace SlayerKnight
         private SpriteBatch spriteBatch;
         private ContentManager contentManager;
         private CollisionManager collisionManager;
-        private OrthographicCamera orthographicCamera;
         private ControlManager controlManager;
         private KeyboardManager keyboardManager;
         private List<ComponentInterface> componentFeatures;
@@ -35,6 +35,7 @@ namespace SlayerKnight
         private Color environmentExcludeColor;
         public bool Started { get; private set; }
         public string Identifier { get; private set; }
+        public OrthographicCamera CameraObject { get; private set; }
         RoomManager FeatureInterface<RoomManager>.ManagerObject { get; set; }
         public LevelFeature(
             ContentManager contentManager,
@@ -52,9 +53,9 @@ namespace SlayerKnight
             Identifier = roomIdentifier;
             Started = false;
             collisionManager = new CollisionManager();
-            orthographicCamera = new OrthographicCamera(graphicsDevice: spriteBatch.GraphicsDevice);
             componentFeatures = new List<ComponentInterface>();
             destroyFeatures = new List<DestroyInterface>();
+            CameraObject = new OrthographicCamera(graphicsDevice: spriteBatch.GraphicsDevice);
             this.spriteBatch = spriteBatch;
             this.contentManager = contentManager;
             this.keyboardManager = keyboardManager;
@@ -193,7 +194,7 @@ namespace SlayerKnight
         }
         public void Draw(Matrix? _ = null)
         {
-            Matrix transformMatrix = orthographicCamera.GetViewMatrix();
+            Matrix transformMatrix = CameraObject.GetViewMatrix();
 
             if (Started)
             {

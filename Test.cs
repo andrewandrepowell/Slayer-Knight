@@ -43,9 +43,9 @@ namespace SlayerKnight
                 controlManager: controlManager,
                 keyboardManager: keyboardManager,
                 roomIdentifier: "first_level",
-                environmentVisualAsset: "test/test_environment_visual_asset_0",
-                environmentMaskAsset: "test/test_environment_mask_asset_0",
-                environmentGridSize: environmentGridSize,
+                environmentVisualAsset: "kingdom/kingdom_environment_visual_asset_0",
+                environmentMaskAsset: "kingdom/kingdom_environment_mask_asset_0",
+                environmentGridSize: new Size(width: 16, height: 16),
                 environmentStartColor: environmentStartColor,
                 environmentIncludeColor: environmentIncludeColor,
                 environmentExcludeColor: environmentExcludeColor);
