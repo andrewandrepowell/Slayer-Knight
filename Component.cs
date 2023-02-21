@@ -24,9 +24,9 @@ namespace SlayerKnight
             Vector2 position,
             LevelInterface levelFeature)
         {
-            if (TestComponentFeature.Identifier == identifier)
+            if (TestComponent.Identifier == identifier)
             {
-                var componentFeature = new TestComponentFeature(
+                var componentFeature = new TestComponent(
                     contentManager: contentManager,
                     spriteBatch: spriteBatch,
                     levelFeature: levelFeature)

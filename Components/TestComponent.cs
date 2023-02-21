@@ -13,7 +13,7 @@ using Utility;
 
 namespace SlayerKnight.Components
 {
-    internal class TestComponentFeature : ComponentInterface, PhysicsInterface, ControlInterface, DestroyInterface
+    internal class TestComponent : ComponentInterface, PhysicsInterface, ControlInterface, DestroyInterface
     {
         const string testComponentMaskAsset = "test/test_component_mask_asset_0";
         const float loopTimerPeriod = 1 / 30;
@@ -50,7 +50,7 @@ namespace SlayerKnight.Components
         public bool Grounded { get; set; }
         PhysicsManager FeatureInterface<PhysicsManager>.ManagerObject { get; set; }
 
-        public TestComponentFeature(
+        public TestComponent(
             ContentManager contentManager,
             SpriteBatch spriteBatch,
             LevelInterface levelFeature)

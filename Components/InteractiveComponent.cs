@@ -11,7 +11,7 @@ using Utility;
 
 namespace SlayerKnight.Components
 {
-    internal class InteractiveComponentFeature : ComponentInterface, CollisionInterface
+    internal class InteractiveComponent : ComponentInterface, CollisionInterface
     {
         const string maskAsset = "general/interactive_mask_asset_0";
         public static Color Identifier { get => new Color(r: 70, g: 150, b: 50, alpha: 255); }
@@ -23,7 +23,7 @@ namespace SlayerKnight.Components
         public bool Static { get => true; set => throw new NotImplementedException(); }
         public Color[] CollisionMask { get; private set; }
         public List<Vector2> CollisionVertices { get => null; }
-        public InteractiveComponentFeature(
+        public InteractiveComponent(
             ContentManager contentManager,
             SpriteBatch spriteBatch)
         {

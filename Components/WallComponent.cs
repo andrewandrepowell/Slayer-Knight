@@ -9,10 +9,10 @@ using Utility;
 
 namespace SlayerKnight.Components
 {
-    internal class WallComponentFeature : ComponentInterface, CollisionInterface
+    internal class WallComponent : ComponentInterface, CollisionInterface
     {
         private Vector2 position;
-        public WallComponentFeature(
+        public WallComponent(
             Vector2 position,
             Size size,
             Color[] mask,

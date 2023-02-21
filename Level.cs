@@ -140,7 +140,7 @@ namespace SlayerKnight
                             var gridVertices = CollisionManager.GetVertices(
                                 maskData: gridMask, size: environmentGridSize,
                                 startColor: environmentStartColor, includeColor: environmentIncludeColor, excludeColor: environmentExcludeColor);
-                            var wallFeature = new WallComponentFeature(
+                            var wallFeature = new WallComponent(
                                 position: gridPosition,
                                 size: environmentGridSize,
                                 mask: gridMask,
