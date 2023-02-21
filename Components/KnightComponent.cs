@@ -13,15 +13,20 @@ namespace SlayerKnight.Components
 {
     internal class KnightComponent : ComponentInterface, PhysicsInterface, ControlInterface, DestroyInterface
     {
+        const float loopTimerPeriod = 1 / 30;
         private ContentManager contentManager;
         private SpriteBatch spriteBatch;
         private LevelInterface LevelFeature;
         private PhysicsManager physicsManager;
+        private TimerFeature loopTimer = new TimerFeature() { Period = loopTimerPeriod, Activated = true, Repeat = true };
+        private int jmpCounter = 0;
+        private int lftCounter = 0;
+        private int rhtCounter = 0;
         public static Color Identifier { get => new Color(r: 78, g: 111, b: 6, alpha: 255); }
         public int DrawLevel { get; set; } = 0;
         public bool PhysicsApplied { get; set; } = true;
         public Vector2 Movement { get; set; } = Vector2.Zero;
-        public Vector2 Gravity { get; private set; } = new Vector2(x: 0, y: .5f);
+        public Vector2 Gravity { get; private set; } = new Vector2(x: 0, y: 1f);
         public float MaxGravspeed { get; private set; } = 8;
         public bool Grounded { get; set; } = default; // managed by physics manager.
         public Vector2 Position { get; set; } = default;  // managed by physics manager.
@@ -60,6 +65,7 @@ namespace SlayerKnight.Components
 
         public void Update(float timeElapsed)
         {
+
             if (Destroyed)
                 return;
 
@@ -73,18 +79,38 @@ namespace SlayerKnight.Components
                 switch (info.Action)
                 {
                     case ControlAction.Jump:
+                        if (info.State == ControlState.Pressed && Grounded)
+                            jmpCounter = 15;
+                        else if (info.State == ControlState.Released)
+                            jmpCounter = 0;
                         break;
                     case ControlAction.MoveLeft:
+                        if (info.State == ControlState.Pressed && info.State == ControlState.Held)
+                            lftCounter = 1;
                         break;
                     case ControlAction.MoveRight:
+                        if (info.State == ControlState.Pressed && info.State == ControlState.Held)
+                            rhtCounter = 1;
                         break;
                     default:
                         break;
                 }
             }
 
-            // Update the managers. managers.
+            // Service main loops.
+            while (loopTimer.GetNext())
+            {
+                // Apply movement.
+                if (jmpCounter > 0)
+                {
+
+                    jmpCounter--;
+                }
+            }
+
+            // Update the managers and features.
             physicsManager.Update(timeElapsed);
+            loopTimer.Update(timeElapsed);
         }
     }
 }

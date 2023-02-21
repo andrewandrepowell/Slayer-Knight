@@ -44,8 +44,10 @@ namespace SlayerKnight
         private Channel<PhysicsInfo> infoChannel;
         private Vector2 curGravity;
         private Vector2 curMovement;
+        private Vector2 defMovement;
         private Vector2 defNormal;
         private Vector2 curGravocity;
+        private float accGravity;
         private int grdCounter;
         public PhysicsManager(PhysicsInterface physicsFeature)
         {
@@ -56,8 +58,10 @@ namespace SlayerKnight
             infoChannel = new Channel<PhysicsInfo>(capacity: 10);
             curGravity = Vector2.Zero;
             curMovement = Vector2.Zero;
+            defMovement = Vector2.Zero;
             defNormal = Vector2.Zero;
             curGravocity = Vector2.Zero;
+            accGravity = 0;
             grdCounter = 0;
         }
         public bool GetNext(PhysicsInterface feature, out PhysicsInfo info)
@@ -88,15 +92,25 @@ namespace SlayerKnight
                 {
                     defNormal = Vector2.Zero;
                     curGravocity = Vector2.Zero;
+                    accGravity = 0;
                 }
                 else
                 {
                     defNormal = -Vector2.Normalize(physicsFeature.Gravity);
                     curGravocity = -defNormal;
+                    accGravity = -Vector2.Dot(defNormal, physicsFeature.Gravity);
                 }
                 curGravity = physicsFeature.Gravity;
                 grdCounter = 0;
             }
+
+            // Update default movement.
+            // Currently, this mechanic is used to ensure jumping--Movement.Y < 0--doesn't
+            // end abruptly. May later try and implement friction mechanic for sliding, but probably
+            // not this game.
+            defMovement.X = physicsFeature.Movement.X;
+            if (physicsFeature.Movement.Y != 0)
+                defMovement.Y = physicsFeature.Movement.Y;
 
             // Service collisions based on other collisions features colliding into the physics feature.
             while ((physicsFeature as CollisionInterface).GetNext(out var info))
@@ -126,9 +140,23 @@ namespace SlayerKnight
                 // Update current velocity based on movement. 
                 // This operation only occurs when in the air.
                 if (grdCounter == 0)
-                    curMovement = physicsFeature.Movement;
+                {
+                    curMovement = defMovement;
+                }
                 else
                     grdCounter--;
+
+                // Update default movement of jumping. 
+                // This mechanic is nonapplicable when the movement is intentionally downward--i.e. physicsFeature.Movement.Y > 0
+                if (physicsFeature.Movement.Y == 0 && defMovement.Y < 0)
+                {
+                    // Slowly lower the default movement in the Y direction based on gravity.
+                    defMovement.Y += accGravity;
+
+                    // Make sure the default movement doesn't flip the opposite direction.
+                    if (defMovement.Y > 0)
+                        defMovement.Y = 0;
+                }
 
                 // Check for collisions.
                 physicsFeature.CheckForCollision();
@@ -161,14 +189,14 @@ namespace SlayerKnight
                         else
                         {
                             horMovement = Vector2.Zero; // squash horizontal movement if colliding with wall.
-                        }
+                        }                        
 
                         // Correct current vertical movement.
                         // The idea is, so long as there isn't something in the way, vertical movement is free to occur.
                         Vector2 verMovement;
-                        if (Vector2.Dot(-physicsFeature.Movement.Y * defNormal, info.Normal) >= 0)
+                        if (Vector2.Dot(-defMovement.Y * defNormal, info.Normal) >= 0)
                         {
-                            verMovement = -physicsFeature.Movement.Y * defNormal;
+                            verMovement = -defMovement.Y * defNormal;
                         }
                         else
                         {

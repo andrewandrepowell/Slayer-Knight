@@ -71,7 +71,7 @@ namespace SlayerKnight.Components
             prevPhysicsInfo = null;
             PhysicsApplied = true;
             Movement = Vector2.Zero;
-            Gravity = new Vector2(x: 0, y: .5f);
+            Gravity = new Vector2(x: 0, y: 1);
             MaxGravspeed = 8;
             physicsManager = new PhysicsManager(this);
         }
