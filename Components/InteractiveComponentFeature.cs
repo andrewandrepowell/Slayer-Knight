@@ -23,7 +23,6 @@ namespace SlayerKnight.Components
         public bool Static { get => true; set => throw new NotImplementedException(); }
         public Color[] CollisionMask { get; private set; }
         public List<Vector2> CollisionVertices { get => null; }
-        public ChannelInterface<CollisionInfo> CollisionInfoChannel { get; private set; }
         public InteractiveComponentFeature(
             ContentManager contentManager,
             SpriteBatch spriteBatch)

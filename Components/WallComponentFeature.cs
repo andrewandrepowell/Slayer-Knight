@@ -30,7 +30,6 @@ namespace SlayerKnight.Components
         public bool Static { get => true; set => throw new NotImplementedException(); }
         public Color[] CollisionMask { get; private set; }
         public List<Vector2> CollisionVertices { get; private set; }
-        public ChannelInterface<CollisionInfo> CollisionInfoChannel { get => throw new NotImplementedException(); }
         public int DrawLevel { get => 0; }
         public void Update(float timeElapsed)
         {

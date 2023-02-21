@@ -3,9 +3,7 @@ using MonoGame.Extended;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Text;
-using System.Threading.Tasks;
 using Utility;
 
 namespace SlayerKnight
@@ -24,22 +22,26 @@ namespace SlayerKnight
             Normal = normal;
         }
     };
-    internal interface PhysicsInterface : CollisionInterface
+    internal interface PhysicsInterface : CollisionInterface, FeatureInterface<PhysicsManager>
     {
         public bool PhysicsApplied { get; set; }
         public Vector2 Movement { get; set; }
         public Vector2 Gravity { get; set; }
         public float MaxGravspeed { get; set; }
         public bool Grounded { get; set; }
-        
-        public ChannelInterface<PhysicsInfo> PhysicsInfoChannel { get; }
     }
-    internal class PhysicsManager : UpdateInterface
+    internal static class PhysicsExtensions
+    {
+        public static bool GetNext(this PhysicsInterface feature, out PhysicsInfo info) => 
+            (feature as FeatureInterface<PhysicsManager>).ManagerObject.GetNext(feature, out info);
+    }
+    internal class PhysicsManager : UpdateInterface, ManagerInterface<PhysicsInterface>
     {
         private const float updatePeriod = 1 / 30;
         private PhysicsInterface physicsFeature;
         private TimerFeature timerFeature;
         private List<CollisionInfo> synthesisInfos;
+        private Channel<PhysicsInfo> infoChannel;
         private Vector2 curGravity;
         private Vector2 curMovement;
         private Vector2 defNormal;
@@ -48,13 +50,27 @@ namespace SlayerKnight
         public PhysicsManager(PhysicsInterface physicsFeature)
         {
             this.physicsFeature = physicsFeature;
+            (physicsFeature as FeatureInterface<PhysicsManager>).ManagerObject = this;
             timerFeature = new TimerFeature() { Period = updatePeriod };
             synthesisInfos = new List<CollisionInfo>();
+            infoChannel = new Channel<PhysicsInfo>(capacity: 10);
             curGravity = Vector2.Zero;
             curMovement = Vector2.Zero;
             defNormal = Vector2.Zero;
             curGravocity = Vector2.Zero;
             grdCounter = 0;
+        }
+        public bool GetNext(PhysicsInterface feature, out PhysicsInfo info)
+        {
+            if (physicsFeature != feature)
+                throw new Exception("The specifid feature isn't associated with this PhysicsManager.");
+            info = default;
+            if (infoChannel.Count > 0)
+            {
+                info = infoChannel.Dequeue();
+                return true;
+            }
+            return false;
         }
 
         public void Update(float timeElapsed)
@@ -83,10 +99,10 @@ namespace SlayerKnight
             }
 
             // Service collisions based on other collisions features colliding into the physics feature.
-            while (physicsFeature.GetNext(out var info))
+            while ((physicsFeature as CollisionInterface).GetNext(out var info))
             {
                 // Create physics info so that the user can react to the collision.
-                physicsFeature.PhysicsInfoChannel.Enqueue(new PhysicsInfo(
+                infoChannel.Enqueue(new PhysicsInfo(
                     other: info.Other, 
                     selfCollided: false, 
                     normal: info.Normal,
@@ -121,7 +137,7 @@ namespace SlayerKnight
                 synthesisInfos.Clear();
 
                 // Collect all the collisions infos.
-                while (physicsFeature.GetNext(out var info))
+                while ((physicsFeature as CollisionInterface).GetNext(out var info))
                     synthesisInfos.Add(info);
 
                 // Synthesize infos and send the physic infos to physics feature if any collisions occurred.
@@ -165,7 +181,7 @@ namespace SlayerKnight
 
                     // Send physic infos to physics feature.
                     foreach (var other in info.Others)
-                        physicsFeature.PhysicsInfoChannel.Enqueue(new PhysicsInfo(
+                        infoChannel.Enqueue(new PhysicsInfo(
                             other: other, 
                             selfCollided: true, 
                             point: info.Point,
@@ -178,5 +194,8 @@ namespace SlayerKnight
 
             timerFeature.Update(timeElapsed);
         }
+        IList<PhysicsInterface> ManagerInterface<PhysicsInterface>.Features { get => throw new NotImplementedException("For the PhysicsManager, pass feature into constructor."); }
+        void ManagerInterface<PhysicsInterface>.DestroyFeature(PhysicsInterface feature) => throw new NotImplementedException("For the PhysicsManager, pass feature into constructor.");
+        void ManagerInterface<PhysicsInterface>.SetupFeature(PhysicsInterface feature) => throw new NotImplementedException("For the PhysicsManager, pass feature into constructor.");
     }
 }

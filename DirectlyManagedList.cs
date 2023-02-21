@@ -27,7 +27,7 @@ namespace Utility
             featureList = new List<T1>();
             this.manager = manager;
         }
-        public T1 this[int index] { get => featureList[index]; set => featureList[index] = value; }
+        public T1 this[int index] { get => featureList[index]; set => throw new Exception("Not allowed to directly set a directly managed list."); }
         public int Count => featureList.Count;
         public bool IsReadOnly => (featureList as IList<T1>).IsReadOnly;
         public void Add(T1 item)

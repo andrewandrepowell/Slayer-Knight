@@ -24,7 +24,6 @@ namespace SlayerKnight.Components
         private LevelInterface levelFeature;
         private PhysicsInfo? prevPhysicsInfo;
         private PhysicsManager physicsManager;
-        private bool startDestroy;
         public static Color Identifier { get => new Color(r: 112, g: 146, b: 190, alpha: 255); }
         CollisionManager FeatureInterface<CollisionManager>.ManagerObject { get; set; }
         public Vector2 Position { get; set; }
@@ -33,8 +32,8 @@ namespace SlayerKnight.Components
         public bool Static { get; set; }
         public Color[] CollisionMask { get; private set; }
         public List<Vector2> CollisionVertices => null;
-        public ChannelInterface<CollisionInfo> CollisionInfoChannel { get; private set; }
         public bool Destroyed { get; private set; }
+
         public void Destroy() 
         { 
             if (Destroyed) 
@@ -47,9 +46,9 @@ namespace SlayerKnight.Components
         public bool PhysicsApplied { get; set; }
         public Vector2 Movement { get; set; }
         public Vector2 Gravity { get; set; }
-        public ChannelInterface<PhysicsInfo> PhysicsInfoChannel { get; private set; }
         public float MaxGravspeed { get; set; }
         public bool Grounded { get; set; }
+        PhysicsManager FeatureInterface<PhysicsManager>.ManagerObject { get; set; }
 
         public TestComponentFeature(
             ContentManager contentManager,
@@ -65,9 +64,7 @@ namespace SlayerKnight.Components
             Static = false;
             CollisionMask = new Color[testComponentMaskTexture.Width * testComponentMaskTexture.Height];
             testComponentMaskTexture.GetData(CollisionMask);
-            CollisionInfoChannel = new Channel<CollisionInfo>(capacity: 10);
             Destroyed = false;
-            startDestroy = false;
             ControlFeatureObject = new ControlFeature() { Activated = true };
             loopTimerFeature = new TimerFeature() { Activated = true, Repeat = true, Period = loopTimerPeriod };
             this.levelFeature = levelFeature;
@@ -75,7 +72,6 @@ namespace SlayerKnight.Components
             PhysicsApplied = true;
             Movement = Vector2.Zero;
             Gravity = new Vector2(x: 0, y: .5f);
-            PhysicsInfoChannel = new Channel<PhysicsInfo>(capacity: 10);
             MaxGravspeed = 8;
             physicsManager = new PhysicsManager(this);
         }
@@ -151,10 +147,8 @@ namespace SlayerKnight.Components
                 }
             }
 
-            while (PhysicsInfoChannel.Count > 0)
-            {
-                PhysicsInfoChannel.Dequeue();
-            }
+            while (this.GetNext(out var info))
+                continue;
 
             loopTimerFeature.Update(timeElapsed);
             physicsManager.Update(timeElapsed);
