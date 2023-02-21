@@ -24,10 +24,10 @@ namespace SlayerKnight
     };
     internal interface PhysicsInterface : CollisionInterface, FeatureInterface<PhysicsManager>
     {
-        public bool PhysicsApplied { get; set; }
-        public Vector2 Movement { get; set; }
-        public Vector2 Gravity { get; set; }
-        public float MaxGravspeed { get; set; }
+        public bool PhysicsApplied { get; }
+        public Vector2 Movement { get; }
+        public Vector2 Gravity { get; }
+        public float MaxGravspeed { get; }
         public bool Grounded { get; set; }
     }
     internal static class PhysicsExtensions

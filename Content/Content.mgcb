@@ -37,6 +37,18 @@
 /processorParam:TextureFormat=Color
 /build:kingdom/kingdom_environment_visual_asset_0.png
 
+#begin knight/knight_mask_0.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,255,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:knight/knight_mask_0.png
+
 #begin test/test_component_mask_asset_0.png
 /importer:TextureImporter
 /processor:TextureProcessor
