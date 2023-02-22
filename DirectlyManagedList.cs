@@ -14,6 +14,8 @@ namespace Utility
         {
             if (featureList.Contains(item))
                 throw new Exception($"This DirectlyManagedList {this} already contains item {item}.");
+            if (!EqualityComparer<T2>.Default.Equals(item.ManagerObject, default(T2)))
+                throw new Exception($"Manager {item.ManagerObject} is already associated with item {item}.");
             manager.SetupFeature(item);
             item.ManagerObject = manager;
         }

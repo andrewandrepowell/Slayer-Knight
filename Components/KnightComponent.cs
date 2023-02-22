@@ -2,9 +2,13 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
+using MonoGame.Extended.Content;
+using MonoGame.Extended.Serialization;
+using MonoGame.Extended.Sprites;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Utility;
@@ -14,6 +18,7 @@ namespace SlayerKnight.Components
     internal class KnightComponent : ComponentInterface, PhysicsInterface, ControlInterface, DestroyInterface
     {
         const float loopTimerPeriod = 1 / 30;
+        readonly private static string maskAsset = "knight/knight_mask_0";
         private ContentManager contentManager;
         private SpriteBatch spriteBatch;
         private LevelInterface LevelFeature;
@@ -30,7 +35,7 @@ namespace SlayerKnight.Components
         public float MaxGravspeed { get; private set; } = 8;
         public bool Grounded { get; set; } = default; // managed by physics manager.
         public Vector2 Position { get; set; } = default;  // managed by physics manager.
-        public Size Size { get; private set; } = default; // gets defined by constructor.
+        public Size Size { get; private set; } = new Size(width: 32, height: 48);
         public bool Collidable { get; set; } = true;
         public bool Static { get; set; } = false;
         public Color[] CollisionMask { get; set; } = default; // gets defined by constructor.
@@ -48,12 +53,21 @@ namespace SlayerKnight.Components
             this.spriteBatch = spriteBatch;
             this.LevelFeature = levelFeature;
             physicsManager = new PhysicsManager(this);
+            {
+                var maskTexture = contentManager.Load<Texture2D>(maskAsset);
+                if (maskTexture.Width != Size.Width || maskTexture.Height != Size.Height)
+                    throw new Exception("The expected dimensions of the knight are incorrected.");
+                var totalPixels = Size.Width * Size.Height;
+                CollisionMask = new Color[totalPixels];
+                maskTexture.GetData(CollisionMask);
+                contentManager.UnloadAsset(maskAsset);
+            }
         }
         public void Destroy()
         {
             if (Destroyed)
                 throw new Exception("Already destroyed.");
-            //
+            
             Destroyed = true;
         }
 
@@ -97,14 +111,32 @@ namespace SlayerKnight.Components
                 }
             }
 
-            // Service main loops.
+            // Service main loop.
             while (loopTimer.GetNext())
             {
                 // Apply movement.
-                if (jmpCounter > 0)
                 {
+                    float jmpAmount = 0;
+                    float lftAmount = 0;
+                    float rhtAmount = 0;
 
-                    jmpCounter--;
+                    if (jmpCounter > 0)
+                    {
+                        jmpAmount = 20;
+                        jmpCounter--;
+                    }
+                    if (lftCounter > 0)
+                    {
+                        lftAmount = 8;
+                        lftCounter--;
+                    }
+                    if (rhtCounter > 0)
+                    {
+                        rhtAmount = 8;
+                        rhtCounter--;
+                    }
+
+                    Movement = new Vector2(x: rhtAmount - lftAmount, y: -jmpAmount);
                 }
             }
 
