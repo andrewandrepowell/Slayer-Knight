@@ -44,7 +44,7 @@ namespace SlayerKnight
         private Channel<PhysicsInfo> infoChannel;
         private Vector2 curGravity;
         private Vector2 curMovement;
-        private Vector2 defMovement;
+        private Vector2 memMovement;
         private Vector2 defNormal;
         private Vector2 curGravocity;
         private float accGravity;
@@ -58,7 +58,7 @@ namespace SlayerKnight
             infoChannel = new Channel<PhysicsInfo>(capacity: 10);
             curGravity = Vector2.Zero;
             curMovement = Vector2.Zero;
-            defMovement = Vector2.Zero;
+            memMovement = Vector2.Zero;
             defNormal = Vector2.Zero;
             curGravocity = Vector2.Zero;
             accGravity = 0;
@@ -104,14 +104,6 @@ namespace SlayerKnight
                 grdCounter = 0;
             }
 
-            // Update default movement.
-            // Currently, this mechanic is used to ensure jumping--Movement.Y < 0--doesn't
-            // end abruptly. May later try and implement friction mechanic for sliding, but probably
-            // not this game.
-            defMovement.X = physicsFeature.Movement.X;
-            if (physicsFeature.Movement.Y != 0)
-                defMovement.Y = physicsFeature.Movement.Y;
-
             // Service collisions based on other collisions features colliding into the physics feature.
             while ((physicsFeature as CollisionInterface).GetNext(out var info))
             {
@@ -137,26 +129,53 @@ namespace SlayerKnight
                 if (curGravspeed > physicsFeature.MaxGravspeed)
                     curGravocity = physicsFeature.MaxGravspeed * -defNormal;
 
+                // Update memorized movement. 
+                // Memorized movement is a mechanic where, under specific circumstances,
+                //   movement isn't allowed to instantly change to a specified movement.
+                // Movement in this context refers to velocity in response to user-demanded movement, as opposed
+                //   to gravity or some other factor.
+                {
+                    // Service the case where to specified movement is a jump, i.e. negative Y movemement.
+                    // If a jump's speed is lowered, the speed should gradually diminish in accordance to gravity.
+                    // If the jump's is raised, the speed will instantly change to that speed.
+                    if (physicsFeature.Movement.Y <= 0)
+                    {
+                        // If specified jump speed is greater than or equal to memorized jump speed, just
+                        // set the memorized jump speed to the specified amount.
+                        if (physicsFeature.Movement.Y <= memMovement.Y)
+                            memMovement.Y = physicsFeature.Movement.Y;
+                        // If specified jump speed is less than the memorized jump speed,
+                        // gradually reduce the speed with gravity until the specified amount is reached.
+                        else
+                        {
+                            // Slowly diminish memorized movement based on gravity.
+                            memMovement.Y += accGravity;
+
+                            // Make sure the memorized movement doesn't flip to the opposite direction.
+                            if (memMovement.Y > physicsFeature.Movement.Y)
+                                memMovement.Y = physicsFeature.Movement.Y;
+                        }
+                    }
+
+                    // For now, if the specified vertical movement is in  downwards direction, just set the memorized
+                    // speed in the vertical direction to the specified movement.
+                    else
+                        memMovement.Y = physicsFeature.Movement.Y;
+
+                    // For now, the memorized horizontal movement, i.e. running left and right,
+                    // is set to the specified horizontal movement. May implement sliding/friction later;
+                    // The code will change here once that happens.
+                    memMovement.X = physicsFeature.Movement.X;
+                }
+
                 // Update current velocity based on movement. 
                 // This operation only occurs when in the air.
                 if (grdCounter == 0)
                 {
-                    curMovement = defMovement;
+                    curMovement = memMovement;
                 }
                 else
                     grdCounter--;
-
-                // Update default movement of jumping. 
-                // This mechanic is nonapplicable when the movement is intentionally downward--i.e. physicsFeature.Movement.Y > 0
-                if (physicsFeature.Movement.Y == 0 && defMovement.Y < 0)
-                {
-                    // Slowly lower the default movement in the Y direction based on gravity.
-                    defMovement.Y += accGravity;
-
-                    // Make sure the default movement doesn't flip the opposite direction.
-                    if (defMovement.Y > 0)
-                        defMovement.Y = 0;
-                }
 
                 // Check for collisions.
                 physicsFeature.CheckForCollision();
@@ -194,9 +213,9 @@ namespace SlayerKnight
                         // Correct current vertical movement.
                         // The idea is, so long as there isn't something in the way, vertical movement is free to occur.
                         Vector2 verMovement;
-                        if (Vector2.Dot(-defMovement.Y * defNormal, info.Normal) >= 0)
+                        if (Vector2.Dot(-memMovement.Y * defNormal, info.Normal) >= 0)
                         {
-                            verMovement = -defMovement.Y * defNormal;
+                            verMovement = -memMovement.Y * defNormal;
                         }
                         else
                         {
