@@ -19,10 +19,15 @@ namespace SlayerKnight.Components
     {
         const float loopTimerPeriod = 1 / 30;
         readonly private static string maskAsset = "knight/knight_mask_0";
+        readonly private static string idleVisualAsset = "knight/knight_idle_visual_0.sf";
+        readonly private static string runVisualAsset = "knight/knight_run_visual_0.sf";
         private ContentManager contentManager;
         private SpriteBatch spriteBatch;
         private LevelInterface LevelFeature;
         private PhysicsManager physicsManager;
+        private AnimatorManager animatorManager;
+        private AnimatorFeature idleVisualAnimation;
+        private AnimatorFeature runVisualAnimation;
         private TimerFeature loopTimer = new TimerFeature() { Period = loopTimerPeriod, Activated = true, Repeat = true };
         private int jmpCounter = 0;
         private int lftCounter = 0;
@@ -53,6 +58,12 @@ namespace SlayerKnight.Components
             this.spriteBatch = spriteBatch;
             this.LevelFeature = levelFeature;
             physicsManager = new PhysicsManager(this);
+            animatorManager = new AnimatorManager(contentManager: contentManager, spriteBatch: spriteBatch);
+            idleVisualAnimation = new AnimatorFeature(idleVisualAsset) { Offset = new Vector2(x: -16, y: -16) };
+            runVisualAnimation = new AnimatorFeature(runVisualAsset) { Offset = new Vector2(x: -24, y: -16)  };
+            animatorManager.Features.Add(idleVisualAnimation);
+            animatorManager.Features.Add(runVisualAnimation);
+            idleVisualAnimation.Play("idle");
             {
                 var maskTexture = contentManager.Load<Texture2D>(maskAsset);
                 if (maskTexture.Width != Size.Width || maskTexture.Height != Size.Height)

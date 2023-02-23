@@ -12,11 +12,17 @@ namespace Utility
     {
         public string Identifier { get; private set; }
         public Vector2 Offset { get; set; } = Vector2.Zero;
-        AnimatorManager FeatureInterface<AnimatorManager>.ManagerObject { get; set; }
+        public AnimatedSprite Sprite { get => (this as FeatureInterface<AnimatorManager>).ManagerObject.GetSprite(this); }
+        public void Play(string animation, Action onCompleted = null) =>
+            (this as FeatureInterface<AnimatorManager>).ManagerObject.Play(
+                feature: this, 
+                animation: animation, 
+                onCompleted: onCompleted);
         public AnimatorFeature(string identifier)
         {
             Identifier = identifier;
         }
+        AnimatorManager FeatureInterface<AnimatorManager>.ManagerObject { get; set; }
     }
     public class AnimatorManager : UpdateInterface, DrawInterface, ManagerInterface<AnimatorFeature>
     {
@@ -43,7 +49,6 @@ namespace Utility
 
         void ManagerInterface<AnimatorFeature>.DestroyFeature(AnimatorFeature feature)
         {
-            contentManager.UnloadAsset(feature.Identifier);
             mapFeatureSprite.Remove(feature);
         }
 

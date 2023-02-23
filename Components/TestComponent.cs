@@ -13,7 +13,7 @@ using Utility;
 
 namespace SlayerKnight.Components
 {
-    internal class TestComponent : ComponentInterface, PhysicsInterface, ControlInterface, DestroyInterface
+    internal class TestComponent : ComponentInterface, PhysicsInterface, ControlInterface
     {
         const string testComponentMaskAsset = "test/test_component_mask_asset_0";
         const float loopTimerPeriod = 1 / 30;
@@ -32,15 +32,6 @@ namespace SlayerKnight.Components
         public bool Static { get; set; }
         public Color[] CollisionMask { get; private set; }
         public List<Vector2> CollisionVertices => null;
-        public bool Destroyed { get; private set; }
-
-        public void Destroy() 
-        { 
-            if (Destroyed) 
-                throw new Exception("Already destroyed.");
-            contentManager.UnloadAsset(testComponentMaskAsset);
-            Destroyed = true;
-        }
         public ControlFeature ControlFeatureObject { get; private set; }
         public int DrawLevel { get => 0; }
         public bool PhysicsApplied { get; set; }
@@ -64,7 +55,6 @@ namespace SlayerKnight.Components
             Static = false;
             CollisionMask = new Color[testComponentMaskTexture.Width * testComponentMaskTexture.Height];
             testComponentMaskTexture.GetData(CollisionMask);
-            Destroyed = false;
             ControlFeatureObject = new ControlFeature() { Activated = true };
             loopTimerFeature = new TimerFeature() { Activated = true, Repeat = true, Period = loopTimerPeriod };
             this.levelFeature = levelFeature;
@@ -77,9 +67,6 @@ namespace SlayerKnight.Components
         }
         public void Draw(Matrix? transformMatrix = null)
         {
-            if (Destroyed)
-                return;
-
             spriteBatch.Begin(transformMatrix: transformMatrix);
             spriteBatch.Draw(texture: testComponentMaskTexture, position: Position, color: Color.White);
             if (prevPhysicsInfo != null)
@@ -94,8 +81,6 @@ namespace SlayerKnight.Components
         }
         public void Update(float timeElapsed)
         {
-            if (Destroyed)
-                return;
 
             {
                 var screenBounds = spriteBatch.GraphicsDevice.Viewport.Bounds;

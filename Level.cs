@@ -149,7 +149,7 @@ namespace SlayerKnight
                         }
                     }
 
-                // The environment mask asset is no long needed now that the 
+                // The environment mask asset is no longer needed now that the 
                 // collision manager has been updated with all the grid features.
                 contentManager.UnloadAsset(environmentMaskAsset);
             }
@@ -161,36 +161,35 @@ namespace SlayerKnight
         {
             // Can't end something that hasn't been started.
             if (!Started)
-                throw new Exception("There should never be a case where the level is ended but is not started."); 
-
-            // Unload assets.
-            contentManager.UnloadAsset(environmentVisualAsset);
+                throw new Exception("There should never be a case where the level is ended but is not started.");
 
             // Remove all the component features. 
-            // Don't remove components that implement the destroy interface immediately, instead set them to get destroyed and then get cleaned up later.  
             foreach (var feature in componentFeatures.ToList())
-            {
-                if (feature is DestroyInterface destroyFeature)
-                    destroyFeature.Destroy();
-                else Remove(feature);   
-            }
+                Remove(feature);
+
+            // Unload all assets.
+            contentManager.Unload();
 
             // Let the world know the level has ended.
             Started = false;
         }
         public void Update(float timeElapsed)
         {
-            // Update the components.
+            // Update the state of each component.
             foreach (var component in componentFeatures)
+            {
+                // Perform the update.
                 component.Update(timeElapsed);
 
+                // Any destroyed interfaces should be added to the list to get removed later.
+                if (component is DestroyInterface destroy && destroy.Destroyed)
+                    destroyFeatures.Add(destroy);
+            }
+
             // Remove any destroyed components.
-            destroyFeatures.Clear();
-            foreach (var component in componentFeatures.OfType<DestroyInterface>())
-                if (component.Destroyed)
-                    destroyFeatures.Add(component);
             foreach (var destroy in destroyFeatures)
                Remove(destroy as ComponentInterface);
+            destroyFeatures.Clear();
         }
         public void Draw(Matrix? _ = null)
         {
