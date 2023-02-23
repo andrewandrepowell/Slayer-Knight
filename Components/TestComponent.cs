@@ -39,8 +39,9 @@ namespace SlayerKnight.Components
         public Vector2 Gravity { get; set; }
         public float MaxGravspeed { get; set; }
         public bool Grounded { get; set; }
+        public Vector2 Velocity { get; set; }
         PhysicsManager FeatureInterface<PhysicsManager>.ManagerObject { get; set; }
-
+        
         public TestComponent(
             ContentManager contentManager,
             SpriteBatch spriteBatch,

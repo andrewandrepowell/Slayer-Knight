@@ -21,6 +21,7 @@ namespace SlayerKnight.Components
         readonly private static string maskAsset = "knight/knight_mask_0";
         readonly private static string idleVisualAsset = "knight/knight_idle_visual_0.sf";
         readonly private static string runVisualAsset = "knight/knight_run_visual_0.sf";
+        readonly private static string jumpVisualAsset = "knight/knight_jump_visual_0.sf";
         private ContentManager contentManager;
         private SpriteBatch spriteBatch;
         private LevelInterface levelFeature;
@@ -28,6 +29,7 @@ namespace SlayerKnight.Components
         private AnimatorManager animatorManager;
         private AnimatorFeature idleVisualAnimation;
         private AnimatorFeature runVisualAnimation;
+        private AnimatorFeature jumpVisualAnimation;
         private TimerFeature loopTimer = new TimerFeature() { Period = loopTimerPeriod, Activated = true, Repeat = true };
         private Texture2D maskTexture;
         private int jmpCounter = 0;
@@ -47,8 +49,10 @@ namespace SlayerKnight.Components
         public Color[] CollisionMask { get; set; } = default; // gets defined by constructor.
         public List<Vector2> CollisionVertices { get; set; } = null; // collision vertices aren't utlized.
         public ControlFeature ControlFeatureObject { get; private set; } = new ControlFeature() { Activated = true };
+        public Vector2 Velocity { get; set; } // managed by associated manager.
         CollisionManager FeatureInterface<CollisionManager>.ManagerObject { get; set; } // managed by associated manager.
         PhysicsManager FeatureInterface<PhysicsManager>.ManagerObject { get; set; } // managed by associated manager.
+        
         public KnightComponent(
             ContentManager contentManager,
             SpriteBatch spriteBatch,
@@ -60,9 +64,11 @@ namespace SlayerKnight.Components
             physicsManager = new PhysicsManager(this);
             animatorManager = new AnimatorManager(contentManager: contentManager, spriteBatch: spriteBatch);
             idleVisualAnimation = new AnimatorFeature(idleVisualAsset) { Offset = new Vector2(x: 16, y: 24) };
-            runVisualAnimation = new AnimatorFeature(runVisualAsset) { Offset = new Vector2(x: 16, y: 24)  };
+            runVisualAnimation = new AnimatorFeature(runVisualAsset) { Offset = new Vector2(x: 16, y: 24) };
+            jumpVisualAnimation = new AnimatorFeature(jumpVisualAsset) { Offset = new Vector2(x: 16, y: 24) };
             animatorManager.Features.Add(idleVisualAnimation);
             animatorManager.Features.Add(runVisualAnimation);
+            animatorManager.Features.Add(jumpVisualAnimation);
             idleVisualAnimation.Play("idle_0");
             {
                 maskTexture = contentManager.Load<Texture2D>(maskAsset);
@@ -134,24 +140,36 @@ namespace SlayerKnight.Components
                     }
                     if (lftCounter > 0)
                     {
-                        animatorManager.CurrentSprite.Effect = SpriteEffects.FlipHorizontally;
                         lftAmount = 8;
                         lftCounter--;
                     }
                     if (rhtCounter > 0)
                     {
-                        animatorManager.CurrentSprite.Effect = SpriteEffects.None;
+                        
                         rhtAmount = 8;
                         rhtCounter--;
                     }
                     horAmount = rhtAmount - lftAmount;
-
-                    if (horAmount == 0)
-                        idleVisualAnimation.Play(animation: "idle_0");
-                    else
-                        runVisualAnimation.Play(animation: "run_0");
-
                     Movement = new Vector2(x: horAmount, y: -jmpAmount);
+
+                    // Handle animations.
+                    {
+                        if (horAmount > 0)
+                        {
+                            animatorManager.CurrentSprite.Effect = SpriteEffects.None;
+                        }
+                        else if (horAmount < 0)
+                        {
+                            animatorManager.CurrentSprite.Effect = SpriteEffects.FlipHorizontally;
+                        }
+                        if (Grounded)
+                        {
+                            if (horAmount == 0)
+                                idleVisualAnimation.Play(animation: "idle_0");
+                            else
+                                runVisualAnimation.Play(animation: "run_0");
+                        }
+                    }  
                 }
             }
 

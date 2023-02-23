@@ -28,7 +28,8 @@ namespace SlayerKnight
         public Vector2 Movement { get; }
         public Vector2 Gravity { get; }
         public float MaxGravspeed { get; }
-        public bool Grounded { get; set; }
+        public bool Grounded { get; set; } // manager controlled
+        public Vector2 Velocity { get; set; } // manager controlled
     }
     internal static class PhysicsExtensions
     {
@@ -118,8 +119,11 @@ namespace SlayerKnight
             // Apply physics for each
             while (timerFeature.GetNext())
             {
-                // Update the position based on current velocity based on gravity and movement.
-                physicsFeature.Position += (curGravocity + curMovement);
+                // Update the velocity with the velocity based on gravity and movement.
+                physicsFeature.Velocity = curGravocity + curMovement;
+
+                // Update the position based on current velocity.
+                physicsFeature.Position += physicsFeature.Velocity;
 
                 // Update current velocity based on gravity.
                 curGravocity += physicsFeature.Gravity;
@@ -144,6 +148,7 @@ namespace SlayerKnight
                         // set the memorized jump speed to the specified amount.
                         if (physicsFeature.Movement.Y <= memMovement.Y)
                             memMovement.Y = physicsFeature.Movement.Y;
+
                         // If specified jump speed is less than the memorized jump speed,
                         // gradually reduce the speed with gravity until the specified amount is reached.
                         else
