@@ -5,9 +5,9 @@
     "regionHeight": 80
   },
   "cycles": {
-    "idle": {
+    "idle_0": {
       "frames": [0,1,2,3],
-      "isLooping": false,
+      "isLooping": true,
       "frameDuration": 0.2
     }
   }

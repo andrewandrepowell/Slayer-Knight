@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended.Content;
+using MonoGame.Extended.Serialization;
 using MonoGame.Extended.Sprites;
 using System;
 using System.Collections.Generic;
@@ -29,15 +31,17 @@ namespace Utility
         private ContentManager contentManager;
         private SpriteBatch spriteBatch;
         private Dictionary<AnimatorFeature, AnimatedSprite> mapFeatureSprite = new Dictionary<AnimatorFeature, AnimatedSprite>();
-        private AnimatedSprite curSprite = null;
         private Vector2 curOffset = Vector2.Zero;
         public IList<AnimatorFeature> Features { get; private set; }
         public Vector2 Position { get; set; } = Vector2.Zero;
         public AnimatedSprite GetSprite(AnimatorFeature feature) => mapFeatureSprite[feature];
+        public AnimatorFeature CurrentFeature { get; private set; } = null;
+        public AnimatedSprite CurrentSprite { get; private set; } = null;
         public void Play(AnimatorFeature feature, string animation, Action onCompleted = null)
         {
-            curSprite = mapFeatureSprite[feature];
-            curSprite.Play(name: animation, onCompleted: onCompleted);
+            CurrentFeature = feature;
+            CurrentSprite = mapFeatureSprite[feature];
+            CurrentSprite.Play(name: animation, onCompleted: onCompleted);
             curOffset = feature.Offset;
         }
         public AnimatorManager(ContentManager contentManager, SpriteBatch spriteBatch)
@@ -55,25 +59,25 @@ namespace Utility
         void ManagerInterface<AnimatorFeature>.SetupFeature(AnimatorFeature feature)
         {
 
-            var spriteSheet = contentManager.Load<SpriteSheet>(feature.Identifier);
+            var spriteSheet = contentManager.Load<SpriteSheet>(feature.Identifier, new JsonContentLoader());
             var sprite = new AnimatedSprite(spriteSheet);
             mapFeatureSprite.Add(feature, sprite);
         }
 
         public void Update(float timeElapsed)
         {
-            if (curSprite != null)
+            if (CurrentSprite != null)
             {
-                curSprite.Update(timeElapsed);
+                CurrentSprite.Update(timeElapsed);
             }
         }
 
         public void Draw(Matrix? transformMatrix = null)
         {
-            if (curSprite != null)
+            if (CurrentSprite != null)
             {
                 spriteBatch.Begin(transformMatrix: transformMatrix);
-                spriteBatch.Draw(sprite: curSprite, position: Position + curOffset);
+                spriteBatch.Draw(sprite: CurrentSprite, position: Position + curOffset);
                 spriteBatch.End();
             }
         }

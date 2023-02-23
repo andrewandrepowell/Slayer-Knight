@@ -10,10 +10,10 @@
     "fileStates": {
         "kingdom_environment_visual_asset_0.tmx": {
             "scale": 1,
-            "selectedLayer": 1,
+            "selectedLayer": 2,
             "viewCenter": {
                 "x": 391.5,
-                "y": 930
+                "y": 135
             }
         },
         "kingdom_tileset_mask_asset_0.tsx": {
