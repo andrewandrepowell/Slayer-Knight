@@ -30,6 +30,7 @@ namespace SlayerKnight
         public float MaxGravspeed { get; }
         public bool Grounded { get; set; } // manager controlled
         public Vector2 Velocity { get; set; } // manager controlled
+        public float NormalSpeed { get; set; } // manager controlled
     }
     internal static class PhysicsExtensions
     {
@@ -122,6 +123,9 @@ namespace SlayerKnight
                 // Update the velocity with the velocity based on gravity and movement.
                 physicsFeature.Velocity = curGravocity + curMovement;
 
+                // Update the normal speed.
+                physicsFeature.NormalSpeed = Vector2.Dot(physicsFeature.Velocity, defNormal);
+
                 // Update the position based on current velocity.
                 physicsFeature.Position += physicsFeature.Velocity;
 
@@ -207,7 +211,7 @@ namespace SlayerKnight
                         if (Vector2.Dot(defNormal, info.Normal) > 0.25f)
                         {
                             horMovement = physicsFeature.Movement.X * info.Normal.GetPerpendicular(); // horizontal movement rotates with ground.
-                            grdCounter = 10; // increasing ground counter implies the physics feature is grounded.
+                            grdCounter = 6; // increasing ground counter implies the physics feature is grounded.
                             curGravocity = -defNormal; // velocity based on gravity is reset back to negative default normal.
                         }
                         else

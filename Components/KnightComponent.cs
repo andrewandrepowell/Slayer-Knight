@@ -18,6 +18,8 @@ namespace SlayerKnight.Components
     internal class KnightComponent : ComponentInterface, PhysicsInterface, ControlInterface
     {
         const float loopTimerPeriod = 1 / 30;
+        readonly private static Vector2 jumpRightOffset = new Vector2(x: 24, y: 16);
+        readonly private static Vector2 jumpLeftOffset = new Vector2(x: 8, y: 16);
         readonly private static string maskAsset = "knight/knight_mask_0";
         readonly private static string idleVisualAsset = "knight/knight_idle_visual_0.sf";
         readonly private static string runVisualAsset = "knight/knight_run_visual_0.sf";
@@ -35,6 +37,7 @@ namespace SlayerKnight.Components
         private int jmpCounter = 0;
         private int lftCounter = 0;
         private int rhtCounter = 0;
+        private bool facingRight = true;
         public static Color Identifier { get => new Color(r: 78, g: 111, b: 6, alpha: 255); }
         public int DrawLevel { get; set; } = 0;
         public bool PhysicsApplied { get; set; } = true;
@@ -52,7 +55,8 @@ namespace SlayerKnight.Components
         public Vector2 Velocity { get; set; } // managed by associated manager.
         CollisionManager FeatureInterface<CollisionManager>.ManagerObject { get; set; } // managed by associated manager.
         PhysicsManager FeatureInterface<PhysicsManager>.ManagerObject { get; set; } // managed by associated manager.
-        
+        public float NormalSpeed { get; set; } // managed by associated manager.
+
         public KnightComponent(
             ContentManager contentManager,
             SpriteBatch spriteBatch,
@@ -65,7 +69,7 @@ namespace SlayerKnight.Components
             animatorManager = new AnimatorManager(contentManager: contentManager, spriteBatch: spriteBatch);
             idleVisualAnimation = new AnimatorFeature(idleVisualAsset) { Offset = new Vector2(x: 16, y: 24) };
             runVisualAnimation = new AnimatorFeature(runVisualAsset) { Offset = new Vector2(x: 16, y: 24) };
-            jumpVisualAnimation = new AnimatorFeature(jumpVisualAsset) { Offset = new Vector2(x: 16, y: 24) };
+            jumpVisualAnimation = new AnimatorFeature(jumpVisualAsset); // offset needs to be set dynamically.
             animatorManager.Features.Add(idleVisualAnimation);
             animatorManager.Features.Add(runVisualAnimation);
             animatorManager.Features.Add(jumpVisualAnimation);
@@ -108,7 +112,7 @@ namespace SlayerKnight.Components
                         if (info.State == ControlState.Pressed && Grounded)
                             jmpCounter = 15;
                         else if (info.State == ControlState.Released)
-                            jmpCounter = 0;
+                            jmpCounter = Math.Max(jmpCounter - 10, 0);
                         break;
                     case ControlAction.MoveLeft:
                         if (info.State == ControlState.Pressed || info.State == ControlState.Held)
@@ -152,22 +156,82 @@ namespace SlayerKnight.Components
                     horAmount = rhtAmount - lftAmount;
                     Movement = new Vector2(x: horAmount, y: -jmpAmount);
 
+                    // Determine facing direction
+                    if (horAmount > 0)
+                        facingRight = true;
+                    else if (horAmount < 0)
+                        facingRight = false;
+                    
+
                     // Handle animations.
                     {
-                        if (horAmount > 0)
-                        {
-                            animatorManager.CurrentSprite.Effect = SpriteEffects.None;
-                        }
-                        else if (horAmount < 0)
-                        {
-                            animatorManager.CurrentSprite.Effect = SpriteEffects.FlipHorizontally;
-                        }
                         if (Grounded)
                         {
-                            if (horAmount == 0)
-                                idleVisualAnimation.Play(animation: "idle_0");
-                            else
-                                runVisualAnimation.Play(animation: "run_0");
+                            //Console.WriteLine("GROUNDED");
+                            if (animatorManager.CurrentFeature != jumpVisualAnimation && 
+                                animatorManager.CurrentSpriteSheetAnimation.Name != "start_0" && 
+                                jmpAmount > 0)
+                            {
+                                jumpVisualAnimation.Play(animation: "start_0").Rewind();
+                            }
+                            
+                            if (animatorManager.CurrentFeature == jumpVisualAnimation &&
+                                animatorManager.CurrentSpriteSheetAnimation.Name == "down_0" &&
+                                animatorManager.CurrentSpriteSheetAnimation.IsComplete &&
+                                jmpAmount == 0)
+                            {
+                                jumpVisualAnimation.Play(animation: "end_0").Rewind();
+                            }
+
+                            if ((animatorManager.CurrentFeature != jumpVisualAnimation) || 
+                                (animatorManager.CurrentSpriteSheetAnimation.Name == "end_0" && 
+                                 animatorManager.CurrentSpriteSheetAnimation.IsComplete))
+                            {
+                                if (horAmount == 0)
+                                    idleVisualAnimation.Play(animation: "idle_0");
+                                else
+                                    runVisualAnimation.Play(animation: "run_0");
+                            }
+                        }
+                        else
+                        {
+                            
+                            //Console.WriteLine($"AIRBORN: {animatorManager.CurrentSpriteSheetAnimation.Name}");
+                            if ((animatorManager.CurrentFeature != jumpVisualAnimation) || 
+                                (animatorManager.CurrentSpriteSheetAnimation.Name != "start_0") ||
+                                (animatorManager.CurrentSpriteSheetAnimation.Name != "fall_0") ||
+                                (animatorManager.CurrentSpriteSheetAnimation.IsComplete))
+                            {
+                                if (NormalSpeed > 0)
+                                {
+                                    jumpVisualAnimation.Play(animation: "up_0");
+                                }
+
+                                if (NormalSpeed < 0)
+                                {
+                                    if (animatorManager.CurrentFeature != jumpVisualAnimation || (animatorManager.CurrentSpriteSheetAnimation.Name != "fall_0" && animatorManager.CurrentSpriteSheetAnimation.Name != "down_0"))
+                                        jumpVisualAnimation.Play(animation: "fall_0").Rewind();
+                                    else
+                                        jumpVisualAnimation.Play(animation: "down_0").Rewind();
+                                }
+
+                                
+                            }
+                
+                            //jumpVisualAnimation.Play(animation: "start_0");
+                        }
+
+                        if (facingRight)
+                        {
+                            animatorManager.CurrentSprite.Effect = SpriteEffects.None;
+                            if (animatorManager.CurrentFeature == jumpVisualAnimation)
+                                animatorManager.CurrentOffset = jumpRightOffset;
+                        }
+                        else
+                        {
+                            animatorManager.CurrentSprite.Effect = SpriteEffects.FlipHorizontally;
+                            if (animatorManager.CurrentFeature == jumpVisualAnimation)
+                                animatorManager.CurrentOffset = jumpLeftOffset;
                         }
                     }  
                 }

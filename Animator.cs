@@ -15,7 +15,7 @@ namespace Utility
         public string Identifier { get; private set; }
         public Vector2 Offset { get; set; } = Vector2.Zero;
         public AnimatedSprite Sprite { get => (this as FeatureInterface<AnimatorManager>).ManagerObject.GetSprite(this); }
-        public void Play(string animation, Action onCompleted = null) =>
+        public SpriteSheetAnimation Play(string animation, Action onCompleted = null) =>
             (this as FeatureInterface<AnimatorManager>).ManagerObject.Play(
                 feature: this, 
                 animation: animation, 
@@ -31,18 +31,20 @@ namespace Utility
         private ContentManager contentManager;
         private SpriteBatch spriteBatch;
         private Dictionary<AnimatorFeature, AnimatedSprite> mapFeatureSprite = new Dictionary<AnimatorFeature, AnimatedSprite>();
-        private Vector2 curOffset = Vector2.Zero;
+        public Vector2 CurrentOffset { get; set; } = Vector2.Zero;
         public IList<AnimatorFeature> Features { get; private set; }
         public Vector2 Position { get; set; } = Vector2.Zero;
         public AnimatedSprite GetSprite(AnimatorFeature feature) => mapFeatureSprite[feature];
         public AnimatorFeature CurrentFeature { get; private set; } = null;
         public AnimatedSprite CurrentSprite { get; private set; } = null;
-        public void Play(AnimatorFeature feature, string animation, Action onCompleted = null)
+        public SpriteSheetAnimation CurrentSpriteSheetAnimation { get; private set; } = null;
+        public SpriteSheetAnimation Play(AnimatorFeature feature, string animation, Action onCompleted = null)
         {
+            CurrentOffset = feature.Offset;
             CurrentFeature = feature;
             CurrentSprite = mapFeatureSprite[feature];
-            CurrentSprite.Play(name: animation, onCompleted: onCompleted);
-            curOffset = feature.Offset;
+            CurrentSpriteSheetAnimation = CurrentSprite.Play(name: animation, onCompleted: onCompleted);
+            return CurrentSpriteSheetAnimation;
         }
         public AnimatorManager(ContentManager contentManager, SpriteBatch spriteBatch)
         {
@@ -77,7 +79,7 @@ namespace Utility
             if (CurrentSprite != null)
             {
                 spriteBatch.Begin(transformMatrix: transformMatrix);
-                spriteBatch.Draw(sprite: CurrentSprite, position: Position + curOffset);
+                spriteBatch.Draw(sprite: CurrentSprite, position: Position + CurrentOffset);
                 spriteBatch.End();
             }
         }

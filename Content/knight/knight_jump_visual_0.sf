@@ -8,27 +8,27 @@
     "start_0": {
       "frames": [0,1,2,3,4,5],
       "isLooping": false,
-      "frameDuration": 0.2
+      "frameDuration": 0.075
     },
     "up_0": {
       "frames": [6],
       "isLooping": false,
-      "frameDuration": 0.2
+      "frameDuration": 0.1
     },
     "fall_0": {
-      "frames": [7,8,9,10],
+      "frames": [8,6,7],
       "isLooping": false,
-      "frameDuration": 0.2
+      "frameDuration": 0.1
     },
     "down_0": {
-      "frames": [11],
+      "frames": [8],
       "isLooping": false,
-      "frameDuration": 0.2
+      "frameDuration": 0.1
     },
     "end_0": {
       "frames": [12,13,14],
       "isLooping": false,
-      "frameDuration": 0.2
+      "frameDuration": 0.075
     }
   }
 }

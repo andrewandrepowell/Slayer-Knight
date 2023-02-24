@@ -40,8 +40,8 @@ namespace SlayerKnight.Components
         public float MaxGravspeed { get; set; }
         public bool Grounded { get; set; }
         public Vector2 Velocity { get; set; }
+        public float NormalSpeed { get; set; }
         PhysicsManager FeatureInterface<PhysicsManager>.ManagerObject { get; set; }
-        
         public TestComponent(
             ContentManager contentManager,
             SpriteBatch spriteBatch,
