@@ -11,7 +11,7 @@
       "frameDuration": 0.075
     },
     "up_0": {
-      "frames": [6],
+      "frames": [5],
       "isLooping": false,
       "frameDuration": 0.1
     },

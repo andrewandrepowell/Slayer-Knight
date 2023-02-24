@@ -87,7 +87,7 @@ namespace SlayerKnight.Components
         public void Draw(Matrix? transformMatrix = null)
         {
             spriteBatch.Begin(transformMatrix: transformMatrix);
-            spriteBatch.Draw(texture: maskTexture, position: Position, color: Color.White);
+            //spriteBatch.Draw(texture: maskTexture, position: Position, color: Color.White);
             spriteBatch.End();
             animatorManager.Draw(transformMatrix: transformMatrix);
         }
@@ -139,7 +139,7 @@ namespace SlayerKnight.Components
 
                     if (jmpCounter > 0)
                     {
-                        jmpAmount = 20;
+                        jmpAmount = 15;
                         jmpCounter--;
                     }
                     if (lftCounter > 0)
@@ -176,7 +176,7 @@ namespace SlayerKnight.Components
                             }
                             
                             if (animatorManager.CurrentFeature == jumpVisualAnimation &&
-                                animatorManager.CurrentSpriteSheetAnimation.Name == "down_0" &&
+                                animatorManager.CurrentSpriteSheetAnimation.Name != "end_0" &&
                                 animatorManager.CurrentSpriteSheetAnimation.IsComplete &&
                                 jmpAmount == 0)
                             {
@@ -195,30 +195,11 @@ namespace SlayerKnight.Components
                         }
                         else
                         {
-                            
-                            //Console.WriteLine($"AIRBORN: {animatorManager.CurrentSpriteSheetAnimation.Name}");
-                            if ((animatorManager.CurrentFeature != jumpVisualAnimation) || 
-                                (animatorManager.CurrentSpriteSheetAnimation.Name != "start_0") ||
-                                (animatorManager.CurrentSpriteSheetAnimation.Name != "fall_0") ||
-                                (animatorManager.CurrentSpriteSheetAnimation.IsComplete))
+
+                            if (animatorManager.CurrentFeature != jumpVisualAnimation || animatorManager.CurrentSpriteSheetAnimation.Name != "start_0" || animatorManager.CurrentSpriteSheetAnimation.IsComplete)
                             {
-                                if (NormalSpeed > 0)
-                                {
-                                    jumpVisualAnimation.Play(animation: "up_0");
-                                }
-
-                                if (NormalSpeed < 0)
-                                {
-                                    if (animatorManager.CurrentFeature != jumpVisualAnimation || (animatorManager.CurrentSpriteSheetAnimation.Name != "fall_0" && animatorManager.CurrentSpriteSheetAnimation.Name != "down_0"))
-                                        jumpVisualAnimation.Play(animation: "fall_0").Rewind();
-                                    else
-                                        jumpVisualAnimation.Play(animation: "down_0").Rewind();
-                                }
-
-                                
+                                jumpVisualAnimation.Play(animation: "up_0");
                             }
-                
-                            //jumpVisualAnimation.Play(animation: "start_0");
                         }
 
                         if (facingRight)
