@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using MonoGame.Extended;
+using MonoGame.Extended.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,6 +45,7 @@ namespace SlayerKnight
         private TimerFeature timerFeature;
         private List<CollisionInfo> synthesisInfos;
         private Channel<PhysicsInfo> infoChannel;
+        private Vector2 lstPosition;
         private Vector2 curGravity;
         private Vector2 curMovement;
         private Vector2 memMovement;
@@ -51,6 +53,7 @@ namespace SlayerKnight
         private Vector2 curGravocity;
         private float accGravity;
         private int grdCounter;
+        private int wllCounter;
         public PhysicsManager(PhysicsInterface physicsFeature)
         {
             this.physicsFeature = physicsFeature;
@@ -63,8 +66,10 @@ namespace SlayerKnight
             memMovement = Vector2.Zero;
             defNormal = Vector2.Zero;
             curGravocity = Vector2.Zero;
+            lstPosition = Vector2.Zero;
             accGravity = 0;
             grdCounter = 0;
+            wllCounter = 0;
         }
         public bool GetNext(PhysicsInterface feature, out PhysicsInfo info)
         {
@@ -186,6 +191,9 @@ namespace SlayerKnight
                 else
                     grdCounter--;
 
+                if (wllCounter != 0)
+                    wllCounter--;
+
                 // Check for collisions.
                 physicsFeature.CheckForCollision();
 
@@ -201,6 +209,7 @@ namespace SlayerKnight
                 {
                     // Synthesize all the collisions infos.
                     var info = CollisionManager.SynthesizeInfos(synthesisInfos);
+                    Console.WriteLine($"info={info.Correction} {info.Normal} {synthesisInfos.Count} {curMovement} {curGravocity}");
 
                     // Correct current movement.
                     {
@@ -210,13 +219,21 @@ namespace SlayerKnight
                         Vector2 horMovement;
                         if (Vector2.Dot(defNormal, info.Normal) > 0.25f)
                         {
-                            horMovement = physicsFeature.Movement.X * info.Normal.GetPerpendicular(); // horizontal movement rotates with ground.
+                            horMovement = memMovement.X * info.Normal.GetPerpendicular(); // horizontal movement rotates with ground.
                             grdCounter = 6; // increasing ground counter implies the physics feature is grounded.
                             curGravocity = -defNormal; // velocity based on gravity is reset back to negative default normal.
                         }
                         else
                         {
+                            //Console.WriteLine($"COLLIDING WITH WALL");
                             horMovement = Vector2.Zero; // squash horizontal movement if colliding with wall.
+                            wllCounter = 3;
+                            //if (grdCounter > 0)
+                            //{
+                            //    grdCounter = 6; // increasing ground counter implies the physics feature is grounded.
+                            //    curGravocity = -defNormal; // velocity based on gravity is reset back to negative default normal.
+                            //}
+                            //physicsFeature.Position += info.Normal;
                         }                        
 
                         // Correct current vertical movement.
@@ -228,6 +245,7 @@ namespace SlayerKnight
                         }
                         else
                         {
+                            //Console.WriteLine("TOUCHING CEILING.");
                             verMovement = Vector2.Zero;
                         }
 
@@ -245,7 +263,43 @@ namespace SlayerKnight
 
                     // Correction position so that physics feature doesn't overlap with other collisions features.
                     physicsFeature.Position += info.Correction;
+
+                    // This piece solely of disgusting code is tp resolve another glitch:
+                    // The physics feature will start bouncing around when grounded and
+                    // touching a wall. To prevent this from happening, always reset back
+                    // to last position.
+                    if (grdCounter > 0 && wllCounter > 0)
+                    {
+                        Console.WriteLine("APPLYING FIX.");
+                        physicsFeature.Position = lstPosition;
+                    }
+                    else
+                    {
+                        Console.WriteLine("NO FIX.");
+                        lstPosition = physicsFeature.Position;
+                    }
+
+                    // This piece solely of disgusting code is tp resolve another glitch:
+                    // If the phsics feature is stuck, simply move it in the direction normal
+                    // to the collision feature it ran into.
+                    if (grdCounter == 0 && physicsFeature.Position == lstPosition)
+                        physicsFeature.Position += info.Normal;
+                    
+                    
                 }
+
+                
+                Console.WriteLine($"POSITION: {physicsFeature.Position} {curMovement} {curGravocity}");
+                //if (prevPositions.Contains(physicsFeature.Position))
+                //{
+                //    Console.WriteLine("RESET ON POSITION.");
+                //    physicsFeature.Position = prevPositions.Last();
+                //}
+                //else
+                //{
+                //    prevPositions.Dequeue();
+                //    prevPositions.Enqueue(physicsFeature.Position);
+                //}
             }
 
             timerFeature.Update(timeElapsed);

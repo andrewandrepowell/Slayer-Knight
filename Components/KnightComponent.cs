@@ -87,7 +87,7 @@ namespace SlayerKnight.Components
         public void Draw(Matrix? transformMatrix = null)
         {
             spriteBatch.Begin(transformMatrix: transformMatrix);
-            //spriteBatch.Draw(texture: maskTexture, position: Position, color: Color.White);
+            spriteBatch.Draw(texture: maskTexture, position: Position, color: Color.White);
             spriteBatch.End();
             animatorManager.Draw(transformMatrix: transformMatrix);
         }
@@ -96,7 +96,13 @@ namespace SlayerKnight.Components
         {
             {
                 var screenBounds = spriteBatch.GraphicsDevice.Viewport.Bounds;
-                levelFeature.CameraObject.Position = Position - screenBounds.Center.ToVector2();
+                var positionOnScreen = Position - levelFeature.CameraObject.Position;
+                if (positionOnScreen.X < 100 || positionOnScreen.X > screenBounds.Width - 100 ||
+                    positionOnScreen.Y < 100 || positionOnScreen.Y > screenBounds.Height - 100)
+                {
+                    levelFeature.CameraObject.Position = Position - screenBounds.Center.ToVector2();
+                }
+                
             }
 
             // Service collisions as reported by the physics manager.
@@ -144,13 +150,13 @@ namespace SlayerKnight.Components
                     }
                     if (lftCounter > 0)
                     {
-                        lftAmount = 8;
+                        lftAmount = 6;
                         lftCounter--;
                     }
                     if (rhtCounter > 0)
                     {
                         
-                        rhtAmount = 8;
+                        rhtAmount = 6;
                         rhtCounter--;
                     }
                     horAmount = rhtAmount - lftAmount;

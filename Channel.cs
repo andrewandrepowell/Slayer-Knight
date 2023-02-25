@@ -37,6 +37,15 @@ namespace Utility
             tail = 0;
             buffer = new T[capacity + 1];
         }
+        public T this[int index] 
+        {
+            get
+            {
+                if (index < 0 || index >= buffer.Length || index >= Count)
+                    throw new IndexOutOfRangeException();
+                return buffer[(index + tail) % buffer.Length];
+            }
+        }
         public int Count { get => (head >= tail) ? head - tail : buffer.Length - tail + head; }
         public bool IsSynchronized { get => false; }
         public object SyncRoot { get => throw new NotImplementedException(); }

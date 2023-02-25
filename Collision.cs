@@ -299,7 +299,7 @@ namespace Utility
                 pointY0 = rowOfMax + intersection1.Y + collidable1.Position.Y;
                 pointY1 = rowOfMax + intersection0.Y + collidable0.Position.Y;
 
-                if (rightSum0  > leftSum0)
+                if (rightSum0  >= leftSum0)
                 {
                     correctionOffsetX0 = -overlapWidth - adjustX0;
                     pointX0 = colMin + intersection1.X + collidable1.Position.X;
@@ -309,7 +309,7 @@ namespace Utility
                     correctionOffsetX0 = overlapWidth - adjustX0;
                     pointX0 = colMax + intersection1.X + collidable1.Position.X;
                 }
-                if (rightSum1  > leftSum1)
+                if (rightSum1  >= leftSum1)
                 {
                     correctionOffsetX1 = -overlapWidth - adjustX1;
                     pointX1 = colMin + intersection0.X + collidable0.Position.X;
