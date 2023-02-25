@@ -51,6 +51,7 @@ namespace SlayerKnight
         private Vector2 memMovement;
         private Vector2 defNormal;
         private Vector2 curGravocity;
+        private Vector2 horMovement;
         private float accGravity;
         private int grdCounter;
         private int wllCounter;
@@ -67,6 +68,7 @@ namespace SlayerKnight
             defNormal = Vector2.Zero;
             curGravocity = Vector2.Zero;
             lstPosition = Vector2.Zero;
+            horMovement = Vector2.Zero; 
             accGravity = 0;
             grdCounter = 0;
             wllCounter = 0;
@@ -216,7 +218,7 @@ namespace SlayerKnight
                         // Correct current horizontal movement.
                         // The idea is, so long as the incline isn't too steep, the horizontal movement will rotate with the incline.
                         // This state also determines whether the physics feature is considered grounded or not.
-                        Vector2 horMovement;
+                        //Vector2 horMovement;
                         if (Vector2.Dot(defNormal, info.Normal) > 0.4f)
                         {
                             horMovement = memMovement.X * info.Normal.GetPerpendicular(); // horizontal movement rotates with ground.
@@ -226,8 +228,12 @@ namespace SlayerKnight
                         else
                         {
                             //Console.WriteLine($"COLLIDING WITH WALL");
-                            horMovement = Vector2.Zero; // squash horizontal movement if colliding with wall.
-                            wllCounter = 3;
+                            
+                            if (Vector2.Dot(memMovement, info.Normal) < 0)
+                            {
+                                horMovement = Vector2.Zero; // squash horizontal movement if colliding with wall.
+                                wllCounter = 3;
+                            }
                             //if (grdCounter > 0)
                             //{
                             //    grdCounter = 6; // increasing ground counter implies the physics feature is grounded.
@@ -265,30 +271,29 @@ namespace SlayerKnight
                     physicsFeature.Position += info.Correction;
 
                     // This piece solely of disgusting code is tp resolve another glitch:
-                    // The physics feature will start bouncing around when grounded and
-                    // touching a wall. To prevent this from happening, always reset back
-                    // to last position.
-                    if (grdCounter > 0 && wllCounter > 0)
-                    {
-                        Console.WriteLine("APPLYING FIX.");
-                        physicsFeature.Position = lstPosition;
-                    }
-                    else
-                    {
-                        Console.WriteLine("NO FIX.");
-                        lstPosition = physicsFeature.Position;
-                    }
-
-                    // This piece solely of disgusting code is tp resolve another glitch:
                     // If the phsics feature is stuck, simply move it in the direction normal
                     // to the collision feature it ran into.
                     if (grdCounter == 0 && physicsFeature.Position == lstPosition)
                         physicsFeature.Position += info.Normal;
-                    
-                    
                 }
 
-                
+                // This piece solely of disgusting code is tp resolve another glitch:
+                // The physics feature will start bouncing around when grounded and
+                // touching a wall. To prevent this from happening, always reset back
+                // to last position.
+                if (grdCounter > 0 && wllCounter > 0)
+                {
+                    Console.WriteLine("APPLYING FIX.");
+                    physicsFeature.Position = lstPosition;
+                }
+                else
+                {
+                    Console.WriteLine("NO FIX.");
+                    lstPosition = physicsFeature.Position;
+                }
+
+
+
                 Console.WriteLine($"POSITION: {physicsFeature.Position} {curMovement} {curGravocity}");
                 //if (prevPositions.Contains(physicsFeature.Position))
                 //{
