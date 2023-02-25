@@ -145,18 +145,18 @@ namespace SlayerKnight.Components
 
                     if (jmpCounter > 0)
                     {
-                        jmpAmount = 15;
+                        jmpAmount = 13f;
                         jmpCounter--;
                     }
                     if (lftCounter > 0)
                     {
-                        lftAmount = 6;
+                        lftAmount = 4;
                         lftCounter--;
                     }
                     if (rhtCounter > 0)
                     {
                         
-                        rhtAmount = 6;
+                        rhtAmount = 4;
                         rhtCounter--;
                     }
                     horAmount = rhtAmount - lftAmount;

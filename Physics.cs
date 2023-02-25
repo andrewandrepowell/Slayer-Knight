@@ -217,7 +217,7 @@ namespace SlayerKnight
                         // The idea is, so long as the incline isn't too steep, the horizontal movement will rotate with the incline.
                         // This state also determines whether the physics feature is considered grounded or not.
                         Vector2 horMovement;
-                        if (Vector2.Dot(defNormal, info.Normal) > 0.25f)
+                        if (Vector2.Dot(defNormal, info.Normal) > 0.4f)
                         {
                             horMovement = memMovement.X * info.Normal.GetPerpendicular(); // horizontal movement rotates with ground.
                             grdCounter = 6; // increasing ground counter implies the physics feature is grounded.
