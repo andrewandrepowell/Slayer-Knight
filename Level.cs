@@ -13,6 +13,7 @@ namespace SlayerKnight
 { 
     internal interface LevelInterface : RoomInterface
     {
+        public Size2 Size { get; }
         public OrthographicCamera CameraObject { get; }
         public void Add(ComponentInterface component);
         public void Remove(ComponentInterface component);
@@ -36,6 +37,7 @@ namespace SlayerKnight
         public bool Started { get; private set; }
         public string Identifier { get; private set; }
         public OrthographicCamera CameraObject { get; private set; }
+        public Size2 Size { get => environmentVisualTexture.Bounds.Size; }
         RoomManager FeatureInterface<RoomManager>.ManagerObject { get; set; }
         public LevelFeature(
             ContentManager contentManager,

@@ -94,28 +94,40 @@ namespace SlayerKnight.Components
 
         public void Update(float timeElapsed)
         {
+            // Apply the camera.
             {
+                const float pixelsToWidthEdge = 600;
+                const float pixelsToHeightEdge = 100;
                 var screenBounds = spriteBatch.GraphicsDevice.Viewport.Bounds;
                 var positionOnScreen = Position - levelFeature.CameraObject.Position;
                 var cameraPosition = levelFeature.CameraObject.Position;
+                Size2 lowerThresholds = new Size2(width: pixelsToWidthEdge, height: pixelsToHeightEdge);
+                Size2 upperThresholds = new Size2(width: screenBounds.Width - pixelsToWidthEdge, height: screenBounds.Height - pixelsToHeightEdge);
 
-                if (positionOnScreen.X < 100)
-                    cameraPosition.X -= 100 - positionOnScreen.X;
-                if (positionOnScreen.X > screenBounds.Width - 100)
-                    cameraPosition.X += positionOnScreen.X - (screenBounds.Width - 100);
-                if (positionOnScreen.Y < 100)
-                    cameraPosition.Y -= 100 - positionOnScreen.Y;
-                if (positionOnScreen.Y > screenBounds.Height - 100)
-                    cameraPosition.Y += positionOnScreen.Y - (screenBounds.Height - 100);
+                // Ensure the camera centers around the knight, but with some wiggle room such that
+                //   the camera only moves when the knight gets closer to the edge.
+                {
+                    if (positionOnScreen.X < lowerThresholds.Width)
+                        cameraPosition.X -= lowerThresholds.Width - positionOnScreen.X;
 
+                    if (positionOnScreen.X > upperThresholds.Width)
+                        cameraPosition.X += positionOnScreen.X - upperThresholds.Width;
+
+                    if (positionOnScreen.Y < lowerThresholds.Height)
+                        cameraPosition.Y -= lowerThresholds.Height - positionOnScreen.Y;
+
+                    if (positionOnScreen.Y > upperThresholds.Height)
+                        cameraPosition.Y += positionOnScreen.Y - upperThresholds.Height;
+                }
+
+                // Ensure the camera never goes off the edge of the level itself.
+                {
+                    cameraPosition.X = Math.Clamp(cameraPosition.X, 0, levelFeature.Size.Width - screenBounds.Width - 1);
+                    cameraPosition.Y = Math.Clamp(cameraPosition.Y, 0, levelFeature.Size.Height - screenBounds.Height - 1);
+                }
+
+                // Set the camera position.
                 levelFeature.CameraObject.Position = cameraPosition;
-
-                //if (positionOnScreen.X < 100 || positionOnScreen.X > screenBounds.Width - 100 ||
-                //    positionOnScreen.Y < 100 || positionOnScreen.Y > screenBounds.Height - 100)
-                //{
-                //    levelFeature.CameraObject.Position = Position - screenBounds.Center.ToVector2();
-                //}
-
             }
 
             // Service collisions as reported by the physics manager.

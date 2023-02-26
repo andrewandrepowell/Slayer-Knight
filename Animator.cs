@@ -30,6 +30,7 @@ namespace Utility
     {
         private ContentManager contentManager;
         private SpriteBatch spriteBatch;
+        private Vector2 drawPosition = Vector2.Zero;
         private Dictionary<AnimatorFeature, AnimatedSprite> mapFeatureSprite = new Dictionary<AnimatorFeature, AnimatedSprite>();
         public Vector2 CurrentOffset { get; set; } = Vector2.Zero;
         public IList<AnimatorFeature> Features { get; private set; }
@@ -70,6 +71,13 @@ namespace Utility
         {
             if (CurrentSprite != null)
             {
+                // Draw position includes offset.
+                // Pixels are rounded for intended visual effect.
+                drawPosition = Position + CurrentOffset;
+                drawPosition.X = (float)Math.Floor(drawPosition.X);
+                drawPosition.Y = (float)Math.Floor(drawPosition.Y);
+
+                // Update the current animated sprite.
                 CurrentSprite.Update(timeElapsed);
             }
         }
@@ -79,7 +87,7 @@ namespace Utility
             if (CurrentSprite != null)
             {
                 spriteBatch.Begin(transformMatrix: transformMatrix);
-                spriteBatch.Draw(sprite: CurrentSprite, position: Position + CurrentOffset);
+                spriteBatch.Draw(sprite: CurrentSprite, position: drawPosition);
                 spriteBatch.End();
             }
         }

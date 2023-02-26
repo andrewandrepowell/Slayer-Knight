@@ -51,10 +51,10 @@ namespace SlayerKnight
         private Vector2 memMovement;
         private Vector2 defNormal;
         private Vector2 curGravocity;
-        private Vector2 horMovement;
         private float accGravity;
-        private int grdCounter;
-        private int wllCounter;
+        private int groundCounter;
+        private int wallCounter;
+        private int ceilCounter;
         public PhysicsManager(PhysicsInterface physicsFeature)
         {
             this.physicsFeature = physicsFeature;
@@ -68,10 +68,10 @@ namespace SlayerKnight
             defNormal = Vector2.Zero;
             curGravocity = Vector2.Zero;
             lstPosition = Vector2.Zero;
-            horMovement = Vector2.Zero; 
             accGravity = 0;
-            grdCounter = 0;
-            wllCounter = 0;
+            groundCounter = 0;
+            wallCounter = 0;
+            ceilCounter = 0;
         }
         public bool GetNext(PhysicsInterface feature, out PhysicsInfo info)
         {
@@ -92,7 +92,7 @@ namespace SlayerKnight
             timerFeature.Activated = physicsFeature.PhysicsApplied;
 
             // Grounded is simply when the ground counter is not zero.
-            physicsFeature.Grounded = grdCounter > 0;
+            physicsFeature.Grounded = groundCounter > 0;
 
             // Update the normal direction from ground if user decides to change gravity.
             if (curGravity != physicsFeature.Gravity)
@@ -110,7 +110,9 @@ namespace SlayerKnight
                     accGravity = -Vector2.Dot(defNormal, physicsFeature.Gravity);
                 }
                 curGravity = physicsFeature.Gravity;
-                grdCounter = 0;
+                groundCounter = 0;
+                wallCounter = 0;
+                ceilCounter = 0;
             }
 
             // Service collisions based on other collisions features colliding into the physics feature.
@@ -130,10 +132,13 @@ namespace SlayerKnight
                 // Update the velocity with the velocity based on gravity and movement.
                 physicsFeature.Velocity = curGravocity + curMovement;
 
-                // Update the normal speed.
+                // Update the normal speed. 
+                // This was added so that the user has a way to determine if the physics feature is
+                // moving upward or moving downward. 
                 physicsFeature.NormalSpeed = Vector2.Dot(physicsFeature.Velocity, defNormal);
 
                 // Update the position based on current velocity.
+                // This will get corrected if any glitches and/or collisions occur.
                 physicsFeature.Position += physicsFeature.Velocity;
 
                 // Update current velocity based on gravity.
@@ -146,13 +151,14 @@ namespace SlayerKnight
 
                 // Update memorized movement. 
                 // Memorized movement is a mechanic where, under specific circumstances,
-                //   movement isn't allowed to instantly change to a specified movement.
+                //   movement isn't allowed to instantly change to a specified movement, i.e. movement specified
+                //   by the physics feature.
                 // Movement in this context refers to velocity in response to user-demanded movement, as opposed
                 //   to gravity or some other factor.
                 {
-                    // Service the case where to specified movement is a jump, i.e. negative Y movemement.
+                    // Service the case where the specified movement is a jump, i.e. negative Y movemement.
                     // If a jump's speed is lowered, the speed should gradually diminish in accordance to gravity.
-                    // If the jump's is raised, the speed will instantly change to that speed.
+                    // If the jump is raised, the speed will instantly change to that speed.
                     if (physicsFeature.Movement.Y <= 0)
                     {
                         // If specified jump speed is greater than or equal to memorized jump speed, just
@@ -185,16 +191,25 @@ namespace SlayerKnight
                 }
 
                 // Update current velocity based on movement. 
-                // This operation only occurs when in the air.
-                if (grdCounter == 0)
+                // This operation only occurs when in the air, i.e.
+                //   ground counter equal to 0.
+                if (groundCounter == 0)
                 {
                     curMovement = memMovement;
                 }
-                else
-                    grdCounter--;
 
-                if (wllCounter != 0)
-                    wllCounter--;
+                // Decrement the ground counter. 
+                // Value greater than zero indicates the physics feature is considered
+                //   in its ground state.
+                else
+                    groundCounter--;
+
+                // Decrement the wall counter.
+                if (wallCounter != 0)
+                    wallCounter--;
+
+                if (ceilCounter != 0)
+                    ceilCounter--;
 
                 // Check for collisions.
                 physicsFeature.CheckForCollision();
@@ -211,48 +226,35 @@ namespace SlayerKnight
                 {
                     // Synthesize all the collisions infos.
                     var info = CollisionManager.SynthesizeInfos(synthesisInfos);
-                    Console.WriteLine($"info={info.Correction} {info.Normal} {synthesisInfos.Count} {curMovement} {curGravocity}");
+                    // Console.WriteLine($"info={info.Correction} {info.Normal} {synthesisInfos.Count} {curMovement} {curGravocity}");
 
                     // Correct current movement.
                     {
                         // Correct current horizontal movement.
                         // The idea is, so long as the incline isn't too steep, the horizontal movement will rotate with the incline.
                         // This state also determines whether the physics feature is considered grounded or not.
-                        //Vector2 horMovement;
+                        Vector2 horMovement;
                         if (Vector2.Dot(defNormal, info.Normal) > 0.4f)
                         {
                             horMovement = memMovement.X * info.Normal.GetPerpendicular(); // horizontal movement rotates with ground.
-                            grdCounter = 6; // increasing ground counter implies the physics feature is grounded.
+                            groundCounter = 6; // increasing ground counter implies the physics feature is grounded.
                             curGravocity = -defNormal; // velocity based on gravity is reset back to negative default normal.
                         }
                         else
                         {
-                            //Console.WriteLine($"COLLIDING WITH WALL");
-                            
-                            if (Vector2.Dot(memMovement, info.Normal) < 0)
-                            {
-                                horMovement = Vector2.Zero; // squash horizontal movement if colliding with wall.
-                                wllCounter = 3;
-                            }
-                            //if (grdCounter > 0)
-                            //{
-                            //    grdCounter = 6; // increasing ground counter implies the physics feature is grounded.
-                            //    curGravocity = -defNormal; // velocity based on gravity is reset back to negative default normal.
-                            //}
-                            //physicsFeature.Position += info.Normal;
+                            horMovement = Vector2.Zero; // squash horizontal movement if colliding with wall.
+                            wallCounter = 3;
                         }                        
 
                         // Correct current vertical movement.
                         // The idea is, so long as there isn't something in the way, vertical movement is free to occur.
                         Vector2 verMovement;
                         if (Vector2.Dot(-memMovement.Y * defNormal, info.Normal) >= 0)
-                        {
                             verMovement = -memMovement.Y * defNormal;
-                        }
                         else
                         {
-                            //Console.WriteLine("TOUCHING CEILING.");
                             verMovement = Vector2.Zero;
+                            ceilCounter = 3;
                         }
 
                         // Combination of horizontal and vertical movement defines the current movement.
@@ -273,7 +275,7 @@ namespace SlayerKnight
                     // This piece solely of disgusting code is tp resolve another glitch:
                     // If the phsics feature is stuck, simply move it in the direction normal
                     // to the collision feature it ran into.
-                    if (grdCounter == 0 && physicsFeature.Position == lstPosition)
+                    if (groundCounter == 0 && physicsFeature.Position == lstPosition)
                         physicsFeature.Position += info.Normal;
                 }
 
@@ -281,31 +283,16 @@ namespace SlayerKnight
                 // The physics feature will start bouncing around when grounded and
                 // touching a wall. To prevent this from happening, always reset back
                 // to last position.
-                if (grdCounter > 0 && wllCounter > 0)
-                {
-                    Console.WriteLine("APPLYING FIX.");
+                if (groundCounter > 0 && wallCounter > 0)
                     physicsFeature.Position = lstPosition;
-                }
+                else if (ceilCounter > 0)
+                    physicsFeature.Position = new Vector2(x: physicsFeature.Position.X, y: lstPosition.Y);
                 else
-                {
-                    Console.WriteLine("NO FIX.");
                     lstPosition = physicsFeature.Position;
-                }
 
 
-
-                Console.WriteLine($"POSITION: {physicsFeature.Position} {curMovement} {curGravocity}");
-                //if (prevPositions.Contains(physicsFeature.Position))
-                //{
-                //    Console.WriteLine("RESET ON POSITION.");
-                //    physicsFeature.Position = prevPositions.Last();
-                //}
-                //else
-                //{
-                //    prevPositions.Dequeue();
-                //    prevPositions.Enqueue(physicsFeature.Position);
-                //}
             }
+            Console.WriteLine($"Position: {physicsFeature.Position}");
 
             timerFeature.Update(timeElapsed);
         }
