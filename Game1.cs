@@ -18,6 +18,7 @@ public class Game1 : Game
     private GraphicsDeviceManager graphics;
     private SpriteBatch spriteBatch;
     private TestLevelFeature testLevelFeature;
+    private VirtualScreen virtualScreen;
 
     public Game1()
     {
@@ -40,6 +41,7 @@ public class Game1 : Game
         testLevelFeature = new TestLevelFeature(
             contentManager: Content,
             spriteBatch: spriteBatch);
+        virtualScreen = new VirtualScreen(spriteBatch: spriteBatch, screenScalar: 2);
         base.Initialize();
     }
 
@@ -59,9 +61,14 @@ public class Game1 : Game
 
     protected override void Draw(GameTime gameTime)
     {
+        virtualScreen.BeginCapture();
         GraphicsDevice.Clear(Color.CornflowerBlue);
         testLevelFeature.Draw();
         base.Draw(gameTime);
+        virtualScreen.EndCapture();
+
+        GraphicsDevice.Clear(Color.Black);
+        virtualScreen.Draw();
     }
 
 #if DEBUG

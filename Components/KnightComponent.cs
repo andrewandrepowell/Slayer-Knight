@@ -96,13 +96,12 @@ namespace SlayerKnight.Components
         {
             // Apply the camera.
             {
-                const float pixelsToWidthEdge = 600;
-                const float pixelsToHeightEdge = 100;
-                var screenBounds = spriteBatch.GraphicsDevice.Viewport.Bounds;
+                int pixelsToWidthEdge = levelFeature.ScreenSize.Width / 2 - 100;
+                int pixelsToHeightEdge = levelFeature.ScreenSize.Height / 2 - 100;
                 var positionOnScreen = Position - levelFeature.CameraObject.Position;
                 var cameraPosition = levelFeature.CameraObject.Position;
-                Size2 lowerThresholds = new Size2(width: pixelsToWidthEdge, height: pixelsToHeightEdge);
-                Size2 upperThresholds = new Size2(width: screenBounds.Width - pixelsToWidthEdge, height: screenBounds.Height - pixelsToHeightEdge);
+                Size lowerThresholds = new Size(width: pixelsToWidthEdge, height: pixelsToHeightEdge);
+                Size upperThresholds = new Size(width: levelFeature.ScreenSize.Width - pixelsToWidthEdge, height: levelFeature.ScreenSize.Height - pixelsToHeightEdge);
 
                 // Ensure the camera centers around the knight, but with some wiggle room such that
                 //   the camera only moves when the knight gets closer to the edge.
@@ -122,8 +121,15 @@ namespace SlayerKnight.Components
 
                 // Ensure the camera never goes off the edge of the level itself.
                 {
-                    cameraPosition.X = Math.Clamp(cameraPosition.X, 0, levelFeature.Size.Width - screenBounds.Width - 1);
-                    cameraPosition.Y = Math.Clamp(cameraPosition.Y, 0, levelFeature.Size.Height - screenBounds.Height - 1);
+                    cameraPosition.X = Math.Clamp(cameraPosition.X, 0, levelFeature.LevelSize.Width - levelFeature.ScreenSize.Width - 1);
+                    cameraPosition.Y = Math.Clamp(cameraPosition.Y, 0, levelFeature.LevelSize.Height - levelFeature.ScreenSize.Height - 1);
+                }
+
+                // Also make sure the camera's position is always an integer to prevent weird interpolation when 
+                //   the screen is drawn.
+                {
+                    cameraPosition.X = (float)Math.Floor(cameraPosition.X);
+                    cameraPosition.Y = (float)Math.Floor(cameraPosition.Y);
                 }
 
                 // Set the camera position.

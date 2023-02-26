@@ -13,7 +13,8 @@ namespace SlayerKnight
 { 
     internal interface LevelInterface : RoomInterface
     {
-        public Size2 Size { get; }
+        public Size ScreenSize { get; }
+        public Size LevelSize { get; }
         public OrthographicCamera CameraObject { get; }
         public void Add(ComponentInterface component);
         public void Remove(ComponentInterface component);
@@ -37,7 +38,8 @@ namespace SlayerKnight
         public bool Started { get; private set; }
         public string Identifier { get; private set; }
         public OrthographicCamera CameraObject { get; private set; }
-        public Size2 Size { get => environmentVisualTexture.Bounds.Size; }
+        public Size LevelSize { get => environmentVisualTexture.Bounds.Size; }
+        public Size ScreenSize { get; private set; }
         RoomManager FeatureInterface<RoomManager>.ManagerObject { get; set; }
         public LevelFeature(
             ContentManager contentManager,
@@ -50,7 +52,8 @@ namespace SlayerKnight
             Size environmentGridSize,
             Color environmentStartColor,
             Color environmentIncludeColor,
-            Color environmentExcludeColor)
+            Color environmentExcludeColor,
+            Size screenSize)
         {
             Identifier = roomIdentifier;
             Started = false;
@@ -58,6 +61,7 @@ namespace SlayerKnight
             componentFeatures = new List<ComponentInterface>();
             destroyFeatures = new List<DestroyInterface>();
             CameraObject = new OrthographicCamera(graphicsDevice: spriteBatch.GraphicsDevice);
+            ScreenSize = screenSize;
             this.spriteBatch = spriteBatch;
             this.contentManager = contentManager;
             this.keyboardManager = keyboardManager;

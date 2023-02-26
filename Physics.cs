@@ -289,8 +289,6 @@ namespace SlayerKnight
                     physicsFeature.Position = new Vector2(x: physicsFeature.Position.X, y: lstPosition.Y);
                 else
                     lstPosition = physicsFeature.Position;
-
-
             }
             Console.WriteLine($"Position: {physicsFeature.Position}");
 

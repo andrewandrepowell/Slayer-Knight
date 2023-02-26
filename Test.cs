@@ -37,6 +37,9 @@ namespace SlayerKnight
             controlManager.KeyActionMap.Add(Keys.Up, ControlAction.MoveUp);
             controlManager.KeyActionMap.Add(Keys.Down, ControlAction.MoveDown);
             controlManager.KeyActionMap.Add(Keys.Space, ControlAction.Jump);
+            var screenSize = new Size(
+                width: spriteBatch.GraphicsDevice.Viewport.Bounds.Width,
+                height: spriteBatch.GraphicsDevice.Viewport.Bounds.Height) / 2;
             firstLevelFeature = new LevelFeature(
                 contentManager: contentManager,
                 spriteBatch: spriteBatch,
@@ -48,7 +51,8 @@ namespace SlayerKnight
                 environmentGridSize: new Size(width: 16, height: 16),
                 environmentStartColor: environmentStartColor,
                 environmentIncludeColor: environmentIncludeColor,
-                environmentExcludeColor: environmentExcludeColor);
+                environmentExcludeColor: environmentExcludeColor,
+                screenSize: screenSize);
             secondLevelFeature = new LevelFeature(
                 contentManager: contentManager,
                 spriteBatch: spriteBatch,
@@ -60,7 +64,8 @@ namespace SlayerKnight
                 environmentGridSize: environmentGridSize,
                 environmentStartColor: environmentStartColor,
                 environmentIncludeColor: environmentIncludeColor,
-                environmentExcludeColor: environmentExcludeColor);
+                environmentExcludeColor: environmentExcludeColor,
+                screenSize: screenSize);
             roomManager = new RoomManager();
             roomManager.Features.Add(firstLevelFeature);
             roomManager.Features.Add(secondLevelFeature);
