@@ -97,7 +97,7 @@ namespace SlayerKnight.Components
             // Apply the camera.
             {
                 int pixelsToWidthEdge = levelFeature.ScreenSize.Width / 2 - 100;
-                int pixelsToHeightEdge = levelFeature.ScreenSize.Height / 2 - 100;
+                int pixelsToHeightEdge = levelFeature.ScreenSize.Height / 2 - 50;
                 var positionOnScreen = Position - levelFeature.CameraObject.Position;
                 var cameraPosition = levelFeature.CameraObject.Position;
                 Size lowerThresholds = new Size(width: pixelsToWidthEdge, height: pixelsToHeightEdge);
@@ -141,7 +141,7 @@ namespace SlayerKnight.Components
                 ;
 
             // Service user input.
-            Console.WriteLine($"Jump Counter: {jmpCounter}");
+            //Console.WriteLine($"Jump Counter: {jmpCounter}");
             while (ControlFeatureObject.GetNext(out var info))
             {
                 switch (info.Action)

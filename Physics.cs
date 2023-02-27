@@ -236,7 +236,7 @@ namespace SlayerKnight
                         Vector2 horMovement;
                         if (Vector2.Dot(defNormal, info.Normal) > 0.4f)
                         {
-                            Console.WriteLine("GROUNDED");
+                            //Console.WriteLine("GROUNDED");
                             horMovement = memMovement.X * info.Normal.GetPerpendicular(); // horizontal movement rotates with ground.
                             groundCounter = 2; // increasing ground counter implies the physics feature is grounded.
                             curGravocity = -defNormal; // velocity based on gravity is reset back to negative default normal.
@@ -252,7 +252,7 @@ namespace SlayerKnight
                         Vector2 verMovement;
                         if (Vector2.Dot(-memMovement.Y * defNormal, info.Normal) >= 0)
                         {
-                            Console.WriteLine("NOT HITTING CEILING");
+                            //Console.WriteLine("NOT HITTING CEILING");
                             verMovement = -memMovement.Y * defNormal;
                         }
                         else
@@ -262,7 +262,7 @@ namespace SlayerKnight
                         }
 
                         // Combination of horizontal and vertical movement defines the current movement.
-                        Console.WriteLine($"Hor: {horMovement}, Ver: {verMovement}");
+                        //Console.WriteLine($"Hor: {horMovement}, Ver: {verMovement}");
                         curMovement = horMovement + verMovement;
                     }
 
@@ -295,7 +295,7 @@ namespace SlayerKnight
                 else
                     lstPosition = physicsFeature.Position;
             }
-            Console.WriteLine($"Current Movement: {curMovement}");
+            //Console.WriteLine($"Current Movement: {curMovement}");
 
             timerFeature.Update(timeElapsed);
         }
