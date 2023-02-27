@@ -226,7 +226,7 @@ namespace SlayerKnight
                 {
                     // Synthesize all the collisions infos.
                     var info = CollisionManager.SynthesizeInfos(synthesisInfos);
-                    // Console.WriteLine($"info={info.Correction} {info.Normal} {synthesisInfos.Count} {curMovement} {curGravocity}");
+                    Console.WriteLine($"info={info.Correction} {info.Normal} {synthesisInfos.Count} {curMovement} {curGravocity}");
 
                     // Correct current movement.
                     {
@@ -236,8 +236,9 @@ namespace SlayerKnight
                         Vector2 horMovement;
                         if (Vector2.Dot(defNormal, info.Normal) > 0.4f)
                         {
+                            Console.WriteLine("GROUNDED");
                             horMovement = memMovement.X * info.Normal.GetPerpendicular(); // horizontal movement rotates with ground.
-                            groundCounter = 6; // increasing ground counter implies the physics feature is grounded.
+                            groundCounter = 2; // increasing ground counter implies the physics feature is grounded.
                             curGravocity = -defNormal; // velocity based on gravity is reset back to negative default normal.
                         }
                         else
@@ -250,14 +251,18 @@ namespace SlayerKnight
                         // The idea is, so long as there isn't something in the way, vertical movement is free to occur.
                         Vector2 verMovement;
                         if (Vector2.Dot(-memMovement.Y * defNormal, info.Normal) >= 0)
+                        {
+                            Console.WriteLine("NOT HITTING CEILING");
                             verMovement = -memMovement.Y * defNormal;
+                        }
                         else
                         {
                             verMovement = Vector2.Zero;
-                            ceilCounter = 3;
+                            ceilCounter = 6;
                         }
 
                         // Combination of horizontal and vertical movement defines the current movement.
+                        Console.WriteLine($"Hor: {horMovement}, Ver: {verMovement}");
                         curMovement = horMovement + verMovement;
                     }
 
@@ -290,7 +295,7 @@ namespace SlayerKnight
                 else
                     lstPosition = physicsFeature.Position;
             }
-            Console.WriteLine($"Position: {physicsFeature.Position}");
+            Console.WriteLine($"Current Movement: {curMovement}");
 
             timerFeature.Update(timeElapsed);
         }

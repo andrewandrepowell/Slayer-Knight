@@ -9,11 +9,11 @@
     ],
     "fileStates": {
         "kingdom_environment_visual_asset_0.tmx": {
-            "scale": 4,
-            "selectedLayer": 0,
+            "scale": 2,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 826.125,
-                "y": 1032.25
+                "x": 868.25,
+                "y": 618
             }
         },
         "kingdom_tileset_mask_asset_0.tsx": {
