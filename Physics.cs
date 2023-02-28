@@ -51,6 +51,7 @@ namespace SlayerKnight
         private Vector2 memMovement;
         private Vector2 defNormal;
         private Vector2 curGravocity;
+        private Vector2 lstNormal;
         private float accGravity;
         private int groundCounter;
         private int wallCounter;
@@ -68,6 +69,7 @@ namespace SlayerKnight
             defNormal = Vector2.Zero;
             curGravocity = Vector2.Zero;
             lstPosition = Vector2.Zero;
+            lstNormal = Vector2.Zero;
             accGravity = 0;
             groundCounter = 0;
             wallCounter = 0;
@@ -190,18 +192,10 @@ namespace SlayerKnight
                     memMovement.X = physicsFeature.Movement.X;
                 }
 
-                // Update current velocity based on movement. 
-                // This operation only occurs when in the air, i.e.
-                //   ground counter equal to 0.
-                if (groundCounter == 0)
-                {
-                    curMovement = memMovement;
-                }
-
                 // Decrement the ground counter. 
                 // Value greater than zero indicates the physics feature is considered
                 //   in its ground state.
-                else
+                if (groundCounter != 0)
                     groundCounter--;
 
                 // Decrement the wall counter.
@@ -282,6 +276,22 @@ namespace SlayerKnight
                     // to the collision feature it ran into.
                     if (groundCounter == 0 && physicsFeature.Position == lstPosition)
                         physicsFeature.Position += info.Normal;
+
+                    // Remember the previous normal from collision surface.
+                    lstNormal = info.Normal;
+                }
+                else if (groundCounter > 0)
+                {
+                    Vector2 verMovement, horMovement;
+
+                    horMovement = memMovement.X * lstNormal.GetPerpendicular();
+                    verMovement = -memMovement.Y * defNormal;
+
+                    curMovement = horMovement + verMovement;
+                }
+                else if (groundCounter == 0)
+                {
+                    curMovement = memMovement;
                 }
 
                 // This piece solely of disgusting code is tp resolve another glitch:
@@ -294,8 +304,10 @@ namespace SlayerKnight
                     physicsFeature.Position = new Vector2(x: physicsFeature.Position.X, y: lstPosition.Y);
                 else
                     lstPosition = physicsFeature.Position;
+
+                Console.WriteLine($"Current Movement: {curMovement} {groundCounter} {memMovement}");
             }
-            //Console.WriteLine($"Current Movement: {curMovement}");
+            
 
             timerFeature.Update(timeElapsed);
         }

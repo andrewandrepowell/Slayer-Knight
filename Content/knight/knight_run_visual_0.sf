@@ -9,6 +9,11 @@
       "frames": [0,1,2,3,4,5,6,7],
       "isLooping": true,
       "frameDuration": 0.09999997
+    },
+    "dash_0": {
+      "frames": [0],
+      "isLooping": false,
+      "frameDuration": 0.2
     }
   }
 }

@@ -37,6 +37,10 @@ namespace SlayerKnight.Components
         private int jmpCounter = 0;
         private int lftCounter = 0;
         private int rhtCounter = 0;
+        private float jmpAmount = 0;
+        private float lftAmount = 0;
+        private float rhtAmount = 0;
+        private float horAmount = 0;
         private bool facingRight = true;
         public static Color Identifier { get => new Color(r: 78, g: 111, b: 6, alpha: 255); }
         public int DrawLevel { get; set; } = 0;
@@ -84,17 +88,11 @@ namespace SlayerKnight.Components
             }
         }
 
-        public void Draw(Matrix? transformMatrix = null)
-        {
-            spriteBatch.Begin(transformMatrix: transformMatrix);
-            //spriteBatch.Draw(texture: maskTexture, position: Position, color: Color.White);
-            spriteBatch.End();
-            animatorManager.Draw(transformMatrix: transformMatrix);
-        }
-
-        public void Update(float timeElapsed)
+        private void serviceCamera()
         {
             // Apply the camera.
+            // Might be a good idea to move the cemera stuff into the timer loop, since it's
+            //   not really necessary to update the camera as soon as possible.
             {
                 int pixelsToWidthEdge = levelFeature.ScreenSize.Width / 2 - 100;
                 int pixelsToHeightEdge = levelFeature.ScreenSize.Height / 2 - 50;
@@ -135,11 +133,10 @@ namespace SlayerKnight.Components
                 // Set the camera position.
                 levelFeature.CameraObject.Position = cameraPosition;
             }
+        }
 
-            // Service collisions as reported by the physics manager.
-            while ((this as PhysicsInterface).GetNext(out var info))
-                ;
-
+        private void serviceControls()
+        {
             // Service user input.
             //Console.WriteLine($"Jump Counter: {jmpCounter}");
             while (ControlFeatureObject.GetNext(out var info))
@@ -164,96 +161,125 @@ namespace SlayerKnight.Components
                         break;
                 }
             }
+        }
+
+        private void serviceMovement()
+        {
+            // Determine movement amounts.
+            {
+                jmpAmount = 0;
+                lftAmount = 0;
+                rhtAmount = 0;
+                horAmount = 0;
+
+                if (jmpCounter > 0)
+                {
+                    jmpAmount = 13f;
+                    jmpCounter--;
+                }
+                if (lftCounter > 0)
+                {
+                    lftAmount = 4;
+                    lftCounter--;
+                }
+                if (rhtCounter > 0)
+                {
+
+                    rhtAmount = 4;
+                    rhtCounter--;
+                }
+                horAmount = rhtAmount - lftAmount;
+            }
+
+            // Determine facing direction
+            if (horAmount > 0)
+                facingRight = true;
+            else if (horAmount < 0)
+                facingRight = false;
+
+            // Set the movement. 
+            Movement = new Vector2(x: horAmount, y: -jmpAmount);
+        }
+
+        private void serviceAnimations()
+        { 
+            if (Grounded)
+            {
+                //Console.WriteLine("GROUNDED");
+                if (animatorManager.CurrentFeature != jumpVisualAnimation &&
+                    animatorManager.CurrentSpriteSheetAnimation.Name != "start_0" &&
+                    jmpAmount > 0)
+                {
+                    jumpVisualAnimation.Play(animation: "start_0").Rewind();
+                }
+
+                if (animatorManager.CurrentFeature == jumpVisualAnimation &&
+                    animatorManager.CurrentSpriteSheetAnimation.Name != "end_0" &&
+                    animatorManager.CurrentSpriteSheetAnimation.IsComplete &&
+                    jmpAmount == 0)
+                {
+                    jumpVisualAnimation.Play(animation: "end_0").Rewind();
+                }
+
+                if ((animatorManager.CurrentFeature != jumpVisualAnimation) ||
+                    (animatorManager.CurrentSpriteSheetAnimation.Name == "end_0" &&
+                        animatorManager.CurrentSpriteSheetAnimation.IsComplete))
+                {
+                    if (horAmount == 0)
+                        idleVisualAnimation.Play(animation: "idle_0");
+                    else
+                        runVisualAnimation.Play(animation: "run_0");
+                }
+            }
+            else
+            {
+
+                if (animatorManager.CurrentFeature != jumpVisualAnimation || animatorManager.CurrentSpriteSheetAnimation.Name != "start_0" || animatorManager.CurrentSpriteSheetAnimation.IsComplete)
+                {
+                    jumpVisualAnimation.Play(animation: "up_0");
+                }
+            }
+
+            if (facingRight)
+            {
+                animatorManager.CurrentSprite.Effect = SpriteEffects.None;
+                if (animatorManager.CurrentFeature == jumpVisualAnimation)
+                    animatorManager.CurrentOffset = jumpRightOffset;
+            }
+            else
+            {
+                animatorManager.CurrentSprite.Effect = SpriteEffects.FlipHorizontally;
+                if (animatorManager.CurrentFeature == jumpVisualAnimation)
+                    animatorManager.CurrentOffset = jumpLeftOffset;
+            } 
+        }
+
+        private void serviceCollisions()
+        {
+            // Service collisions as reported by the physics manager.
+            while ((this as PhysicsInterface).GetNext(out var info))
+                ;
+        }
+
+        public void Draw(Matrix? transformMatrix = null)
+        {
+            spriteBatch.Begin(transformMatrix: transformMatrix);
+            //spriteBatch.Draw(texture: maskTexture, position: Position, color: Color.White);
+            spriteBatch.End();
+            animatorManager.Draw(transformMatrix: transformMatrix);
+        }
+
+        public void Update(float timeElapsed)
+        {
+            serviceCollisions();
+            serviceControls();
 
             // Service main loop.
             while (loopTimer.GetNext())
             {
-                // Apply movement.
-                {
-                    float jmpAmount = 0;
-                    float lftAmount = 0;
-                    float rhtAmount = 0;
-                    float horAmount = 0;
-
-                    if (jmpCounter > 0)
-                    {
-                        jmpAmount = 13f;
-                        jmpCounter--;
-                    }
-                    if (lftCounter > 0)
-                    {
-                        lftAmount = 4;
-                        lftCounter--;
-                    }
-                    if (rhtCounter > 0)
-                    {
-                        
-                        rhtAmount = 4;
-                        rhtCounter--;
-                    }
-                    horAmount = rhtAmount - lftAmount;
-                    Movement = new Vector2(x: horAmount, y: -jmpAmount);
-
-                    // Determine facing direction
-                    if (horAmount > 0)
-                        facingRight = true;
-                    else if (horAmount < 0)
-                        facingRight = false;
-                    
-
-                    // Handle animations.
-                    {
-                        if (Grounded)
-                        {
-                            //Console.WriteLine("GROUNDED");
-                            if (animatorManager.CurrentFeature != jumpVisualAnimation && 
-                                animatorManager.CurrentSpriteSheetAnimation.Name != "start_0" && 
-                                jmpAmount > 0)
-                            {
-                                jumpVisualAnimation.Play(animation: "start_0").Rewind();
-                            }
-                            
-                            if (animatorManager.CurrentFeature == jumpVisualAnimation &&
-                                animatorManager.CurrentSpriteSheetAnimation.Name != "end_0" &&
-                                animatorManager.CurrentSpriteSheetAnimation.IsComplete &&
-                                jmpAmount == 0)
-                            {
-                                jumpVisualAnimation.Play(animation: "end_0").Rewind();
-                            }
-
-                            if ((animatorManager.CurrentFeature != jumpVisualAnimation) || 
-                                (animatorManager.CurrentSpriteSheetAnimation.Name == "end_0" && 
-                                 animatorManager.CurrentSpriteSheetAnimation.IsComplete))
-                            {
-                                if (horAmount == 0)
-                                    idleVisualAnimation.Play(animation: "idle_0");
-                                else
-                                    runVisualAnimation.Play(animation: "run_0");
-                            }
-                        }
-                        else
-                        {
-
-                            if (animatorManager.CurrentFeature != jumpVisualAnimation || animatorManager.CurrentSpriteSheetAnimation.Name != "start_0" || animatorManager.CurrentSpriteSheetAnimation.IsComplete)
-                            {
-                                jumpVisualAnimation.Play(animation: "up_0");
-                            }
-                        }
-
-                        if (facingRight)
-                        {
-                            animatorManager.CurrentSprite.Effect = SpriteEffects.None;
-                            if (animatorManager.CurrentFeature == jumpVisualAnimation)
-                                animatorManager.CurrentOffset = jumpRightOffset;
-                        }
-                        else
-                        {
-                            animatorManager.CurrentSprite.Effect = SpriteEffects.FlipHorizontally;
-                            if (animatorManager.CurrentFeature == jumpVisualAnimation)
-                                animatorManager.CurrentOffset = jumpLeftOffset;
-                        }
-                    }  
-                }
+                serviceCamera();
+                serviceMovement();
+                serviceAnimations();
             }
 
             // Update the managers and features.

@@ -9,15 +9,15 @@
     ],
     "fileStates": {
         "kingdom_environment_visual_asset_0.tmx": {
-            "scale": 2,
-            "selectedLayer": 2,
+            "scale": 1.5,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 868.25,
-                "y": 618
+                "x": 521.6666666666666,
+                "y": 912
             }
         },
         "kingdom_tileset_mask_asset_0.tsx": {
-            "scaleInDock": 4,
+            "scaleInDock": 3,
             "scaleInEditor": 1
         },
         "kingdom_tileset_visual_asset_0.tsx": {
@@ -25,6 +25,14 @@
             "scaleInEditor": 4
         },
         "kingdom_tileset_visual_asset_1.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "kingdom_tileset_visual_asset_2.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "kingdom_tileset_visual_asset_3.tsx": {
             "scaleInDock": 1.5,
             "scaleInEditor": 1
         },
@@ -53,13 +61,17 @@
         "kingdom_tileset_visual_asset_0.tsx",
         "kingdom_environment_visual_asset_0.tmx",
         "kingdom_tileset_mask_asset_0.tsx",
-        "kingdom_tileset_visual_asset_1.tsx"
+        "kingdom_tileset_visual_asset_1.tsx",
+        "kingdom_tileset_visual_asset_2.tsx",
+        "kingdom_tileset_visual_asset_3.tsx"
     ],
     "project": "tiled_project.tiled-project",
     "recentFiles": [
         "test_tileset_mask_asset_0.tsx",
         "test_environment_mask_asset_0.tmx",
         "kingdom_tileset_visual_asset_0.tsx",
+        "kingdom_tileset_visual_asset_3.tsx",
+        "kingdom_tileset_visual_asset_2.tsx",
         "kingdom_tileset_visual_asset_1.tsx",
         "kingdom_tileset_mask_asset_0.tsx",
         "kingdom_environment_visual_asset_0.tmx"
