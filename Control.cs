@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Input;
 namespace Utility
 {
     public enum ControlState { Pressed, Held, Released }
-    public enum ControlAction { MoveLeft, MoveRight, MoveUp, MoveDown, Jump, Attack, Special }
+    public enum ControlAction { MoveLeft, MoveRight, MoveUp, MoveDown, Jump, Attack, Dash, Special }
     public struct ControlInfo
     {
         public ControlAction Action { get; private set; }

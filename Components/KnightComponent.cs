@@ -34,13 +34,9 @@ namespace SlayerKnight.Components
         private AnimatorFeature jumpVisualAnimation;
         private TimerFeature loopTimer = new TimerFeature() { Period = loopTimerPeriod, Activated = true, Repeat = true };
         private Texture2D maskTexture;
-        private int jmpCounter = 0;
-        private int lftCounter = 0;
-        private int rhtCounter = 0;
-        private float jmpAmount = 0;
-        private float lftAmount = 0;
-        private float rhtAmount = 0;
-        private float horAmount = 0;
+        private int jumpCounter = 0;
+        private int leftCounter = 0;
+        private int rightCounter = 0;
         private bool facingRight = true;
         public static Color Identifier { get => new Color(r: 78, g: 111, b: 6, alpha: 255); }
         public int DrawLevel { get; set; } = 0;
@@ -145,17 +141,17 @@ namespace SlayerKnight.Components
                 {
                     case ControlAction.Jump:
                         if (info.State == ControlState.Pressed && Grounded)
-                            jmpCounter = 15;
+                            jumpCounter = 15;
                         else if (info.State == ControlState.Released)
-                            jmpCounter = Math.Max(jmpCounter - 10, 0);
+                            jumpCounter = Math.Max(jumpCounter - 10, 0);
                         break;
                     case ControlAction.MoveLeft:
                         if (info.State == ControlState.Pressed || info.State == ControlState.Held)
-                            lftCounter = 1;
+                            leftCounter = 1;
                         break;
                     case ControlAction.MoveRight:
                         if (info.State == ControlState.Pressed || info.State == ControlState.Held)
-                            rhtCounter = 1;
+                            rightCounter = 1;
                         break;
                     default:
                         break;
@@ -165,31 +161,19 @@ namespace SlayerKnight.Components
 
         private void serviceMovement()
         {
+            float jumpAmount = 0;
+            float leftAmount = 0;
+            float rightAmount = 0;
+            float horAmount = 0;
+
             // Determine movement amounts.
-            {
-                jmpAmount = 0;
-                lftAmount = 0;
-                rhtAmount = 0;
-                horAmount = 0;
-
-                if (jmpCounter > 0)
-                {
-                    jmpAmount = 13f;
-                    jmpCounter--;
-                }
-                if (lftCounter > 0)
-                {
-                    lftAmount = 4;
-                    lftCounter--;
-                }
-                if (rhtCounter > 0)
-                {
-
-                    rhtAmount = 4;
-                    rhtCounter--;
-                }
-                horAmount = rhtAmount - lftAmount;
-            }
+            if (jumpCounter > 0)
+                jumpAmount = 13f;
+            if (leftCounter > 0)
+                leftAmount = 4;
+            if (rightCounter > 0)
+                rightAmount = 4;
+            horAmount = rightAmount - leftAmount;
 
             // Determine facing direction
             if (horAmount > 0)
@@ -198,17 +182,16 @@ namespace SlayerKnight.Components
                 facingRight = false;
 
             // Set the movement. 
-            Movement = new Vector2(x: horAmount, y: -jmpAmount);
+            Movement = new Vector2(x: horAmount, y: -jumpAmount);
         }
 
         private void serviceAnimations()
         { 
             if (Grounded)
             {
-                //Console.WriteLine("GROUNDED");
                 if (animatorManager.CurrentFeature != jumpVisualAnimation &&
                     animatorManager.CurrentSpriteSheetAnimation.Name != "start_0" &&
-                    jmpAmount > 0)
+                    jumpCounter > 0)
                 {
                     jumpVisualAnimation.Play(animation: "start_0").Rewind();
                 }
@@ -216,7 +199,7 @@ namespace SlayerKnight.Components
                 if (animatorManager.CurrentFeature == jumpVisualAnimation &&
                     animatorManager.CurrentSpriteSheetAnimation.Name != "end_0" &&
                     animatorManager.CurrentSpriteSheetAnimation.IsComplete &&
-                    jmpAmount == 0)
+                    jumpCounter == 0)
                 {
                     jumpVisualAnimation.Play(animation: "end_0").Rewind();
                 }
@@ -225,7 +208,7 @@ namespace SlayerKnight.Components
                     (animatorManager.CurrentSpriteSheetAnimation.Name == "end_0" &&
                         animatorManager.CurrentSpriteSheetAnimation.IsComplete))
                 {
-                    if (horAmount == 0)
+                    if ((leftCounter == 0 && rightCounter == 0) || (leftCounter > 0 && rightCounter > 0))
                         idleVisualAnimation.Play(animation: "idle_0");
                     else
                         runVisualAnimation.Play(animation: "run_0");
@@ -261,6 +244,18 @@ namespace SlayerKnight.Components
                 ;
         }
 
+        private void decrementCounters()
+        {
+            // This method is dedicated to decrementing all counters at the same time.
+            // The counter should be decremented at the end of the update loop.
+            if (jumpCounter > 0)
+                jumpCounter--;
+            if (leftCounter > 0)
+                leftCounter--;
+            if (rightCounter > 0)
+                rightCounter--;
+        }
+
         public void Draw(Matrix? transformMatrix = null)
         {
             spriteBatch.Begin(transformMatrix: transformMatrix);
@@ -280,6 +275,7 @@ namespace SlayerKnight.Components
                 serviceCamera();
                 serviceMovement();
                 serviceAnimations();
+                decrementCounters();
             }
 
             // Update the managers and features.
