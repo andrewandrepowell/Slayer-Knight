@@ -37,7 +37,10 @@ namespace SlayerKnight.Components
         private int jumpCounter = 0;
         private int leftCounter = 0;
         private int rightCounter = 0;
+        private int dashActiveCounter = 0;
+        private int dashCooldownCounter = 0;
         private bool facingRight = true;
+        private bool dashTouchedGround = true;
         public static Color Identifier { get => new Color(r: 78, g: 111, b: 6, alpha: 255); }
         public int DrawLevel { get; set; } = 0;
         public bool PhysicsApplied { get; set; } = true;
@@ -153,6 +156,14 @@ namespace SlayerKnight.Components
                         if (info.State == ControlState.Pressed || info.State == ControlState.Held)
                             rightCounter = 1;
                         break;
+                    case ControlAction.Dash:
+                        if (info.State == ControlState.Pressed && dashCooldownCounter == 0 && dashTouchedGround)
+                        {
+                            dashActiveCounter = 6;
+                            dashCooldownCounter = 30;
+                            dashTouchedGround = false;
+                        }
+                        break;
                     default:
                         break;
                 }
@@ -166,14 +177,37 @@ namespace SlayerKnight.Components
             float rightAmount = 0;
             float horAmount = 0;
 
-            // Determine movement amounts.
-            if (jumpCounter > 0)
-                jumpAmount = 13f;
-            if (leftCounter > 0)
-                leftAmount = 4;
-            if (rightCounter > 0)
-                rightAmount = 4;
+            // Order of if-else-statements matter
+            // since they indicate priority of mechanics.
+
+            // Implement dash mechanic.
+            if (dashActiveCounter > 0)
+            {
+                jumpCounter = 0;
+                leftCounter = 0;
+                rightCounter = 0;
+
+                if (facingRight)
+                    rightAmount = 12;
+                else
+                    leftAmount = 12;
+            }
+
+            // Implement jump and moving left/right mechanics.
+            else
+            {
+                if (jumpCounter > 0)
+                    jumpAmount = 13f;
+                if (leftCounter > 0)
+                    leftAmount = 4;
+                if (rightCounter > 0)
+                    rightAmount = 4;
+            }
             horAmount = rightAmount - leftAmount;
+
+            // Dashes get reset when knight is on ground.
+            if (Grounded)
+                dashTouchedGround = true;
 
             // Determine facing direction
             if (horAmount > 0)
@@ -187,7 +221,11 @@ namespace SlayerKnight.Components
 
         private void serviceAnimations()
         { 
-            if (Grounded)
+            if (dashActiveCounter > 0)
+            {
+                runVisualAnimation.Play(animation: "dash_0");
+            }
+            else if (Grounded)
             {
                 if (animatorManager.CurrentFeature != jumpVisualAnimation &&
                     animatorManager.CurrentSpriteSheetAnimation.Name != "start_0" &&
@@ -254,6 +292,10 @@ namespace SlayerKnight.Components
                 leftCounter--;
             if (rightCounter > 0)
                 rightCounter--;
+            if (dashActiveCounter > 0)
+                dashActiveCounter--;
+            if (dashCooldownCounter > 0)
+                dashCooldownCounter--;
         }
 
         public void Draw(Matrix? transformMatrix = null)

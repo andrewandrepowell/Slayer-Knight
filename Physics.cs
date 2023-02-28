@@ -37,6 +37,8 @@ namespace SlayerKnight
     {
         public static bool GetNext(this PhysicsInterface feature, out PhysicsInfo info) => 
             (feature as FeatureInterface<PhysicsManager>).ManagerObject.GetNext(feature, out info);
+        public static void ResetMemorizedMovement(this PhysicsInterface feature) =>
+            (feature as FeatureInterface<PhysicsManager>).ManagerObject.ResetMemorizedMovement(feature);
     }
     internal class PhysicsManager : UpdateInterface, ManagerInterface<PhysicsInterface>
     {
@@ -86,6 +88,13 @@ namespace SlayerKnight
                 return true;
             }
             return false;
+        }
+
+        public void ResetMemorizedMovement(PhysicsInterface feature)
+        {
+            if (physicsFeature != feature)
+                throw new Exception("The specifid feature isn't associated with this PhysicsManager.");
+            memMovement = Vector2.Zero;
         }
 
         public void Update(float timeElapsed)
@@ -280,6 +289,8 @@ namespace SlayerKnight
                     // Remember the previous normal from collision surface.
                     lstNormal = info.Normal;
                 }
+
+                //
                 else if (groundCounter > 0)
                 {
                     Vector2 verMovement, horMovement;
@@ -289,6 +300,8 @@ namespace SlayerKnight
 
                     curMovement = horMovement + verMovement;
                 }
+
+                //
                 else if (groundCounter == 0)
                 {
                     curMovement = memMovement;
