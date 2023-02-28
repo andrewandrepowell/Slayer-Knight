@@ -137,7 +137,6 @@ namespace SlayerKnight.Components
         private void serviceControls()
         {
             // Service user input.
-            //Console.WriteLine($"Jump Counter: {jmpCounter}");
             while (ControlFeatureObject.GetNext(out var info))
             {
                 switch (info.Action)

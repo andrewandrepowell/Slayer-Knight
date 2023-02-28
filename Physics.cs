@@ -229,65 +229,70 @@ namespace SlayerKnight
                 {
                     // Synthesize all the collisions infos.
                     var info = CollisionManager.SynthesizeInfos(synthesisInfos);
+
                     Console.WriteLine($"info={info.Correction} {info.Normal} {synthesisInfos.Count} {curMovement} {curGravocity}");
 
-                    // Correct current movement.
+                    // Only perform the changes to movement if the normal direction from collision surface isn't zero.
+                    if (info.Normal != Vector2.Zero)
                     {
-                        // Correct current horizontal movement.
-                        // The idea is, so long as the incline isn't too steep, the horizontal movement will rotate with the incline.
-                        // This state also determines whether the physics feature is considered grounded or not.
-                        Vector2 horMovement;
-                        if (Vector2.Dot(defNormal, info.Normal) > 0.4f)
+                        // Correct current movement.
                         {
-                            //Console.WriteLine("GROUNDED");
-                            horMovement = memMovement.X * info.Normal.GetPerpendicular(); // horizontal movement rotates with ground.
-                            groundCounter = 2; // increasing ground counter implies the physics feature is grounded.
-                            curGravocity = -defNormal; // velocity based on gravity is reset back to negative default normal.
-                        }
-                        else
-                        {
-                            horMovement = Vector2.Zero; // squash horizontal movement if colliding with wall.
-                            wallCounter = 3;
-                        }                        
+                            // Correct current horizontal movement.
+                            // The idea is, so long as the incline isn't too steep, the horizontal movement will rotate with the incline.
+                            // This state also determines whether the physics feature is considered grounded or not.
+                            Vector2 horMovement;
+                            if (Vector2.Dot(defNormal, info.Normal) > 0.4f)
+                            {
+                                //Console.WriteLine("GROUNDED");
+                                horMovement = memMovement.X * info.Normal.GetPerpendicular(); // horizontal movement rotates with ground.
+                                groundCounter = 2; // increasing ground counter implies the physics feature is grounded.
+                                curGravocity = -defNormal; // velocity based on gravity is reset back to negative default normal.
+                            }
+                            else
+                            {
+                                horMovement = Vector2.Zero; // squash horizontal movement if colliding with wall.
+                                wallCounter = 3;
+                            }
 
-                        // Correct current vertical movement.
-                        // The idea is, so long as there isn't something in the way, vertical movement is free to occur.
-                        Vector2 verMovement;
-                        if (Vector2.Dot(-memMovement.Y * defNormal, info.Normal) >= 0)
-                        {
-                            //Console.WriteLine("NOT HITTING CEILING");
-                            verMovement = -memMovement.Y * defNormal;
-                        }
-                        else
-                        {
-                            verMovement = Vector2.Zero;
-                            ceilCounter = 6;
+                            // Correct current vertical movement.
+                            // The idea is, so long as there isn't something in the way, vertical movement is free to occur.
+                            Vector2 verMovement;
+                            if (Vector2.Dot(-memMovement.Y * defNormal, info.Normal) >= 0)
+                            {
+                                verMovement = -memMovement.Y * defNormal;
+                            }
+                            else
+                            {
+                                verMovement = Vector2.Zero;
+                                ceilCounter = 6;
+                            }
+
+                            // Combination of horizontal and vertical movement defines the current movement.
+                            curMovement = horMovement + verMovement;
                         }
 
-                        // Combination of horizontal and vertical movement defines the current movement.
-                        //Console.WriteLine($"Hor: {horMovement}, Ver: {verMovement}");
-                        curMovement = horMovement + verMovement;
+
+
+                        // This piece solely of disgusting code is tp resolve another glitch:
+                        // If the phsics feature is stuck, simply move it in the direction normal
+                        // to the collision feature it ran into.
+                        if (groundCounter == 0 && physicsFeature.Position == lstPosition)
+                            physicsFeature.Position += info.Normal;
+
+                        // Remember the previous normal from collision surface.
+                        lstNormal = info.Normal;
                     }
-
-                    // Send physic infos to physics feature.
-                    foreach (var other in info.Others)
-                        infoChannel.Enqueue(new PhysicsInfo(
-                            other: other, 
-                            selfCollided: true, 
-                            point: info.Point,
-                            normal: info.Normal));
 
                     // Correction position so that physics feature doesn't overlap with other collisions features.
                     physicsFeature.Position += info.Correction;
 
-                    // This piece solely of disgusting code is tp resolve another glitch:
-                    // If the phsics feature is stuck, simply move it in the direction normal
-                    // to the collision feature it ran into.
-                    if (groundCounter == 0 && physicsFeature.Position == lstPosition)
-                        physicsFeature.Position += info.Normal;
-
-                    // Remember the previous normal from collision surface.
-                    lstNormal = info.Normal;
+                    // Send physic infos to physics feature.
+                    foreach (var other in info.Others)
+                        infoChannel.Enqueue(new PhysicsInfo(
+                            other: other,
+                            selfCollided: true,
+                            point: info.Point,
+                            normal: info.Normal));
                 }
 
                 //

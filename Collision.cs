@@ -77,6 +77,18 @@ namespace Utility
                     correction: infos.First().Correction,
                     normal: infos.First().Normal);
 
+            Vector2 normal;
+            {
+                var sum = new Vector2(
+                    x: infos.Select(i => i.Normal.X).Sum(),
+                    y: infos.Select(i => i.Normal.Y).Sum());
+                var length = sum.Length();
+                if (length < 0.001)
+                    normal = Vector2.Zero;
+                else
+                    normal = sum / length;
+            }
+
             return new SynthesizedCollisionInfo(
                 others: infos.Select(i => i.Other).ToArray(),
                 point: new Vector2(
@@ -85,9 +97,7 @@ namespace Utility
                 correction: new Vector2(
                     x: infos.Where(i => i.Correction.Y == 0).Select(i => i.Correction.X).DefaultIfEmpty().Average(),
                     y: infos.Where(i => i.Correction.X == 0).Select(i => i.Correction.Y).DefaultIfEmpty().Average()),
-                normal: Vector2.Normalize(new Vector2(
-                    x: infos.Select(i => i.Normal.X).Sum(),
-                    y: infos.Select(i => i.Normal.Y).Sum())));
+                normal: normal);
         }
         public bool GetNextCollision(CollisionInterface collidable0, out CollisionInfo info)
         {
