@@ -30,8 +30,10 @@ namespace SlayerKnight
         private List<DestroyInterface> destroyFeatures;
         private string environmentVisualAsset;
         private string environmentMaskAsset;
+        private string backgroundVisualAsset;
         private Size environmentGridSize;
         private Texture2D environmentVisualTexture;
+        private Texture2D backgroundVisualTexture;
         private Color environmentStartColor;
         private Color environmentIncludeColor;
         private Color environmentExcludeColor;
@@ -49,6 +51,7 @@ namespace SlayerKnight
             string roomIdentifier, 
             string environmentVisualAsset, 
             string environmentMaskAsset,
+            string backgroundVisualAsset,
             Size environmentGridSize,
             Color environmentStartColor,
             Color environmentIncludeColor,
@@ -68,6 +71,7 @@ namespace SlayerKnight
             this.controlManager = controlManager;
             this.environmentVisualAsset = environmentVisualAsset;
             this.environmentMaskAsset = environmentMaskAsset;
+            this.backgroundVisualAsset = backgroundVisualAsset;
             this.environmentGridSize = environmentGridSize;
             this.environmentStartColor = environmentStartColor;
             this.environmentIncludeColor = environmentIncludeColor;
@@ -100,6 +104,7 @@ namespace SlayerKnight
                 throw new Exception("There should never be case where the level is started when already started.");
 
             // Load static visual textures.
+            backgroundVisualTexture = contentManager.Load<Texture2D>(backgroundVisualAsset);
             environmentVisualTexture = contentManager.Load<Texture2D>(environmentVisualAsset);
 
             // Generate features from environment mask.
@@ -205,6 +210,7 @@ namespace SlayerKnight
             {
                 // Draw the environment visual texture.
                 spriteBatch.Begin(transformMatrix: transformMatrix);
+                spriteBatch.Draw(texture: backgroundVisualTexture, position: CameraObject.Position, color: Color.White);
                 spriteBatch.Draw(texture: environmentVisualTexture, position: Vector2.Zero, color: Color.White);
                 spriteBatch.End();
             }

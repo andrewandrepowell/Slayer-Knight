@@ -9,11 +9,11 @@
     ],
     "fileStates": {
         "kingdom_environment_visual_asset_0.tmx": {
-            "scale": 1.5,
-            "selectedLayer": 5,
+            "scale": 0.5,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 521.6666666666666,
-                "y": 912
+                "x": 1848,
+                "y": 683
             }
         },
         "kingdom_tileset_mask_asset_0.tsx": {
@@ -50,11 +50,11 @@
         }
     },
     "last.imagePath": "C:/Users/andre/source/repos/Slayer Knight/Content/kingdom",
-    "map.height": 120,
+    "map.height": 23,
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 16,
     "map.tileWidth": 16,
-    "map.width": 240,
+    "map.width": 40,
     "openFiles": [
         "test_tileset_mask_asset_0.tsx",
         "test_environment_mask_asset_0.tmx",
