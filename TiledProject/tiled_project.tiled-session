@@ -8,16 +8,32 @@
         "."
     ],
     "fileStates": {
-        "kingdom_environment_visual_asset_0.tmx": {
-            "scale": 0.5,
-            "selectedLayer": 1,
+        "kingdom_background_visual_asset_0.tmx": {
+            "scale": 1,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 1848,
-                "y": 683
+                "x": 320,
+                "y": 184
             }
         },
+        "kingdom_environment_visual_asset_0.tmx": {
+            "scale": 0.33,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 1918.1818181818182,
+                "y": 960.6060606060606
+            }
+        },
+        "kingdom_tileset_background_asset_0.tsx": {
+            "scaleInDock": 0.75,
+            "scaleInEditor": 1
+        },
+        "kingdom_tileset_background_asset_1.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "kingdom_tileset_mask_asset_0.tsx": {
-            "scaleInDock": 3,
+            "scaleInDock": 4,
             "scaleInEditor": 1
         },
         "kingdom_tileset_visual_asset_0.tsx": {
@@ -25,7 +41,7 @@
             "scaleInEditor": 4
         },
         "kingdom_tileset_visual_asset_1.tsx": {
-            "scaleInDock": 1,
+            "scaleInDock": 2,
             "scaleInEditor": 1
         },
         "kingdom_tileset_visual_asset_2.tsx": {
@@ -41,7 +57,7 @@
             "selectedLayer": 0,
             "viewCenter": {
                 "x": 499.3333333333333,
-                "y": 249.99999999999997
+                "y": 250.66666666666666
             }
         },
         "test_tileset_mask_asset_0.tsx": {
@@ -63,13 +79,19 @@
         "kingdom_tileset_mask_asset_0.tsx",
         "kingdom_tileset_visual_asset_1.tsx",
         "kingdom_tileset_visual_asset_2.tsx",
-        "kingdom_tileset_visual_asset_3.tsx"
+        "kingdom_tileset_visual_asset_3.tsx",
+        "kingdom_background_visual_asset_0.tmx",
+        "kingdom_tileset_background_asset_0.tsx",
+        "kingdom_tileset_background_asset_1.tsx"
     ],
     "project": "tiled_project.tiled-project",
     "recentFiles": [
         "test_tileset_mask_asset_0.tsx",
         "test_environment_mask_asset_0.tmx",
         "kingdom_tileset_visual_asset_0.tsx",
+        "kingdom_tileset_background_asset_1.tsx",
+        "kingdom_tileset_background_asset_0.tsx",
+        "kingdom_background_visual_asset_0.tmx",
         "kingdom_tileset_visual_asset_3.tsx",
         "kingdom_tileset_visual_asset_2.tsx",
         "kingdom_tileset_visual_asset_1.tsx",

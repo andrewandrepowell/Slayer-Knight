@@ -230,7 +230,7 @@ namespace SlayerKnight
                     // Synthesize all the collisions infos.
                     var info = CollisionManager.SynthesizeInfos(synthesisInfos);
 
-                    Console.WriteLine($"info={info.Correction} {info.Normal} {synthesisInfos.Count} {curMovement} {curGravocity}");
+                    //Console.WriteLine($"info={info.Correction} {info.Normal} {synthesisInfos.Count} {curMovement} {curGravocity}");
 
                     // Only perform the changes to movement if the normal direction from collision surface isn't zero.
                     if (info.Normal != Vector2.Zero)
@@ -243,7 +243,6 @@ namespace SlayerKnight
                             Vector2 horMovement;
                             if (Vector2.Dot(defNormal, info.Normal) > 0.4f)
                             {
-                                //Console.WriteLine("GROUNDED");
                                 horMovement = memMovement.X * info.Normal.GetPerpendicular(); // horizontal movement rotates with ground.
                                 groundCounter = 2; // increasing ground counter implies the physics feature is grounded.
                                 curGravocity = -defNormal; // velocity based on gravity is reset back to negative default normal.
@@ -271,8 +270,6 @@ namespace SlayerKnight
                             curMovement = horMovement + verMovement;
                         }
 
-
-
                         // This piece solely of disgusting code is tp resolve another glitch:
                         // If the phsics feature is stuck, simply move it in the direction normal
                         // to the collision feature it ran into.
@@ -295,7 +292,8 @@ namespace SlayerKnight
                             normal: info.Normal));
                 }
 
-                //
+                // If still on the ground, but not colliding,
+                //   updte the current movement accordingly.
                 else if (groundCounter > 0)
                 {
                     Vector2 verMovement, horMovement;
@@ -306,7 +304,8 @@ namespace SlayerKnight
                     curMovement = horMovement + verMovement;
                 }
 
-                //
+                // If in the air and not colliding, reset
+                //   current movement to memorized movement.
                 else if (groundCounter == 0)
                 {
                     curMovement = memMovement;
@@ -323,7 +322,7 @@ namespace SlayerKnight
                 else
                     lstPosition = physicsFeature.Position;
 
-                Console.WriteLine($"Current Movement: {curMovement} {groundCounter} {memMovement}");
+                //Console.WriteLine($"Current Movement: {curMovement} {groundCounter} {memMovement}");
             }
             
 
