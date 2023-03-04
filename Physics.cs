@@ -321,10 +321,7 @@ namespace SlayerKnight
                     physicsFeature.Position = new Vector2(x: physicsFeature.Position.X, y: lstPosition.Y);
                 else
                     lstPosition = physicsFeature.Position;
-
-                //Console.WriteLine($"Current Movement: {curMovement} {groundCounter} {memMovement}");
             }
-            
 
             timerFeature.Update(timeElapsed);
         }

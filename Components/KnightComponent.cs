@@ -24,6 +24,7 @@ namespace SlayerKnight.Components
         readonly private static string idleVisualAsset = "knight/knight_idle_visual_0.sf";
         readonly private static string runVisualAsset = "knight/knight_run_visual_0.sf";
         readonly private static string jumpVisualAsset = "knight/knight_jump_visual_0.sf";
+        readonly private static string attackVisualAsset = "knight/knight_attack_visual_0.sf";
         private ContentManager contentManager;
         private SpriteBatch spriteBatch;
         private LevelInterface levelFeature;
@@ -32,6 +33,7 @@ namespace SlayerKnight.Components
         private AnimatorFeature idleVisualAnimation;
         private AnimatorFeature runVisualAnimation;
         private AnimatorFeature jumpVisualAnimation;
+        private AnimatorFeature attackVisualAnimation;
         private TimerFeature loopTimer = new TimerFeature() { Period = loopTimerPeriod, Activated = true, Repeat = true };
         private Texture2D maskTexture;
         private int jumpCounter = 0;
@@ -39,6 +41,8 @@ namespace SlayerKnight.Components
         private int rightCounter = 0;
         private int dashActiveCounter = 0;
         private int dashCooldownCounter = 0;
+        private bool attackActive = false;
+        private int attackCombo = 0;
         private bool facingRight = true;
         private bool dashTouchedGround = true;
         public static Color Identifier { get => new Color(r: 78, g: 111, b: 6, alpha: 255); }
@@ -73,9 +77,11 @@ namespace SlayerKnight.Components
             idleVisualAnimation = new AnimatorFeature(idleVisualAsset) { Offset = new Vector2(x: 16, y: 24) };
             runVisualAnimation = new AnimatorFeature(runVisualAsset) { Offset = new Vector2(x: 16, y: 24) };
             jumpVisualAnimation = new AnimatorFeature(jumpVisualAsset); // offset needs to be set dynamically.
+            attackVisualAnimation = new AnimatorFeature(attackVisualAsset) { Offset = new Vector2(x: 16, y: 24) };
             animatorManager.Features.Add(idleVisualAnimation);
             animatorManager.Features.Add(runVisualAnimation);
             animatorManager.Features.Add(jumpVisualAnimation);
+            animatorManager.Features.Add(attackVisualAnimation);
             idleVisualAnimation.Play("idle_0");
             {
                 maskTexture = contentManager.Load<Texture2D>(maskAsset);
@@ -163,10 +169,22 @@ namespace SlayerKnight.Components
                             dashTouchedGround = false;
                         }
                         break;
+                    case ControlAction.Attack:
+                        if (info.State == ControlState.Pressed)
+                        {
+                            attackActive = true;
+                        }
+                        break;
                     default:
                         break;
                 }
             }
+        }
+
+        private void serviceAttack()
+        {
+            if (animatorManager.CurrentFeature == attackVisualAnimation && animatorManager.CurrentSpriteSheetAnimation.IsComplete)
+                attackActive = false;
         }
 
         private void serviceMovement()
@@ -179,8 +197,28 @@ namespace SlayerKnight.Components
             // Order of if-else-statements matter
             // since they indicate priority of mechanics.
 
+            // Implement attack movement.
+            if (attackActive)
+            {
+                //jumpCounter = 0;
+                //leftCounter = 0;
+                //rightCounter = 0;
+
+                float amount;
+                if (animatorManager.CurrentFeature == attackVisualAnimation && 
+                    animatorManager.CurrentSpriteSheetAnimation.CurrentFrameIndex <= 1)
+                    amount = 4;
+                else
+                    amount = 0;
+
+                if (facingRight && rightCounter > 0)
+                    rightAmount = amount;
+                else if (!facingRight && leftCounter > 0)
+                    leftAmount = amount;
+            }
+
             // Implement dash mechanic.
-            if (dashActiveCounter > 0)
+            else if (dashActiveCounter > 0)
             {
                 jumpCounter = 0;
                 leftCounter = 0;
@@ -206,7 +244,9 @@ namespace SlayerKnight.Components
 
             // Dashes get reset when knight is on ground.
             if (Grounded)
+            {
                 dashTouchedGround = true;
+            }
 
             // Determine facing direction
             if (horAmount > 0)
@@ -220,7 +260,12 @@ namespace SlayerKnight.Components
 
         private void serviceAnimations()
         { 
-            if (dashActiveCounter > 0)
+            if (attackActive)
+            {
+                if (animatorManager.CurrentFeature != attackVisualAnimation)
+                    attackVisualAnimation.Play(animation: "attack_0").Rewind();
+            }
+            else if (dashActiveCounter > 0)
             {
                 runVisualAnimation.Play(animation: "dash_0");
             }
@@ -315,6 +360,7 @@ namespace SlayerKnight.Components
             {
                 serviceCamera();
                 serviceMovement();
+                serviceAttack();
                 serviceAnimations();
                 decrementCounters();
             }

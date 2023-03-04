@@ -1,0 +1,29 @@
+{
+  "textureAtlas": {
+    "texture": "knight_attack_visual_0.png",
+    "regionWidth": 96,
+    "regionHeight": 80
+  },
+  "cycles": {
+    "attack_0": {
+      "frames": [0,1,2,3],
+      "isLooping": false,
+      "frameDuration": 0.1
+    },
+    "attack_1": {
+      "frames": [4,5,6,7],
+      "isLooping": false,
+      "frameDuration": 0.1
+    },
+    "hold_0": {
+      "frames": [3],
+      "isLooping": false,
+      "frameDuration": 0.1
+    },
+    "hold_1": {
+      "frames": [7],
+      "isLooping": false,
+      "frameDuration": 0.1
+    }
+  }
+}

@@ -38,6 +38,7 @@ namespace SlayerKnight
             controlManager.KeyActionMap.Add(Keys.Down, ControlAction.MoveDown);
             controlManager.KeyActionMap.Add(Keys.Space, ControlAction.Jump);
             controlManager.KeyActionMap.Add(Keys.W, ControlAction.Dash);
+            controlManager.KeyActionMap.Add(Keys.E, ControlAction.Attack);
             var screenSize = new Size(
                 width: spriteBatch.GraphicsDevice.Viewport.Bounds.Width,
                 height: spriteBatch.GraphicsDevice.Viewport.Bounds.Height) / 2;
