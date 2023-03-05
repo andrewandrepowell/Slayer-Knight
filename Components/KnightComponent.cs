@@ -42,7 +42,7 @@ namespace SlayerKnight.Components
         private int dashActiveCounter = 0;
         private int dashCooldownCounter = 0;
         private bool attackActive = false;
-        private int attackCombo = 0;
+        private bool attackNextCombo = false;
         private bool facingRight = true;
         private bool dashTouchedGround = true;
         public static Color Identifier { get => new Color(r: 78, g: 111, b: 6, alpha: 255); }
@@ -172,6 +172,8 @@ namespace SlayerKnight.Components
                     case ControlAction.Attack:
                         if (info.State == ControlState.Pressed)
                         {
+                            if (attackActive && (animatorManager.CurrentFeature != attackVisualAnimation || animatorManager.CurrentSpriteSheetAnimation.Name != "attack_2"))
+                                attackNextCombo = true;
                             attackActive = true;
                         }
                         break;
@@ -183,7 +185,7 @@ namespace SlayerKnight.Components
 
         private void serviceAttack()
         {
-            if (animatorManager.CurrentFeature == attackVisualAnimation && animatorManager.CurrentSpriteSheetAnimation.IsComplete)
+            if (animatorManager.CurrentFeature == attackVisualAnimation && animatorManager.CurrentSpriteSheetAnimation.IsComplete && !attackNextCombo)
                 attackActive = false;
         }
 
@@ -264,6 +266,16 @@ namespace SlayerKnight.Components
             {
                 if (animatorManager.CurrentFeature != attackVisualAnimation)
                     attackVisualAnimation.Play(animation: "attack_0").Rewind();
+                else if (animatorManager.CurrentSpriteSheetAnimation.IsComplete &&
+                         attackNextCombo)
+                {
+                    attackNextCombo = false; // unfortunately, the attack next combo state has to be reset with the end of the animation.
+                    if (animatorManager.CurrentSpriteSheetAnimation.Name == "attack_0")
+                        attackVisualAnimation.Play(animation: "attack_1").Rewind();
+                    else if (animatorManager.CurrentSpriteSheetAnimation.Name == "attack_1")
+                        attackVisualAnimation.Play(animation: "attack_2").Rewind();
+                }
+                
             }
             else if (dashActiveCounter > 0)
             {

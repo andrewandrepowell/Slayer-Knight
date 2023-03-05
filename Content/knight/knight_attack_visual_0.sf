@@ -24,6 +24,11 @@
       "frames": [7],
       "isLooping": false,
       "frameDuration": 0.1
+    },
+    "attack_2": {
+      "frames": [0,1,2,3,3,3],
+      "isLooping": false,
+      "frameDuration": 0.1
     }
   }
 }
