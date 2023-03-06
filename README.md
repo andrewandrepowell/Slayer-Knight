@@ -18,3 +18,4 @@ dotnet add package MonoGame.GlowEffect --version 1.0.4
 - https://www.patreon.com/Anokolisa
 - https://itch.io/game-assets/genre-platformer/tag-2d/tag-tileset
 - https://anokolisa.itch.io/sidescroller-pixelart-sprites-asset-pack-forest-16x16
+- https://joelfrancisburford.itch.io/jrpg-8-bitchiptune-sfx-pack

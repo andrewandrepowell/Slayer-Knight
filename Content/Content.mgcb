@@ -73,6 +73,12 @@
 /processorParam:TextureFormat=Color
 /build:knight/knight_idle_visual_0.png
 
+#begin knight/knight_jump_sound_0.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:knight/knight_jump_sound_0.wav
+
 #begin knight/knight_jump_visual_0.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -96,6 +102,12 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:knight/knight_mask_0.png
+
+#begin knight/knight_run_sound_0.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:knight/knight_run_sound_0.wav
 
 #begin knight/knight_run_visual_0.png
 /importer:TextureImporter

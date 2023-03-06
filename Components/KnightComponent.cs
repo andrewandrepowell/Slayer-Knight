@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
@@ -25,6 +26,8 @@ namespace SlayerKnight.Components
         readonly private static string runVisualAsset = "knight/knight_run_visual_0.sf";
         readonly private static string jumpVisualAsset = "knight/knight_jump_visual_0.sf";
         readonly private static string attackVisualAsset = "knight/knight_attack_visual_0.sf";
+        readonly private static string runSoundAsset = "knight/knight_run_sound_0";
+        readonly private static string jumpSoundAsset = "knight/knight_jump_sound_0";
         private ContentManager contentManager;
         private SpriteBatch spriteBatch;
         private LevelInterface levelFeature;
@@ -34,6 +37,9 @@ namespace SlayerKnight.Components
         private AnimatorFeature runVisualAnimation;
         private AnimatorFeature jumpVisualAnimation;
         private AnimatorFeature attackVisualAnimation;
+        private SoundManager soundManager;
+        private SoundFeature runSoundSound;
+        private SoundFeature jumpSoundSound;
         private TimerFeature loopTimer = new TimerFeature() { Period = loopTimerPeriod, Activated = true, Repeat = true };
         private Texture2D maskTexture;
         private int jumpCounter = 0;
@@ -91,6 +97,11 @@ namespace SlayerKnight.Components
                 CollisionMask = new Color[totalPixels];
                 maskTexture.GetData(CollisionMask);
             }
+            soundManager = new SoundManager(contentManager);
+            runSoundSound = new SoundFeature(runSoundAsset) { Volume = 0.01f };
+            jumpSoundSound = new SoundFeature(jumpSoundAsset) { Volume = 0.01f };
+            soundManager.Features.Add(runSoundSound);
+            soundManager.Features.Add(jumpSoundSound);
         }
 
         private void serviceCamera()
@@ -260,7 +271,7 @@ namespace SlayerKnight.Components
             Movement = new Vector2(x: horAmount, y: -jumpAmount);
         }
 
-        private void serviceAnimations()
+        private void serviceMedia()
         { 
             if (attackActive)
             {
@@ -283,11 +294,13 @@ namespace SlayerKnight.Components
             }
             else if (Grounded)
             {
-                if (animatorManager.CurrentFeature != jumpVisualAnimation &&
-                    animatorManager.CurrentSpriteSheetAnimation.Name != "start_0" &&
+                if ((animatorManager.CurrentFeature != jumpVisualAnimation ||
+                    animatorManager.CurrentSpriteSheetAnimation.Name != "start_0") &&
                     jumpCounter > 0)
                 {
                     jumpVisualAnimation.Play(animation: "start_0").Rewind();
+                    jumpSoundSound.Play();
+                    Console.WriteLine($"Sound Volume: {soundManager.CurrentSoundEffectInstance.Volume}");
                 }
 
                 if (animatorManager.CurrentFeature == jumpVisualAnimation &&
@@ -303,9 +316,16 @@ namespace SlayerKnight.Components
                         animatorManager.CurrentSpriteSheetAnimation.IsComplete))
                 {
                     if ((leftCounter == 0 && rightCounter == 0) || (leftCounter > 0 && rightCounter > 0))
+                    {
                         idleVisualAnimation.Play(animation: "idle_0");
+                        soundManager.CurrentSoundEffectInstance.Stop();
+                    }
                     else
+                    {
                         runVisualAnimation.Play(animation: "run_0");
+                        if (soundManager.CurrentFeature != runSoundSound || soundManager.CurrentSoundEffectInstance.State != SoundState.Playing)
+                            runSoundSound.Play();
+                    }
                 }
             }
             else
@@ -314,6 +334,7 @@ namespace SlayerKnight.Components
                 if (animatorManager.CurrentFeature != jumpVisualAnimation || animatorManager.CurrentSpriteSheetAnimation.Name != "start_0" || animatorManager.CurrentSpriteSheetAnimation.IsComplete)
                 {
                     jumpVisualAnimation.Play(animation: "up_0");
+                    soundManager.CurrentSoundEffectInstance.Stop();
                 }
             }
 
@@ -373,7 +394,7 @@ namespace SlayerKnight.Components
                 serviceCamera();
                 serviceMovement();
                 serviceAttack();
-                serviceAnimations();
+                serviceMedia();
                 decrementCounters();
             }
 

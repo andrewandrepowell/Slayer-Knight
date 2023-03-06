@@ -17,11 +17,11 @@
             }
         },
         "kingdom_environment_visual_asset_0.tmx": {
-            "scale": 0.33,
-            "selectedLayer": 2,
+            "scale": 3,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 1918.1818181818182,
-                "y": 960.6060606060606
+                "x": 2808.5,
+                "y": 1807.5
             }
         },
         "kingdom_tileset_background_asset_0.tsx": {
@@ -41,7 +41,7 @@
             "scaleInEditor": 4
         },
         "kingdom_tileset_visual_asset_1.tsx": {
-            "scaleInDock": 2,
+            "scaleInDock": 3,
             "scaleInEditor": 1
         },
         "kingdom_tileset_visual_asset_2.tsx": {
