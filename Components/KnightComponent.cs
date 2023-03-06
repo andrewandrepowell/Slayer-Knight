@@ -28,6 +28,9 @@ namespace SlayerKnight.Components
         readonly private static string attackVisualAsset = "knight/knight_attack_visual_0.sf";
         readonly private static string runSoundAsset = "knight/knight_run_sound_0";
         readonly private static string jumpSoundAsset = "knight/knight_jump_sound_0";
+        readonly private static string landSoundAsset = "knight/knight_jump_sound_1";
+        readonly private static string attackSoundAsset = "knight/knight_attack_sound_0";
+        readonly private static string dashSoundAsset = "knight/knight_dash_sound_0";
         private ContentManager contentManager;
         private SpriteBatch spriteBatch;
         private LevelInterface levelFeature;
@@ -40,6 +43,9 @@ namespace SlayerKnight.Components
         private SoundManager soundManager;
         private SoundFeature runSoundSound;
         private SoundFeature jumpSoundSound;
+        private SoundFeature landSoundSound;
+        private SoundFeature attackSoundSound;
+        private SoundFeature dashSoundSound;
         private TimerFeature loopTimer = new TimerFeature() { Period = loopTimerPeriod, Activated = true, Repeat = true };
         private Texture2D maskTexture;
         private int jumpCounter = 0;
@@ -98,10 +104,16 @@ namespace SlayerKnight.Components
                 maskTexture.GetData(CollisionMask);
             }
             soundManager = new SoundManager(contentManager);
-            runSoundSound = new SoundFeature(runSoundAsset) { Volume = 0.01f };
+            runSoundSound = new SoundFeature(runSoundAsset) { Volume = 0.0075f, IsLooped = true };
             jumpSoundSound = new SoundFeature(jumpSoundAsset) { Volume = 0.01f };
+            landSoundSound = new SoundFeature(landSoundAsset) { Volume = 0.0060f };
+            attackSoundSound = new SoundFeature(attackSoundAsset) { Volume = 0.01f };
+            dashSoundSound = new SoundFeature(dashSoundAsset) { Volume = 0.01f, IsLooped = true };
             soundManager.Features.Add(runSoundSound);
             soundManager.Features.Add(jumpSoundSound);
+            soundManager.Features.Add(landSoundSound);
+            soundManager.Features.Add(attackSoundSound);
+            soundManager.Features.Add(dashSoundSound);
         }
 
         private void serviceCamera()
@@ -276,21 +288,33 @@ namespace SlayerKnight.Components
             if (attackActive)
             {
                 if (animatorManager.CurrentFeature != attackVisualAnimation)
+                {
                     attackVisualAnimation.Play(animation: "attack_0").Rewind();
+                    attackSoundSound.Play();
+                }
                 else if (animatorManager.CurrentSpriteSheetAnimation.IsComplete &&
                          attackNextCombo)
                 {
                     attackNextCombo = false; // unfortunately, the attack next combo state has to be reset with the end of the animation.
                     if (animatorManager.CurrentSpriteSheetAnimation.Name == "attack_0")
+                    {
                         attackVisualAnimation.Play(animation: "attack_1").Rewind();
+                        attackSoundSound.Play();
+                    }
                     else if (animatorManager.CurrentSpriteSheetAnimation.Name == "attack_1")
+                    {
                         attackVisualAnimation.Play(animation: "attack_2").Rewind();
+                        attackSoundSound.Play();
+                    }
                 }
                 
             }
             else if (dashActiveCounter > 0)
             {
                 runVisualAnimation.Play(animation: "dash_0");
+                if (soundManager.CurrentFeature != dashSoundSound || soundManager.CurrentSoundEffectInstance.State != SoundState.Playing)
+                    dashSoundSound.Play();
+
             }
             else if (Grounded)
             {
@@ -300,7 +324,6 @@ namespace SlayerKnight.Components
                 {
                     jumpVisualAnimation.Play(animation: "start_0").Rewind();
                     jumpSoundSound.Play();
-                    Console.WriteLine($"Sound Volume: {soundManager.CurrentSoundEffectInstance.Volume}");
                 }
 
                 if (animatorManager.CurrentFeature == jumpVisualAnimation &&
@@ -309,6 +332,7 @@ namespace SlayerKnight.Components
                     jumpCounter == 0)
                 {
                     jumpVisualAnimation.Play(animation: "end_0").Rewind();
+                    landSoundSound.Play();
                 }
 
                 if ((animatorManager.CurrentFeature != jumpVisualAnimation) ||

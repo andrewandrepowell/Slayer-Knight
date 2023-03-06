@@ -23,7 +23,7 @@ namespace Utility
                 volume = value;
             }
         }
-        public bool IsLooped { get; private set; }
+        public bool IsLooped { get; set; } = false;
         public void Play()
         {
             var managerObject = (this as FeatureInterface<SoundManager>).ManagerObject;

@@ -49,6 +49,12 @@
 /processorParam:TextureFormat=Color
 /build:kingdom/kingdom_environment_visual_asset_0.png
 
+#begin knight/knight_attack_sound_0.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:knight/knight_attack_sound_0.wav
+
 #begin knight/knight_attack_visual_0.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -60,6 +66,12 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:knight/knight_attack_visual_0.png
+
+#begin knight/knight_dash_sound_0.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:knight/knight_dash_sound_0.wav
 
 #begin knight/knight_idle_visual_0.png
 /importer:TextureImporter
@@ -78,6 +90,12 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:knight/knight_jump_sound_0.wav
+
+#begin knight/knight_jump_sound_1.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:knight/knight_jump_sound_1.wav
 
 #begin knight/knight_jump_visual_0.png
 /importer:TextureImporter
