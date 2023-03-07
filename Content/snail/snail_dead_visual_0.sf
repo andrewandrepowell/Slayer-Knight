@@ -1,0 +1,14 @@
+{
+  "textureAtlas": {
+    "texture": "snail_dead_visual_0.png",
+    "regionWidth": 48,
+    "regionHeight": 32
+  },
+  "cycles": {
+    "dead_0": {
+      "frames": [0,1,2,3],
+      "isLooping": false,
+      "frameDuration": 0.1
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "textureAtlas": {
+    "texture": "snail_walk_visual_0.png",
+    "regionWidth": 48,
+    "regionHeight": 32
+  },
+  "cycles": {
+    "walk_0": {
+      "frames": [0,1,2,3,4,5,6,7],
+      "isLooping": true,
+      "frameDuration": 0.1
+    }
+  }
+}
