@@ -23,10 +23,12 @@ namespace SlayerKnight
         private KeyboardManager keyboardManager;
         private KeyboardFeature keyboardFeature;
         private ControlManager controlManager;
+        private OptionsManager optionsManager;
         public TestLevelFeature(
             ContentManager contentManager,
             SpriteBatch spriteBatch)
         {
+            optionsManager = new OptionsManager();
             keyboardFeature = new KeyboardFeature() { Activated = true };
             keyboardManager = new KeyboardManager();
             keyboardManager.Features.Add(keyboardFeature);
@@ -45,6 +47,7 @@ namespace SlayerKnight
             firstLevelFeature = new LevelFeature(
                 contentManager: contentManager,
                 spriteBatch: spriteBatch,
+                optionsManager: optionsManager,
                 controlManager: controlManager,
                 keyboardManager: keyboardManager,
                 roomIdentifier: "first_level",
@@ -59,6 +62,7 @@ namespace SlayerKnight
             secondLevelFeature = new LevelFeature(
                 contentManager: contentManager,
                 spriteBatch: spriteBatch,
+                optionsManager: optionsManager,
                 controlManager: controlManager,
                 keyboardManager: keyboardManager,
                 roomIdentifier: "second_level",

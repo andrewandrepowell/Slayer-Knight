@@ -18,7 +18,7 @@ namespace Utility
             State = state;
         }
     }
-    public interface KeyboardInterface
+    public interface HasKeyboardInterface
     {
         public KeyboardFeature keyboardFeatureObject { get; }
     }

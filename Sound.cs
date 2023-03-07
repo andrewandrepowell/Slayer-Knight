@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 
 namespace Utility
 {
+    public interface HasSoundInterface
+    {
+        public SoundManager SoundManagerObject { get; }
+    }
     public class SoundFeature : FeatureInterface<SoundManager>
     {
         private float volume = 0.5f;
@@ -37,8 +41,9 @@ namespace Utility
         }
         SoundManager FeatureInterface<SoundManager>.ManagerObject { get; set; }
     }
-    public class SoundManager : ManagerInterface<SoundFeature>
+    public class SoundManager : ManagerInterface<SoundFeature>, OptionsInterface
     {
+        private float globalVolume = 0.5f;
         private ContentManager contentManager;
         private Dictionary<SoundFeature, SoundEffectInstance> mapFeatureSoundEffectInstance;
         public IList<SoundFeature> Features { get; private set; }
@@ -58,13 +63,13 @@ namespace Utility
             if (CurrentSoundEffectInstance != null)
                 CurrentSoundEffectInstance.Stop();
             CurrentSoundEffectInstance = mapFeatureSoundEffectInstance[feature];
+            CurrentSoundEffectInstance.Volume = globalVolume * CurrentFeature.Volume;
             CurrentSoundEffectInstance.Play();
         }
         void ManagerInterface<SoundFeature>.DestroyFeature(SoundFeature feature)
         {
             mapFeatureSoundEffectInstance.Remove(feature);
         }
-
         void ManagerInterface<SoundFeature>.SetupFeature(SoundFeature feature)
         {
             var soundEffect = contentManager.Load<SoundEffect>(feature.Identifier);
@@ -78,5 +83,12 @@ namespace Utility
                 CurrentSoundEffectInstance = soundEffectInstance;
             }
         }
+        void OptionsInterface.Update()
+        {
+            globalVolume = (this as FeatureInterface<OptionsManager>).ManagerObject.SoundVolume;
+            if (Features.Count != 0)
+                CurrentSoundEffectInstance.Volume = globalVolume * CurrentFeature.Volume;
+        }
+        OptionsManager FeatureInterface<OptionsManager>.ManagerObject { get; set; }
     }
 }

@@ -17,7 +17,7 @@ namespace Utility
             State = state;
         }
     }
-    public interface ControlInterface
+    public interface HasControlInterface
     {
         public ControlFeature ControlFeatureObject { get; }
     }

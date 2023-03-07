@@ -17,11 +17,11 @@
             }
         },
         "kingdom_environment_visual_asset_0.tmx": {
-            "scale": 3,
-            "selectedLayer": 1,
+            "scale": 0.75,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 1920,
-                "y": 960
+                "x": 665.3333333333333,
+                "y": 837.3333333333333
             }
         },
         "kingdom_tileset_background_asset_0.tsx": {
@@ -41,7 +41,7 @@
             "scaleInEditor": 4
         },
         "kingdom_tileset_visual_asset_1.tsx": {
-            "scaleInDock": 3,
+            "scaleInDock": 1.5,
             "scaleInEditor": 1
         },
         "kingdom_tileset_visual_asset_2.tsx": {
@@ -49,7 +49,7 @@
             "scaleInEditor": 1
         },
         "kingdom_tileset_visual_asset_3.tsx": {
-            "scaleInDock": 1.5,
+            "scaleInDock": 2,
             "scaleInEditor": 1
         },
         "test.tsx": {
@@ -90,7 +90,6 @@
     ],
     "project": "tiled_project.tiled-project",
     "recentFiles": [
-        "test.tsx",
         "test_tileset_mask_asset_0.tsx",
         "test_environment_mask_asset_0.tmx",
         "kingdom_tileset_visual_asset_0.tsx",
@@ -101,7 +100,8 @@
         "kingdom_tileset_visual_asset_2.tsx",
         "kingdom_tileset_visual_asset_1.tsx",
         "kingdom_tileset_mask_asset_0.tsx",
-        "kingdom_environment_visual_asset_0.tmx"
+        "kingdom_environment_visual_asset_0.tmx",
+        "test.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {

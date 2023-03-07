@@ -25,6 +25,7 @@ namespace SlayerKnight
         private ContentManager contentManager;
         private CollisionManager collisionManager;
         private ControlManager controlManager;
+        private OptionsManager optionsManager;
         private KeyboardManager keyboardManager;
         private List<ComponentInterface> componentFeatures;
         private List<DestroyInterface> destroyFeatures;
@@ -48,6 +49,7 @@ namespace SlayerKnight
             SpriteBatch spriteBatch,
             KeyboardManager keyboardManager,
             ControlManager controlManager,
+            OptionsManager optionsManager,
             string roomIdentifier, 
             string environmentVisualAsset, 
             string environmentMaskAsset,
@@ -69,6 +71,7 @@ namespace SlayerKnight
             this.contentManager = contentManager;
             this.keyboardManager = keyboardManager;
             this.controlManager = controlManager;
+            this.optionsManager = optionsManager;
             this.environmentVisualAsset = environmentVisualAsset;
             this.environmentMaskAsset = environmentMaskAsset;
             this.backgroundVisualAsset = backgroundVisualAsset;
@@ -82,20 +85,24 @@ namespace SlayerKnight
             componentFeatures.Add(component);
             if (component is CollisionInterface collisionFeature)
                 collisionManager.Features.Add(collisionFeature);
-            if (component is ControlInterface controlHolder)
+            if (component is HasControlInterface controlHolder)
                 controlManager.Features.Add(controlHolder.ControlFeatureObject);
-            if (component is KeyboardInterface keyboardHolder)
+            if (component is HasKeyboardInterface keyboardHolder)
                 keyboardManager.Features.Add(keyboardHolder.keyboardFeatureObject);
+            if (component is HasSoundInterface soundHolder)
+                optionsManager.Features.Add(soundHolder.SoundManagerObject);
         }
         public void Remove(ComponentInterface component)
         {
             componentFeatures.Remove(component);
             if (component is CollisionInterface collisionFeature)
                 collisionManager.Features.Remove(collisionFeature);
-            if (component is ControlInterface controlFeature)
+            if (component is HasControlInterface controlFeature)
                 controlManager.Features.Remove(controlFeature.ControlFeatureObject);
-            if (component is KeyboardInterface keyboardHolder)
+            if (component is HasKeyboardInterface keyboardHolder)
                 keyboardManager.Features.Remove(keyboardHolder.keyboardFeatureObject);
+            if (component is HasSoundInterface soundHolder)
+                optionsManager.Features.Remove(soundHolder.SoundManagerObject);
         }
         public void Start()
         {

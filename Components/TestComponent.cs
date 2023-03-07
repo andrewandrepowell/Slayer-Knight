@@ -13,7 +13,7 @@ using Utility;
 
 namespace SlayerKnight.Components
 {
-    internal class TestComponent : ComponentInterface, PhysicsInterface, ControlInterface
+    internal class TestComponent : ComponentInterface, PhysicsInterface, HasControlInterface
     {
         const string testComponentMaskAsset = "test/test_component_mask_asset_0";
         const float loopTimerPeriod = 1 / 30;

@@ -16,7 +16,7 @@ using Utility;
 
 namespace SlayerKnight.Components
 {
-    internal class KnightComponent : ComponentInterface, PhysicsInterface, ControlInterface
+    internal class KnightComponent : ComponentInterface, PhysicsInterface, HasControlInterface, HasSoundInterface
     {
         const float loopTimerPeriod = 1 / 30;
         readonly private static Vector2 jumpRightOffset = new Vector2(x: 24, y: 16);
@@ -40,7 +40,6 @@ namespace SlayerKnight.Components
         private AnimatorFeature runVisualAnimation;
         private AnimatorFeature jumpVisualAnimation;
         private AnimatorFeature attackVisualAnimation;
-        private SoundManager soundManager;
         private SoundFeature runSoundSound;
         private SoundFeature jumpSoundSound;
         private SoundFeature landSoundSound;
@@ -71,6 +70,7 @@ namespace SlayerKnight.Components
         public Color[] CollisionMask { get; set; } = default; // gets defined by constructor.
         public List<Vector2> CollisionVertices { get; set; } = null; // collision vertices aren't utlized.
         public ControlFeature ControlFeatureObject { get; private set; } = new ControlFeature() { Activated = true };
+        public SoundManager SoundManagerObject { get; private set; }
         public Vector2 Velocity { get; set; } // managed by associated manager.
         CollisionManager FeatureInterface<CollisionManager>.ManagerObject { get; set; } // managed by associated manager.
         PhysicsManager FeatureInterface<PhysicsManager>.ManagerObject { get; set; } // managed by associated manager.
@@ -103,17 +103,17 @@ namespace SlayerKnight.Components
                 CollisionMask = new Color[totalPixels];
                 maskTexture.GetData(CollisionMask);
             }
-            soundManager = new SoundManager(contentManager);
-            runSoundSound = new SoundFeature(runSoundAsset) { Volume = 0.0075f, IsLooped = true };
-            jumpSoundSound = new SoundFeature(jumpSoundAsset) { Volume = 0.01f };
-            landSoundSound = new SoundFeature(landSoundAsset) { Volume = 0.0060f };
-            attackSoundSound = new SoundFeature(attackSoundAsset) { Volume = 0.01f };
-            dashSoundSound = new SoundFeature(dashSoundAsset) { Volume = 0.01f, IsLooped = true };
-            soundManager.Features.Add(runSoundSound);
-            soundManager.Features.Add(jumpSoundSound);
-            soundManager.Features.Add(landSoundSound);
-            soundManager.Features.Add(attackSoundSound);
-            soundManager.Features.Add(dashSoundSound);
+            SoundManagerObject = new SoundManager(contentManager);
+            runSoundSound = new SoundFeature(runSoundAsset) { Volume = 0.0075f * 20, IsLooped = true };
+            jumpSoundSound = new SoundFeature(jumpSoundAsset) { Volume = 0.01f * 20 };
+            landSoundSound = new SoundFeature(landSoundAsset) { Volume = 0.0060f * 20 };
+            attackSoundSound = new SoundFeature(attackSoundAsset) { Volume = 0.01f * 20 };
+            dashSoundSound = new SoundFeature(dashSoundAsset) { Volume = 0.01f * 20, IsLooped = true };
+            SoundManagerObject.Features.Add(runSoundSound);
+            SoundManagerObject.Features.Add(jumpSoundSound);
+            SoundManagerObject.Features.Add(landSoundSound);
+            SoundManagerObject.Features.Add(attackSoundSound);
+            SoundManagerObject.Features.Add(dashSoundSound);
         }
 
         private void serviceCamera()
@@ -312,7 +312,7 @@ namespace SlayerKnight.Components
             else if (dashActiveCounter > 0)
             {
                 runVisualAnimation.Play(animation: "dash_0");
-                if (soundManager.CurrentFeature != dashSoundSound || soundManager.CurrentSoundEffectInstance.State != SoundState.Playing)
+                if (SoundManagerObject.CurrentFeature != dashSoundSound || SoundManagerObject.CurrentSoundEffectInstance.State != SoundState.Playing)
                     dashSoundSound.Play();
 
             }
@@ -342,12 +342,12 @@ namespace SlayerKnight.Components
                     if ((leftCounter == 0 && rightCounter == 0) || (leftCounter > 0 && rightCounter > 0))
                     {
                         idleVisualAnimation.Play(animation: "idle_0");
-                        soundManager.CurrentSoundEffectInstance.Stop();
+                        SoundManagerObject.CurrentSoundEffectInstance.Stop();
                     }
                     else
                     {
                         runVisualAnimation.Play(animation: "run_0");
-                        if (soundManager.CurrentFeature != runSoundSound || soundManager.CurrentSoundEffectInstance.State != SoundState.Playing)
+                        if (SoundManagerObject.CurrentFeature != runSoundSound || SoundManagerObject.CurrentSoundEffectInstance.State != SoundState.Playing)
                             runSoundSound.Play();
                     }
                 }
@@ -358,7 +358,7 @@ namespace SlayerKnight.Components
                 if (animatorManager.CurrentFeature != jumpVisualAnimation || animatorManager.CurrentSpriteSheetAnimation.Name != "start_0" || animatorManager.CurrentSpriteSheetAnimation.IsComplete)
                 {
                     jumpVisualAnimation.Play(animation: "up_0");
-                    soundManager.CurrentSoundEffectInstance.Stop();
+                    SoundManagerObject.CurrentSoundEffectInstance.Stop();
                 }
             }
 
