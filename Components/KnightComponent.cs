@@ -60,8 +60,8 @@ namespace SlayerKnight.Components
         public int DrawLevel { get; set; } = 0;
         public bool PhysicsApplied { get; set; } = true;
         public Vector2 Movement { get; set; } = Vector2.Zero;
-        public Vector2 Gravity { get; private set; } = new Vector2(x: 0, y: 1f);
-        public float MaxGravspeed { get; private set; } = 8;
+        public Vector2 Gravity { get; set; } = new Vector2(x: 0, y: 1f);
+        public float MaxGravspeed { get; set; } = 8;
         public bool Grounded { get; set; } = default; // managed by physics manager.
         public Vector2 Position { get; set; } = default;  // managed by physics manager.
         public Size Size { get; private set; } = new Size(width: 32, height: 48);
@@ -85,16 +85,18 @@ namespace SlayerKnight.Components
             this.spriteBatch = spriteBatch;
             this.levelFeature = levelFeature;
             physicsManager = new PhysicsManager(this);
-            animatorManager = new AnimatorManager(contentManager: contentManager, spriteBatch: spriteBatch);
-            idleVisualAnimation = new AnimatorFeature(idleVisualAsset) { Offset = new Vector2(x: 16, y: 24) };
-            runVisualAnimation = new AnimatorFeature(runVisualAsset) { Offset = new Vector2(x: 16, y: 24) };
-            jumpVisualAnimation = new AnimatorFeature(jumpVisualAsset); // offset needs to be set dynamically.
-            attackVisualAnimation = new AnimatorFeature(attackVisualAsset) { Offset = new Vector2(x: 16, y: 24) };
-            animatorManager.Features.Add(idleVisualAnimation);
-            animatorManager.Features.Add(runVisualAnimation);
-            animatorManager.Features.Add(jumpVisualAnimation);
-            animatorManager.Features.Add(attackVisualAnimation);
-            idleVisualAnimation.Play("idle_0");
+            {
+                animatorManager = new AnimatorManager(contentManager: contentManager, spriteBatch: spriteBatch);
+                idleVisualAnimation = new AnimatorFeature(idleVisualAsset) { Offset = new Vector2(x: 16, y: 24) };
+                runVisualAnimation = new AnimatorFeature(runVisualAsset) { Offset = new Vector2(x: 16, y: 24) };
+                jumpVisualAnimation = new AnimatorFeature(jumpVisualAsset); // offset needs to be set dynamically.
+                attackVisualAnimation = new AnimatorFeature(attackVisualAsset) { Offset = new Vector2(x: 16, y: 24) };
+                animatorManager.Features.Add(idleVisualAnimation);
+                animatorManager.Features.Add(runVisualAnimation);
+                animatorManager.Features.Add(jumpVisualAnimation);
+                animatorManager.Features.Add(attackVisualAnimation);
+                idleVisualAnimation.Play("idle_0");
+            }
             {
                 maskTexture = contentManager.Load<Texture2D>(maskAsset);
                 if (maskTexture.Width != Size.Width || maskTexture.Height != Size.Height)
@@ -103,17 +105,19 @@ namespace SlayerKnight.Components
                 CollisionMask = new Color[totalPixels];
                 maskTexture.GetData(CollisionMask);
             }
-            SoundManagerObject = new SoundManager(contentManager);
-            runSoundSound = new SoundFeature(runSoundAsset) { Volume = 0.0075f * 20, IsLooped = true };
-            jumpSoundSound = new SoundFeature(jumpSoundAsset) { Volume = 0.01f * 20 };
-            landSoundSound = new SoundFeature(landSoundAsset) { Volume = 0.0060f * 20 };
-            attackSoundSound = new SoundFeature(attackSoundAsset) { Volume = 0.01f * 20 };
-            dashSoundSound = new SoundFeature(dashSoundAsset) { Volume = 0.01f * 20, IsLooped = true };
-            SoundManagerObject.Features.Add(runSoundSound);
-            SoundManagerObject.Features.Add(jumpSoundSound);
-            SoundManagerObject.Features.Add(landSoundSound);
-            SoundManagerObject.Features.Add(attackSoundSound);
-            SoundManagerObject.Features.Add(dashSoundSound);
+            {
+                SoundManagerObject = new SoundManager(contentManager);
+                runSoundSound = new SoundFeature(runSoundAsset) { Volume = 0.0075f * 20, IsLooped = true };
+                jumpSoundSound = new SoundFeature(jumpSoundAsset) { Volume = 0.01f * 20 };
+                landSoundSound = new SoundFeature(landSoundAsset) { Volume = 0.0060f * 20 };
+                attackSoundSound = new SoundFeature(attackSoundAsset) { Volume = 0.01f * 20 };
+                dashSoundSound = new SoundFeature(dashSoundAsset) { Volume = 0.01f * 20, IsLooped = true };
+                SoundManagerObject.Features.Add(runSoundSound);
+                SoundManagerObject.Features.Add(jumpSoundSound);
+                SoundManagerObject.Features.Add(landSoundSound);
+                SoundManagerObject.Features.Add(attackSoundSound);
+                SoundManagerObject.Features.Add(dashSoundSound);
+            }
         }
 
         private void serviceCamera()

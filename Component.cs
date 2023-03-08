@@ -46,6 +46,17 @@ namespace SlayerKnight
                 };
                 return componentFeature;
             }
+            else if (SnailComponent.Identifier == identifier)
+            {
+                var componentFeature = new SnailComponent(
+                    contentManager: contentManager,
+                    spriteBatch: spriteBatch,
+                    levelFeature: levelFeature)
+                {
+                    Position = position
+                };
+                return componentFeature;
+            }
             return null;
         }
     }

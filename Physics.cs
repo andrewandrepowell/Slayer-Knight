@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using MonoGame.Extended;
 using MonoGame.Extended.Collections;
+using SlayerKnight.Components;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,7 +46,7 @@ namespace SlayerKnight
         private const float updatePeriod = 1 / 30;
         private PhysicsInterface physicsFeature;
         private TimerFeature timerFeature;
-        private List<CollisionInfo> synthesisInfos;
+        private List<CollisionInfo> wallInfos;
         private Channel<PhysicsInfo> infoChannel;
         private Vector2 lstPosition;
         private Vector2 curGravity;
@@ -63,7 +64,7 @@ namespace SlayerKnight
             this.physicsFeature = physicsFeature;
             (physicsFeature as FeatureInterface<PhysicsManager>).ManagerObject = this;
             timerFeature = new TimerFeature() { Period = updatePeriod };
-            synthesisInfos = new List<CollisionInfo>();
+            wallInfos = new List<CollisionInfo>();
             infoChannel = new Channel<PhysicsInfo>(capacity: 10);
             curGravity = Vector2.Zero;
             curMovement = Vector2.Zero;
@@ -214,23 +215,29 @@ namespace SlayerKnight
                 if (ceilCounter != 0)
                     ceilCounter--;
 
-                // Check for collisions.
+                // Check for collisions if there was any movement.
                 physicsFeature.CheckForCollision();
 
-                // In case there are any collisions, clear the list of infos intended for synthesis.
-                synthesisInfos.Clear();
+                // In case there are any collisions, clear the list of wall infos intended for synthesis.
+                wallInfos.Clear();
 
-                // Collect all the collisions infos.
+                // Collect all the wall infos.
+                // Send all other infos to physics feature.
                 while ((physicsFeature as CollisionInterface).GetNext(out var info))
-                    synthesisInfos.Add(info);
-
+                    if (info.Other is WallInterface)
+                        wallInfos.Add(info);
+                    else
+                        infoChannel.Enqueue(new PhysicsInfo(
+                            other: info.Other,
+                            selfCollided: true,
+                            point: info.Point,
+                            normal: info.Normal));
+                    
                 // Synthesize infos and send the physic infos to physics feature if any collisions occurred.
-                if (synthesisInfos.Count > 0)
+                if (wallInfos.Count > 0)
                 {
-                    // Synthesize all the collisions infos.
-                    var info = CollisionManager.SynthesizeInfos(synthesisInfos);
-
-                    //Console.WriteLine($"info={info.Correction} {info.Normal} {synthesisInfos.Count} {curMovement} {curGravocity}");
+                    // Synthesize all the wll infos.
+                    var info = CollisionManager.SynthesizeInfos(wallInfos);
 
                     // Only perform the changes to movement if the normal direction from collision surface isn't zero.
                     if (info.Normal != Vector2.Zero)

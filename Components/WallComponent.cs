@@ -9,7 +9,11 @@ using Utility;
 
 namespace SlayerKnight.Components
 {
-    internal class WallComponent : ComponentInterface, CollisionInterface
+    internal interface WallInterface
+    {
+
+    }
+    internal class WallComponent : ComponentInterface, CollisionInterface, WallInterface
     {
         private Vector2 position;
         public WallComponent(
