@@ -9,8 +9,6 @@ using Utility;
 using SlayerKnight.Components;
 using System.Linq.Expressions;
 using System.Collections;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 
 namespace SlayerKnight
 { 

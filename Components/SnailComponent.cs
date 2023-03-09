@@ -13,6 +13,7 @@ namespace SlayerKnight.Components
 {
     internal class SnailComponent : ComponentInterface, PhysicsInterface, HasSoundInterface
     {
+        private enum ComponentState { Inactive, Walk }
         const float loopTimerPeriod = 1 / 30;
         readonly private static string maskAsset = "snail/snail_mask_0";
         readonly private static string walkVisualAsset = "snail/snail_walk_visual_0.sf";
@@ -28,6 +29,7 @@ namespace SlayerKnight.Components
         private AnimatorFeature walkVisualAnimation;
         private AnimatorFeature deadVisualAnimation;
         private AnimatorFeature hideVisualAnimation;
+        private ComponentState componentState = ComponentState.Walk;
         public static Color Identifier { get => new Color(r: 45, g: 67, b: 226, alpha: 255); }
         public int DrawLevel { get; set; } = 0;
         public bool PhysicsApplied { get; set; } = true;
