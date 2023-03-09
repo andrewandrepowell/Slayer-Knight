@@ -8,6 +8,9 @@ using System.Linq;
 using Utility;
 using SlayerKnight.Components;
 using System.Linq.Expressions;
+using System.Collections;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace SlayerKnight
 { 
@@ -16,18 +19,96 @@ namespace SlayerKnight
         public Size ScreenSize { get; }
         public Size LevelSize { get; }
         public OrthographicCamera CameraObject { get; }
-        public void Add(ComponentInterface component);
-        public void Remove(ComponentInterface component);
+        public IList<ComponentInterface> Features { get; }
     }
     internal class LevelFeature : LevelInterface
     {
+        public class ComponentList : IList<ComponentInterface>
+        {
+            private LevelFeature levelFeature;
+            private List<ComponentInterface> componentFeatures = new List<ComponentInterface>();
+            private void setup(ComponentInterface componentFeature)
+            {
+                if (componentFeature is CollisionInterface collisionFeature)
+                    levelFeature.collisionManager.Features.Add(collisionFeature);
+                if (componentFeature is HasControlInterface controlHolder)
+                    levelFeature.controlManager.Features.Add(controlHolder.ControlFeatureObject);
+                if (componentFeature is HasKeyboardInterface keyboardHolder)
+                    levelFeature.keyboardManager.Features.Add(keyboardHolder.keyboardFeatureObject);
+                if (componentFeature is HasSoundInterface soundHolder)
+                    levelFeature.optionsManager.Features.Add(soundHolder.SoundManagerObject);
+            }
+            private void destroy(ComponentInterface componentFeature)
+            {
+                if (componentFeature is CollisionInterface collisionFeature)
+                    levelFeature.collisionManager.Features.Remove(collisionFeature);
+                if (componentFeature is HasControlInterface controlFeature)
+                    levelFeature.controlManager.Features.Remove(controlFeature.ControlFeatureObject);
+                if (componentFeature is HasKeyboardInterface keyboardHolder)
+                    levelFeature.keyboardManager.Features.Remove(keyboardHolder.keyboardFeatureObject);
+                if (componentFeature is HasSoundInterface soundHolder)
+                    levelFeature.optionsManager.Features.Remove(soundHolder.SoundManagerObject);
+            }
+            public ComponentList(LevelFeature levelFeature) => this.levelFeature = levelFeature;
+            public ComponentInterface this[int index] { get => componentFeatures[index]; set => throw new NotImplementedException(); }
+            public int Count => componentFeatures.Count;
+            public bool IsReadOnly => (componentFeatures as ICollection<ComponentInterface>).IsReadOnly;
+            public void Add(ComponentInterface item)
+            {
+                if (componentFeatures.Contains(item))
+                    throw new Exception("Duplicate components are not allowed.");
+                setup(item);
+                componentFeatures.Add(item);
+            }
+            public void Clear()
+            {
+                foreach (var componentFeature in componentFeatures.ToList())
+                {
+                    componentFeatures.Remove(componentFeature);
+                    destroy(componentFeature);
+                }
+            }
+            public bool Contains(ComponentInterface item) => componentFeatures.Contains(item);
+            public void CopyTo(ComponentInterface[] array, int arrayIndex)
+            {
+                foreach (var item in array)
+                {
+                    if (componentFeatures.Contains(item))
+                        throw new Exception("Duplicate components are not allowed.");
+                    setup(item);
+                }
+                componentFeatures.CopyTo(array, arrayIndex);
+            }
+            public IEnumerator<ComponentInterface> GetEnumerator() => componentFeatures.GetEnumerator();
+            public int IndexOf(ComponentInterface item) => componentFeatures.IndexOf(item);
+            public void Insert(int index, ComponentInterface item)
+            {
+                if (componentFeatures.Contains(item))
+                    throw new Exception("Duplicate components are not allowed.");
+                setup(item);
+                componentFeatures.Insert(index, item);
+            }
+            public bool Remove(ComponentInterface item)
+            {
+                var removed = componentFeatures.Remove(item);
+                if (removed)
+                    destroy(item);
+                return removed;
+            }
+            public void RemoveAt(int index)
+            {
+                var item = this[index];
+                componentFeatures.RemoveAt(index);
+                destroy(item);
+            }
+            IEnumerator IEnumerable.GetEnumerator() => componentFeatures.GetEnumerator();
+        }
         private SpriteBatch spriteBatch;
         private ContentManager contentManager;
         private CollisionManager collisionManager;
         private ControlManager controlManager;
         private OptionsManager optionsManager;
         private KeyboardManager keyboardManager;
-        private List<ComponentInterface> componentFeatures;
         private List<DestroyInterface> destroyFeatures;
         private string environmentVisualAsset;
         private string environmentMaskAsset;
@@ -38,6 +119,7 @@ namespace SlayerKnight
         private Color environmentStartColor;
         private Color environmentIncludeColor;
         private Color environmentExcludeColor;
+        public IList<ComponentInterface> Features { get; private set; }
         public bool Started { get; private set; }
         public string Identifier { get; private set; }
         public OrthographicCamera CameraObject { get; private set; }
@@ -60,10 +142,10 @@ namespace SlayerKnight
             Color environmentExcludeColor,
             Size screenSize)
         {
+            Features = new ComponentList(this);
             Identifier = roomIdentifier;
             Started = false;
             collisionManager = new CollisionManager();
-            componentFeatures = new List<ComponentInterface>();
             destroyFeatures = new List<DestroyInterface>();
             CameraObject = new OrthographicCamera(graphicsDevice: spriteBatch.GraphicsDevice);
             ScreenSize = screenSize;
@@ -79,30 +161,6 @@ namespace SlayerKnight
             this.environmentStartColor = environmentStartColor;
             this.environmentIncludeColor = environmentIncludeColor;
             this.environmentExcludeColor = environmentExcludeColor;
-        }
-        public void Add(ComponentInterface component)
-        {
-            componentFeatures.Add(component);
-            if (component is CollisionInterface collisionFeature)
-                collisionManager.Features.Add(collisionFeature);
-            if (component is HasControlInterface controlHolder)
-                controlManager.Features.Add(controlHolder.ControlFeatureObject);
-            if (component is HasKeyboardInterface keyboardHolder)
-                keyboardManager.Features.Add(keyboardHolder.keyboardFeatureObject);
-            if (component is HasSoundInterface soundHolder)
-                optionsManager.Features.Add(soundHolder.SoundManagerObject);
-        }
-        public void Remove(ComponentInterface component)
-        {
-            componentFeatures.Remove(component);
-            if (component is CollisionInterface collisionFeature)
-                collisionManager.Features.Remove(collisionFeature);
-            if (component is HasControlInterface controlFeature)
-                controlManager.Features.Remove(controlFeature.ControlFeatureObject);
-            if (component is HasKeyboardInterface keyboardHolder)
-                keyboardManager.Features.Remove(keyboardHolder.keyboardFeatureObject);
-            if (component is HasSoundInterface soundHolder)
-                optionsManager.Features.Remove(soundHolder.SoundManagerObject);
         }
         public void Start()
         {
@@ -149,7 +207,7 @@ namespace SlayerKnight
                             position: gridPosition,
                             levelFeature: this);
                         if (componentFeature != null)
-                            Add(componentFeature);
+                            Features.Add(componentFeature);
 
                         // If the mask has at least one visible pixel--i.e. alpha not equal to 0--then determine grid vertices, 
                         // and create wall feature..
@@ -163,7 +221,7 @@ namespace SlayerKnight
                                 size: environmentGridSize,
                                 mask: gridMask,
                                 vertices: gridVertices);
-                            Add(wallFeature);
+                            Features.Add(wallFeature);
                         }
                     }
 
@@ -182,8 +240,7 @@ namespace SlayerKnight
                 throw new Exception("There should never be a case where the level is ended but is not started.");
 
             // Remove all the component features. 
-            foreach (var feature in componentFeatures.ToList())
-                Remove(feature);
+            Features.Clear();
 
             // Unload all assets.
             contentManager.Unload();
@@ -194,7 +251,7 @@ namespace SlayerKnight
         public void Update(float timeElapsed)
         {
             // Update the state of each component.
-            foreach (var component in componentFeatures)
+            foreach (var component in Features)
             {
                 // Perform the update.
                 component.Update(timeElapsed);
@@ -206,7 +263,7 @@ namespace SlayerKnight
 
             // Remove any destroyed components.
             foreach (var destroy in destroyFeatures)
-               Remove(destroy as ComponentInterface);
+                Features.Remove(destroy as ComponentInterface);
             destroyFeatures.Clear();
         }
         public void Draw(Matrix? _ = null)
@@ -223,12 +280,12 @@ namespace SlayerKnight
             }
 
             // Draw all the other components.
-            if (componentFeatures.Count > 0)
+            if (Features.Count > 0)
             {
-                int minDrawLevel = componentFeatures.Select(x => x.DrawLevel).Min();
-                int maxDrawLevel = componentFeatures.Select(x => x.DrawLevel).Max();
+                int minDrawLevel = Features.Select(x => x.DrawLevel).Min();
+                int maxDrawLevel = Features.Select(x => x.DrawLevel).Max();
                 for (int curr = minDrawLevel; curr <= maxDrawLevel; curr++)
-                    foreach (var component in componentFeatures)
+                    foreach (var component in Features)
                         if (component.DrawLevel == curr)
                             component.Draw(transformMatrix);
             }
