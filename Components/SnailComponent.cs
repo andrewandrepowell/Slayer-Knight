@@ -14,7 +14,6 @@ namespace SlayerKnight.Components
     internal class SnailComponent : ComponentInterface, PhysicsInterface, HasSoundInterface
     {
         private enum ComponentState { Inactive, Walk }
-        const float loopTimerPeriod = 1 / 30;
         readonly private static string maskAsset = "snail/snail_mask_0";
         readonly private static string walkVisualAsset = "snail/snail_walk_visual_0.sf";
         readonly private static string deadVisualAsset = "snail/snail_dead_visual_0.sf";
@@ -23,13 +22,15 @@ namespace SlayerKnight.Components
         private SpriteBatch spriteBatch;
         private LevelInterface levelFeature;
         private PhysicsManager physicsManager;
-        private TimerFeature loopTimer = new TimerFeature() { Period = loopTimerPeriod, Activated = true, Repeat = true };
+        private TimerFeature loopTimer = new TimerFeature() { Period = 1 / 30, Activated = true, Repeat = true };
         private Texture2D maskTexture;
         private AnimatorManager animatorManager;
         private AnimatorFeature walkVisualAnimation;
         private AnimatorFeature deadVisualAnimation;
         private AnimatorFeature hideVisualAnimation;
-        private ComponentState componentState = ComponentState.Walk;
+        private ComponentState componentState = ComponentState.Inactive;
+        private int activateCounter = 0;
+        private int agressCounter = 0;
         public static Color Identifier { get => new Color(r: 45, g: 67, b: 226, alpha: 255); }
         public int DrawLevel { get; set; } = 0;
         public bool PhysicsApplied { get; set; } = true;
@@ -89,6 +90,7 @@ namespace SlayerKnight.Components
             serviceCollisions();
             while (loopTimer.GetNext())
             {
+                serviceCounters();
             }
 
             // Update the managers and features.
@@ -102,6 +104,18 @@ namespace SlayerKnight.Components
             // Service collisions as reported by the physics manager.
             while ((this as PhysicsInterface).GetNext(out var info))
                 ;
+        }
+        private void serviceCounters()
+        {
+            if (activateCounter > 0)
+                activateCounter--;
+            else
+                activateCounter = 30 * 2;
+
+            if (agressCounter > 0)
+                agressCounter--;
+            else
+                agressCounter = 30 * 1;
         }
         CollisionManager FeatureInterface<CollisionManager>.ManagerObject { get; set; } // managed by associated manager.
         PhysicsManager FeatureInterface<PhysicsManager>.ManagerObject { get; set; } // managed by associated manager.

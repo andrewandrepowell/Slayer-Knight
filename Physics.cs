@@ -330,6 +330,7 @@ namespace SlayerKnight
                     lstPosition = physicsFeature.Position;
             }
 
+            // Update the timer.
             timerFeature.Update(timeElapsed);
         }
         IList<PhysicsInterface> ManagerInterface<PhysicsInterface>.Features { get => throw new NotImplementedException("For the PhysicsManager, pass feature into constructor."); }

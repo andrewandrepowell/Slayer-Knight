@@ -9,11 +9,36 @@ using Utility;
 
 namespace SlayerKnight.Components
 {
-    internal interface WallInterface
+    internal interface WallInterface : CollisionInterface
     {
-
     }
-    internal class WallComponent : ComponentInterface, CollisionInterface, WallInterface
+    internal static class WallExtensioins
+    {
+        public static bool IsBetween(this WallInterface wall, Vector2 p0, Vector2 p1)
+        {
+            var v0 = p1 - p0;
+            var wp = wall.Position - p0;
+            var cp = wp + new Vector2(x: wall.Size.Width / 2, y: wall.Size.Height / 2);
+            if (cp.LengthSquared() > v0.LengthSquared())
+                return false;
+            var wtl = wp;
+            var wtr = wp + wall.Size.Width * Vector2.UnitX;
+            var wbl = wp + wall.Size.Height * Vector2.UnitY;
+            var wbr = new Vector2(x: wp.X + wall.Size.Width, y: wp.Y + wall.Size.Height);
+            var wvps = new (Vector2, Vector2)[] 
+            {
+                (wtl, wtr),
+                (wtr, wbr),
+                (wbr, wbl),
+                (wbl, wtl)
+            };
+            foreach ((var wvp0, var wvp1) in wvps)
+                if (v0.IsBetweenTwoVectors(wvp0, wvp1))
+                    return true;
+            return false;
+        }
+    }
+    internal class WallComponent : ComponentInterface, WallInterface
     {
         private Vector2 position;
         public WallComponent(
