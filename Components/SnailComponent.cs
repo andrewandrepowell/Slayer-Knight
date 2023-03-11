@@ -19,6 +19,7 @@ namespace SlayerKnight.Components
         readonly private static string walkVisualAsset = "snail/snail_walk_visual_0.sf";
         readonly private static string deadVisualAsset = "snail/snail_dead_visual_0.sf";
         readonly private static string hideVisualAsset = "snail/snail_hide_visual_0.sf";
+        readonly private static Random random = new Random();
         private ContentManager contentManager;
         private SpriteBatch spriteBatch;
         private LevelInterface levelFeature;
@@ -32,9 +33,14 @@ namespace SlayerKnight.Components
         private ComponentState componentState = ComponentState.Inactive;
         private int activateCounter = 0;
         private int agressCounter = 0;
+        private int jumpCounter = 0;
+        private int leftCounter = 0;
+        private int rightCounter = 0;
         private float activateDistance;
         private float agressDistance;
         private KnightComponent knightComponent;
+        private bool facingRight = random.Next(1) == 0;
+        private bool touchedWall = false;
         public static Color Identifier { get => new Color(r: 45, g: 67, b: 226, alpha: 255); }
         public int DrawLevel { get; set; } = 0;
         public bool PhysicsApplied { get; set; } = true;
@@ -42,6 +48,7 @@ namespace SlayerKnight.Components
         public Vector2 Gravity { get; set; } = new Vector2(x: 0, y: 1f);
         public float MaxGravspeed { get; set; } = 8;
         public bool Grounded { get; set; } = default; // managed by physics manager.
+        public bool Walled { get; set; } = default; // managed by physics manager.
         public Vector2 Velocity { get; set; } = default; // managed by associated manager.
         public float NormalSpeed { get; set; } = default; // managed by associated manager.
         public Vector2 Position { get; set; } = default;  // managed by physics manager.
@@ -60,8 +67,8 @@ namespace SlayerKnight.Components
             this.contentManager = contentManager;
             this.spriteBatch = spriteBatch;
             this.levelFeature = levelFeature;
-            activateDistance = Math.Max(levelFeature.ScreenSize.Width, levelFeature.ScreenSize.Height);
-            agressDistance = levelFeature.ScreenSize.Width * 0.8f;
+            activateDistance = Math.Max(levelFeature.ScreenSize.Width, levelFeature.ScreenSize.Height) * 1.25f;
+            agressDistance = levelFeature.ScreenSize.Width * 0.5f;
             SoundManagerObject = new SoundManager(contentManager);
             physicsManager = new PhysicsManager(this);
             {
@@ -98,6 +105,7 @@ namespace SlayerKnight.Components
             while (loopTimer.GetNext())
             {
                 serviceState();
+                serviceMedia();
                 serviceCounters();
             }
 
@@ -135,16 +143,68 @@ namespace SlayerKnight.Components
 
             // Only begin the agression once the knight is close enough to the snail
             // and if the snail has visibility of the knight.
-            if (agressCounter == 0 && (knightComponent.Center - Center).LengthSquared() < (agressDistance * agressDistance))
+            if (agressCounter == 0)
             {
-                bool knightVisible = true;
-                foreach (var wall in levelFeature.Features.OfType<WallInterface>())
-                    if (wall.IsBetween(Center, knightComponent.Center))
-                        knightVisible = false;
-                if (knightVisible)
-                    componentState = ComponentState.Agress;
+                if ((knightComponent.Center - Center).LengthSquared() < (agressDistance * agressDistance))
+                {
+                    bool knightVisible = true;
+                    foreach (var wall in levelFeature.Features.OfType<WallInterface>())
+                        if (wall.IsBetween(Center, knightComponent.Center))
+                            knightVisible = false;
+                    if (knightVisible)
+                        componentState = ComponentState.Agress;
+                }
                 else
+                {
                     componentState = ComponentState.Roam;
+                }
+            }
+
+            if (componentState == ComponentState.Inactive || componentState == ComponentState.Agress)
+            {
+                Movement = Vector2.Zero;
+            }
+            else if (componentState == ComponentState.Roam)
+            {
+                float leftAmount = 0;
+                float rightAmount = 0;
+
+                if (Walled && !touchedWall)
+                    facingRight = !facingRight;
+
+                if (facingRight && rightCounter == 0)
+                    rightCounter = 3;
+                else if (!facingRight && leftCounter == 0)
+                    leftCounter = 3;
+
+                if (leftCounter > 1)
+                    leftAmount = 2.5f;
+                if (rightCounter > 1)
+                    rightAmount = 2.5f;
+
+                Movement = new Vector2(x: leftAmount-rightAmount, y: 0);
+            }
+
+            // Determine if wall was touched.
+            if (Walled)
+                touchedWall = true;
+            else
+                touchedWall = false;
+        }
+        private void serviceMedia()
+        {
+            if (componentState == ComponentState.Roam)
+            {
+                walkVisualAnimation.Play("walk_0");
+            }
+
+            if (facingRight)
+            {
+                animatorManager.CurrentSprite.Effect = SpriteEffects.None;
+            }
+            else
+            {
+                animatorManager.CurrentSprite.Effect = SpriteEffects.FlipHorizontally;
             }
         }
         private void serviceCounters()
@@ -152,12 +212,19 @@ namespace SlayerKnight.Components
             if (activateCounter > 0)
                 activateCounter--;
             else
-                activateCounter = 30 * 2;
+                activateCounter = 30 * 4;
 
             if (agressCounter > 0)
                 agressCounter--;
             else
-                agressCounter = 30 * 1;
+                agressCounter = 30 * 2;
+
+            if (jumpCounter > 0)
+                jumpCounter--;
+            if (leftCounter > 0)
+                leftCounter--;
+            if (rightCounter > 0)
+                rightCounter--;
         }
         CollisionManager FeatureInterface<CollisionManager>.ManagerObject { get; set; } // managed by associated manager.
         PhysicsManager FeatureInterface<PhysicsManager>.ManagerObject { get; set; } // managed by associated manager.

@@ -39,6 +39,7 @@ namespace SlayerKnight.Components
         public Vector2 Gravity { get; set; }
         public float MaxGravspeed { get; set; }
         public bool Grounded { get; set; }
+        public bool Walled { get; set; }
         public Vector2 Velocity { get; set; }
         public float NormalSpeed { get; set; }
         PhysicsManager FeatureInterface<PhysicsManager>.ManagerObject { get; set; }

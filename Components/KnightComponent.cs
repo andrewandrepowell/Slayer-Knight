@@ -63,6 +63,7 @@ namespace SlayerKnight.Components
         public Vector2 Gravity { get; set; } = new Vector2(x: 0, y: 1f);
         public float MaxGravspeed { get; set; } = 8;
         public bool Grounded { get; set; } = default; // managed by physics manager.
+        public bool Walled { get; set; } = default; // managed by physics manager.
         public Vector2 Position { get; set; } = default;  // managed by physics manager.
         public Vector2 Center => Position + new Vector2(x: Size.Width / 2, y: Size.Height / 2);
         public Size Size { get; private set; } = new Size(width: 32, height: 48);

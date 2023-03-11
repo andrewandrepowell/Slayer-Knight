@@ -31,6 +31,7 @@ namespace SlayerKnight
         public Vector2 Gravity { get; }
         public float MaxGravspeed { get; }
         public bool Grounded { get; set; } // manager controlled
+        public bool Walled { get; set; } // manager controlled
         public Vector2 Velocity { get; set; } // manager controlled
         public float NormalSpeed { get; set; } // manager controlled
     }
@@ -103,8 +104,11 @@ namespace SlayerKnight
             // The physics applied flag simply activates the timer.  
             timerFeature.Activated = physicsFeature.PhysicsApplied;
 
-            // Grounded is simply when the ground counter is not zero.
+            // Let the feature know it's grounded, that is, it's touching the ground.
             physicsFeature.Grounded = groundCounter > 0;
+
+            // Let the feature know it's walled, that is, it's touching a wall.
+            physicsFeature.Walled = wallCounter > 0;
 
             // Update the normal direction from ground if user decides to change gravity.
             if (curGravity != physicsFeature.Gravity)
