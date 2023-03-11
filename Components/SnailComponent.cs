@@ -44,6 +44,7 @@ namespace SlayerKnight.Components
         public static Color Identifier { get => new Color(r: 45, g: 67, b: 226, alpha: 255); }
         public int DrawLevel { get; set; } = 0;
         public bool PhysicsApplied { get; set; } = true;
+        public bool IsMob => true;
         public Vector2 Movement { get; set; } = Vector2.Zero;
         public Vector2 Gravity { get; set; } = new Vector2(x: 0, y: 1f);
         public float MaxGravspeed { get; set; } = 8;

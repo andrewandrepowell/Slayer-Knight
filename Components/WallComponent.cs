@@ -52,7 +52,7 @@ namespace SlayerKnight.Components
             CollisionMask = mask;
             CollisionVertices = vertices;
         }
-        CollisionManager FeatureInterface<CollisionManager>.ManagerObject { get; set; }
+        public static Color Identifier => new Color(r:0, g:0, b:0, alpha:255);
         public Vector2 Position { get => position; set => throw new NotImplementedException(); }
         public Size Size { get; private set; }
         public bool Collidable { get => true; set => throw new NotImplementedException(); }
@@ -66,5 +66,36 @@ namespace SlayerKnight.Components
         public void Draw(Matrix? transformMatrix = null)
         {
         }
+        CollisionManager FeatureInterface<CollisionManager>.ManagerObject { get; set; }
+    }
+    internal class MobWallComponent : ComponentInterface, WallInterface
+    {
+        private Vector2 position;
+        public MobWallComponent(
+            Vector2 position,
+            Size size,
+            Color[] mask,
+            List<Vector2> vertices)
+        {
+            this.position = position;
+            Size = size;
+            CollisionMask = mask;
+            CollisionVertices = vertices;
+        }
+        public static Color Identifier => new Color(r: 98, g: 98, b: 98, alpha: 255);
+        public Vector2 Position { get => position; set => throw new NotImplementedException(); }
+        public Size Size { get; private set; }
+        public bool Collidable { get => true; set => throw new NotImplementedException(); }
+        public bool Static { get => true; set => throw new NotImplementedException(); }
+        public Color[] CollisionMask { get; private set; }
+        public List<Vector2> CollisionVertices { get; private set; }
+        public int DrawLevel { get => 0; }
+        public void Update(float timeElapsed)
+        {
+        }
+        public void Draw(Matrix? transformMatrix = null)
+        {
+        }
+        CollisionManager FeatureInterface<CollisionManager>.ManagerObject { get; set; }
     }
 }

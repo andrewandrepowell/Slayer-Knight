@@ -35,6 +35,7 @@ namespace SlayerKnight.Components
         public ControlFeature ControlFeatureObject { get; private set; }
         public int DrawLevel { get => 0; }
         public bool PhysicsApplied { get; set; }
+        public bool IsMob => false;
         public Vector2 Movement { get; set; }
         public Vector2 Gravity { get; set; }
         public float MaxGravspeed { get; set; }

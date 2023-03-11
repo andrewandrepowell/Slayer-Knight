@@ -211,14 +211,15 @@ namespace SlayerKnight
                         // and create wall feature..
                         else if (gridMask.Any(x => x.A != 0))
                         {
-                            var gridVertices = CollisionManager.GetVertices(
-                                maskData: gridMask, size: environmentGridSize,
-                                startColor: environmentStartColor, includeColor: environmentIncludeColor, excludeColor: environmentExcludeColor);
-                            var wallFeature = new WallComponent(
-                                position: gridPosition,
-                                size: environmentGridSize,
+                            var wallFeature = ComponentManager.GetWallComponentFeature(
                                 mask: gridMask,
-                                vertices: gridVertices);
+                                size: environmentGridSize,
+                                start: environmentStartColor,
+                                include: environmentIncludeColor,
+                                exclude: environmentExcludeColor,
+                                position: gridPosition);
+                            if (wallFeature == null)
+                                throw new Exception("Uncreognizable wall component.");
                             Features.Add(wallFeature);
                         }
                     }

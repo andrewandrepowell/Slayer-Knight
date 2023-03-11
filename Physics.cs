@@ -27,6 +27,7 @@ namespace SlayerKnight
     internal interface PhysicsInterface : CollisionInterface, FeatureInterface<PhysicsManager>
     {
         public bool PhysicsApplied { get; }
+        public bool IsMob { get; }
         public Vector2 Movement { get; }
         public Vector2 Gravity { get; }
         public float MaxGravspeed { get; }
@@ -227,8 +228,9 @@ namespace SlayerKnight
 
                 // Collect all the wall infos.
                 // Send all other infos to physics feature.
+                // Mobs have a special wall they can collide into.
                 while ((physicsFeature as CollisionInterface).GetNext(out var info))
-                    if (info.Other is WallInterface)
+                    if (info.Other is WallInterface && (physicsFeature.IsMob || info.Other is not MobWallComponent))
                         wallInfos.Add(info);
                     else
                         infoChannel.Enqueue(new PhysicsInfo(
