@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace SlayerKnight.Components
 {
     internal class SnailComponent : ComponentInterface, PhysicsInterface, HasSoundInterface
     {
-        private enum ComponentState { Inactive, Walk }
+        private enum ComponentState { Inactive, Roam, Agress }
         readonly private static string maskAsset = "snail/snail_mask_0";
         readonly private static string walkVisualAsset = "snail/snail_walk_visual_0.sf";
         readonly private static string deadVisualAsset = "snail/snail_dead_visual_0.sf";
@@ -31,6 +32,9 @@ namespace SlayerKnight.Components
         private ComponentState componentState = ComponentState.Inactive;
         private int activateCounter = 0;
         private int agressCounter = 0;
+        private float activateDistance;
+        private float agressDistance;
+        private KnightComponent knightComponent;
         public static Color Identifier { get => new Color(r: 45, g: 67, b: 226, alpha: 255); }
         public int DrawLevel { get; set; } = 0;
         public bool PhysicsApplied { get; set; } = true;
@@ -41,6 +45,7 @@ namespace SlayerKnight.Components
         public Vector2 Velocity { get; set; } = default; // managed by associated manager.
         public float NormalSpeed { get; set; } = default; // managed by associated manager.
         public Vector2 Position { get; set; } = default;  // managed by physics manager.
+        public Vector2 Center => Position + new Vector2(x: Size.Width / 2, y: Size.Height / 2);
         public Size Size { get; private set; } = new Size(width: 48, height: 32);
         public bool Collidable { get; set; } = true;
         public bool Static { get; set; } = false;
@@ -55,6 +60,8 @@ namespace SlayerKnight.Components
             this.contentManager = contentManager;
             this.spriteBatch = spriteBatch;
             this.levelFeature = levelFeature;
+            activateDistance = Math.Max(levelFeature.ScreenSize.Width, levelFeature.ScreenSize.Height);
+            agressDistance = levelFeature.ScreenSize.Width * 0.8f;
             SoundManagerObject = new SoundManager(contentManager);
             physicsManager = new PhysicsManager(this);
             {
@@ -70,7 +77,7 @@ namespace SlayerKnight.Components
             {
                 maskTexture = contentManager.Load<Texture2D>(maskAsset);
                 if (maskTexture.Width != Size.Width || maskTexture.Height != Size.Height)
-                    throw new Exception("The expected dimensions of the knight are incorrected.");
+                    throw new Exception("The expected dimensions of the snail are incorrected.");
                 var totalPixels = Size.Width * Size.Height;
                 CollisionMask = new Color[totalPixels];
                 maskTexture.GetData(CollisionMask);
@@ -90,6 +97,7 @@ namespace SlayerKnight.Components
             serviceCollisions();
             while (loopTimer.GetNext())
             {
+                serviceState();
                 serviceCounters();
             }
 
@@ -104,6 +112,40 @@ namespace SlayerKnight.Components
             // Service collisions as reported by the physics manager.
             while ((this as PhysicsInterface).GetNext(out var info))
                 ;
+        }
+        private void serviceState()
+        {
+            Console.WriteLine($"Snail: {componentState}");
+
+
+            // Once the activation occurs, search for potential target, then decide to 
+            // activate or deactivate based on the distance from that component.
+            // If too far, deactivate snail, if close and inactive cause the snail to roam.
+            if (activateCounter == 0)
+            {
+                var knightList = levelFeature.Features.OfType<KnightComponent>().ToList();
+                if (knightList.Count != 1)
+                    throw new Exception("There should be 1 knight in the level.");
+                knightComponent = knightList.First();
+                if ((knightComponent.Center - Center).LengthSquared() > (activateDistance * activateDistance))
+                    componentState = ComponentState.Inactive;
+                else if (componentState == ComponentState.Inactive)
+                    componentState = ComponentState.Roam;
+            }
+
+            // Only begin the agression once the knight is close enough to the snail
+            // and if the snail has visibility of the knight.
+            if (agressCounter == 0 && (knightComponent.Center - Center).LengthSquared() < (agressDistance * agressDistance))
+            {
+                bool knightVisible = true;
+                foreach (var wall in levelFeature.Features.OfType<WallInterface>())
+                    if (wall.IsBetween(Center, knightComponent.Center))
+                        knightVisible = false;
+                if (knightVisible)
+                    componentState = ComponentState.Agress;
+                else
+                    componentState = ComponentState.Roam;
+            }
         }
         private void serviceCounters()
         {
