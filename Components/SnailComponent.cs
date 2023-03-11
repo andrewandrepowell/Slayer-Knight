@@ -20,6 +20,7 @@ namespace SlayerKnight.Components
         readonly private static string deadVisualAsset = "snail/snail_dead_visual_0.sf";
         readonly private static string hideVisualAsset = "snail/snail_hide_visual_0.sf";
         readonly private static Random random = new Random();
+        readonly private static Vector2 detectionCone = new Vector2(x: 8, y: 4);
         private ContentManager contentManager;
         private SpriteBatch spriteBatch;
         private LevelInterface levelFeature;
@@ -39,7 +40,7 @@ namespace SlayerKnight.Components
         private float activateDistance;
         private float agressDistance;
         private KnightComponent knightComponent;
-        private bool facingRight = random.Next(1) == 0;
+        private bool facingRight;
         private bool touchedWall = false;
         public static Color Identifier { get => new Color(r: 45, g: 67, b: 226, alpha: 255); }
         public int DrawLevel { get; set; } = 0;
@@ -70,6 +71,7 @@ namespace SlayerKnight.Components
             this.levelFeature = levelFeature;
             activateDistance = Math.Max(levelFeature.ScreenSize.Width, levelFeature.ScreenSize.Height) * 1.25f;
             agressDistance = levelFeature.ScreenSize.Width * 0.5f;
+            facingRight = random.Next(1) == 0;
             SoundManagerObject = new SoundManager(contentManager);
             physicsManager = new PhysicsManager(this);
             {
@@ -116,6 +118,30 @@ namespace SlayerKnight.Components
             animatorManager.Update(timeElapsed);
             animatorManager.Position = Position;
         }
+        private bool IsKnightClose(float distance) => (knightComponent.Center - Center).LengthSquared() < (distance * distance);
+        private bool IsKnightVisible()
+        {
+            foreach (var wall in levelFeature.Features.OfType<WallInterface>())
+                if (wall is not MobWallComponent && wall.IsBetween(Center, knightComponent.Center))
+                    return false;
+            return true;
+        }
+        private bool IsFacingKnight()
+        {
+            var knightVector = knightComponent.Center - Center;
+            if (facingRight)
+            {
+                var topOfCone = new Vector2(x: detectionCone.X, y: -detectionCone.Y);
+                var bottomOfCone = new Vector2(x: detectionCone.X, y: detectionCone.Y);
+                return knightVector.IsBetweenTwoVectors(topOfCone, bottomOfCone);
+            }
+            else
+            {
+                var topOfCone = new Vector2(x: -detectionCone.X, y: -detectionCone.Y);
+                var bottomOfCone = new Vector2(x: -detectionCone.X, y: detectionCone.Y);
+                return knightVector.IsBetweenTwoVectors(bottomOfCone, topOfCone);
+            }
+        }
         private void serviceCollisions()
         {
             // Service collisions as reported by the physics manager.
@@ -124,7 +150,7 @@ namespace SlayerKnight.Components
         }
         private void serviceState()
         {
-            Console.WriteLine($"Snail: {componentState}");
+            //Console.WriteLine($"Snail: {componentState}.");
 
 
             // Once the activation occurs, search for potential target, then decide to 
@@ -136,7 +162,7 @@ namespace SlayerKnight.Components
                 if (knightList.Count != 1)
                     throw new Exception("There should be 1 knight in the level.");
                 knightComponent = knightList.First();
-                if ((knightComponent.Center - Center).LengthSquared() > (activateDistance * activateDistance))
+                if (!IsKnightClose(activateDistance))
                     componentState = ComponentState.Inactive;
                 else if (componentState == ComponentState.Inactive)
                     componentState = ComponentState.Roam;
@@ -144,15 +170,11 @@ namespace SlayerKnight.Components
 
             // Only begin the agression once the knight is close enough to the snail
             // and if the snail has visibility of the knight.
-            if (agressCounter == 0)
+            if (agressCounter == 0 && componentState != ComponentState.Inactive)
             {
-                if ((knightComponent.Center - Center).LengthSquared() < (agressDistance * agressDistance))
+                if (IsKnightClose(agressDistance))
                 {
-                    bool knightVisible = true;
-                    foreach (var wall in levelFeature.Features.OfType<WallInterface>())
-                        if (wall.IsBetween(Center, knightComponent.Center))
-                            knightVisible = false;
-                    if (knightVisible)
+                    if (IsKnightVisible() && IsFacingKnight())
                         componentState = ComponentState.Agress;
                 }
                 else
@@ -161,29 +183,35 @@ namespace SlayerKnight.Components
                 }
             }
 
-            if (componentState == ComponentState.Inactive || componentState == ComponentState.Agress)
+            switch (componentState)
             {
-                Movement = Vector2.Zero;
-            }
-            else if (componentState == ComponentState.Roam)
-            {
-                float leftAmount = 0;
-                float rightAmount = 0;
+                case ComponentState.Inactive:
+                    Movement = Vector2.Zero;
+                    break;
+                case ComponentState.Agress:
+                    Movement = Vector2.Zero;
+                    break;
+                case ComponentState.Roam:
+                    {
+                        float leftAmount = 0;
+                        float rightAmount = 0;
 
-                if (Walled && !touchedWall)
-                    facingRight = !facingRight;
+                        if (Walled && !touchedWall)
+                            facingRight = !facingRight;
 
-                if (facingRight && rightCounter == 0)
-                    rightCounter = 3;
-                else if (!facingRight && leftCounter == 0)
-                    leftCounter = 3;
+                        if (facingRight && rightCounter == 0)
+                            rightCounter = 3;
+                        else if (!facingRight && leftCounter == 0)
+                            leftCounter = 3;
 
-                if (leftCounter > 1)
-                    leftAmount = 2.5f;
-                if (rightCounter > 1)
-                    rightAmount = 2.5f;
+                        if (leftCounter > 1)
+                            leftAmount = 2.5f;
+                        if (rightCounter > 1)
+                            rightAmount = 2.5f;
 
-                Movement = new Vector2(x: leftAmount-rightAmount, y: 0);
+                        Movement = new Vector2(x: rightAmount-leftAmount, y: 0);
+                    }
+                    break;
             }
 
             // Determine if wall was touched.
@@ -201,11 +229,11 @@ namespace SlayerKnight.Components
 
             if (facingRight)
             {
-                animatorManager.CurrentSprite.Effect = SpriteEffects.None;
+                animatorManager.CurrentSprite.Effect = SpriteEffects.FlipHorizontally;
             }
             else
             {
-                animatorManager.CurrentSprite.Effect = SpriteEffects.FlipHorizontally;
+                animatorManager.CurrentSprite.Effect = SpriteEffects.None;
             }
         }
         private void serviceCounters()
