@@ -15,6 +15,7 @@ namespace SlayerKnight.Components
     internal class SnailComponent : ComponentInterface, PhysicsInterface, HasSoundInterface
     {
         private enum ComponentState { Inactive, Roam, Agress }
+        private enum AttackState { Prepare, Fire, Recover };
         readonly private static string maskAsset = "snail/snail_mask_0";
         readonly private static string walkVisualAsset = "snail/snail_walk_visual_0.sf";
         readonly private static string deadVisualAsset = "snail/snail_dead_visual_0.sf";
@@ -32,20 +33,24 @@ namespace SlayerKnight.Components
         private AnimatorFeature deadVisualAnimation;
         private AnimatorFeature hideVisualAnimation;
         private ComponentState componentState = ComponentState.Inactive;
+        private AttackState attackState = AttackState.Prepare;
         private int activateCounter = 0;
         private int agressCounter = 0;
         private int jumpCounter = 0;
         private int leftCounter = 0;
         private int rightCounter = 0;
+        private int recoverCounter = 0;
         private float activateDistance;
         private float agressDistance;
         private KnightComponent knightComponent;
         private List<WallInterface> wallComponents;
         private bool facingRight;
         private bool touchedWall = false;
+        private bool touchedGround = false;
         public static Color Identifier { get => new Color(r: 45, g: 67, b: 226, alpha: 255); }
         public int DrawLevel { get; set; } = 0;
-        public bool PhysicsApplied { get; set; } = true;
+        public bool PhysicsApplied { get; private set; } = true;
+        public bool PhysicsStatic { get; private set; } = false;
         public bool IsMob => true;
         public Vector2 Movement { get; set; } = Vector2.Zero;
         public Vector2 Gravity { get; set; } = new Vector2(x: 0, y: 1f);
@@ -74,12 +79,6 @@ namespace SlayerKnight.Components
             agressDistance = levelFeature.ScreenSize.Width * 0.5f;
             facingRight = random.Next(1) == 0;
             SoundManagerObject = new SoundManager(contentManager);
-            {
-
-            }
-            {
-                
-            }
             physicsManager = new PhysicsManager(this);
             {
                 animatorManager = new AnimatorManager(contentManager: contentManager, spriteBatch: spriteBatch);
@@ -103,9 +102,9 @@ namespace SlayerKnight.Components
 
         public void Draw(Matrix? transformMatrix)
         {
-            spriteBatch.Begin(transformMatrix: transformMatrix);
+            //spriteBatch.Begin(transformMatrix: transformMatrix);
             //spriteBatch.Draw(texture: maskTexture, position: Position, color: Color.White);
-            spriteBatch.End();
+            //spriteBatch.End();
             animatorManager.Draw(transformMatrix: transformMatrix);
         }
 
@@ -172,9 +171,6 @@ namespace SlayerKnight.Components
         }
         private void serviceState()
         {
-            //Console.WriteLine($"Snail: {componentState}.");
-
-
             // Once the activation occurs, search for potential target, then decide to 
             // activate or deactivate based on the distance from that component.
             // If too far, deactivate snail, if close and inactive cause the snail to roam.
@@ -194,8 +190,11 @@ namespace SlayerKnight.Components
                 {
                     if (IsKnightVisible())
                     {
-                        if (IsFacingKnight())
+                        if (componentState != ComponentState.Agress  && IsFacingKnight())
+                        {
                             componentState = ComponentState.Agress;
+                            attackState = AttackState.Prepare;
+                        }
                     }
                     else
                     {
@@ -214,7 +213,42 @@ namespace SlayerKnight.Components
                     Movement = Vector2.Zero;
                     break;
                 case ComponentState.Agress:
-                    Movement = Vector2.Zero;
+                    switch (attackState)
+                    {
+                        case AttackState.Prepare:
+                            {
+                                if (Grounded)
+                                {
+                                    if (!touchedGround)
+                                        attackState = AttackState.Fire;
+                                    else if (jumpCounter == 0 && 
+                                        animatorManager.CurrentFeature == hideVisualAnimation &&
+                                        animatorManager.CurrentSpriteSheetAnimation.Name == "hide_0" &&
+                                        animatorManager.CurrentSpriteSheetAnimation.IsComplete)
+                                        jumpCounter = 4;
+                                }
+                            }
+                            break;
+                        case AttackState.Fire:
+                            {
+                                var rock = new RockComponent(
+                                    contentManager: contentManager,
+                                    spriteBatch: spriteBatch);
+                                rock.Movement = 4 * Vector2.Normalize(knightComponent.Center - Center);
+                                rock.Position = Center - new Vector2(x: rock.Size.Width / 2, y: rock.Size.Height / 2);
+                                levelFeature.NewFeatures.Add(rock);
+                                recoverCounter = 4 * 30;
+                                attackState = AttackState.Recover;
+                            }
+                            break;
+                        case AttackState.Recover:
+                            {
+                                if (recoverCounter == 0)
+                                    attackState = AttackState.Prepare;
+                            }
+                            break;
+                    }
+                    Movement = (jumpCounter > 0 ? -7 : 0) * Vector2.UnitY;
                     break;
                 case ComponentState.Roam:
                     {
@@ -247,6 +281,12 @@ namespace SlayerKnight.Components
                 touchedWall = true;
             else
                 touchedWall = false;
+
+            // Determine if ground was touched.
+            if (Grounded)
+                touchedGround = true;
+            else
+                touchedGround = false;
         }
         private void serviceMedia()
         {
@@ -306,10 +346,15 @@ namespace SlayerKnight.Components
 
             if (jumpCounter > 0)
                 jumpCounter--;
+
             if (leftCounter > 0)
                 leftCounter--;
+
             if (rightCounter > 0)
                 rightCounter--;
+
+            if (recoverCounter > 0)
+                recoverCounter--;
         }
         CollisionManager FeatureInterface<CollisionManager>.ManagerObject { get; set; } // managed by associated manager.
         PhysicsManager FeatureInterface<PhysicsManager>.ManagerObject { get; set; } // managed by associated manager.

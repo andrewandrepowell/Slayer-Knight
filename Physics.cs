@@ -27,6 +27,7 @@ namespace SlayerKnight
     internal interface PhysicsInterface : CollisionInterface, FeatureInterface<PhysicsManager>
     {
         public bool PhysicsApplied { get; }
+        public bool PhysicsStatic { get; }
         public bool IsMob { get; }
         public Vector2 Movement { get; }
         public Vector2 Gravity { get; }
@@ -136,11 +137,12 @@ namespace SlayerKnight
             while ((physicsFeature as CollisionInterface).GetNext(out var info))
             {
                 // Create physics info so that the user can react to the collision.
-                infoChannel.Enqueue(new PhysicsInfo(
-                    other: info.Other, 
-                    selfCollided: false, 
-                    normal: info.Normal,
-                    point: info.Point));
+                if (!physicsFeature.PhysicsStatic)
+                    infoChannel.Enqueue(new PhysicsInfo(
+                        other: info.Other, 
+                        selfCollided: false, 
+                        normal: info.Normal,
+                        point: info.Point));
             }
 
             // Apply physics for each
@@ -232,7 +234,7 @@ namespace SlayerKnight
                 while ((physicsFeature as CollisionInterface).GetNext(out var info))
                     if (info.Other is WallInterface && (physicsFeature.IsMob || info.Other is not MobWallComponent))
                         wallInfos.Add(info);
-                    else
+                    else if (!physicsFeature.PhysicsStatic)
                         infoChannel.Enqueue(new PhysicsInfo(
                             other: info.Other,
                             selfCollided: true,
@@ -297,12 +299,13 @@ namespace SlayerKnight
                     physicsFeature.Position += info.Correction;
 
                     // Send physic infos to physics feature.
-                    foreach (var other in info.Others)
-                        infoChannel.Enqueue(new PhysicsInfo(
-                            other: other,
-                            selfCollided: true,
-                            point: info.Point,
-                            normal: info.Normal));
+                    if (!physicsFeature.PhysicsStatic)
+                        foreach (var other in info.Others)
+                            infoChannel.Enqueue(new PhysicsInfo(
+                                other: other,
+                                selfCollided: true,
+                                point: info.Point,
+                                normal: info.Normal));
                 }
 
                 // If still on the ground, but not colliding,

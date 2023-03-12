@@ -18,6 +18,7 @@ namespace SlayerKnight
         public Size LevelSize { get; }
         public OrthographicCamera CameraObject { get; }
         public IList<ComponentInterface> Features { get; }
+        public IList<ComponentInterface> NewFeatures { get; }
     }
     internal class LevelFeature : LevelInterface
     {
@@ -137,10 +138,11 @@ namespace SlayerKnight
         public IList<ComponentInterface> Features => componentFeatures;
         public bool Started { get; private set; }
         public string Identifier { get; private set; }
+        public IList<ComponentInterface> NewFeatures { get; private set; } = new List<ComponentInterface>();
         public OrthographicCamera CameraObject { get; private set; }
         public Size LevelSize { get => environmentVisualTexture.Bounds.Size; }
         public Size ScreenSize { get; private set; }
-        RoomManager FeatureInterface<RoomManager>.ManagerObject { get; set; }
+        
         public LevelFeature(
             ContentManager contentManager,
             SpriteBatch spriteBatch,
@@ -294,6 +296,11 @@ namespace SlayerKnight
                     componentFeatures.Remove(component);
                 destroyFeatures.Clear();
 
+                // Add new components.
+                foreach (var component in NewFeatures)
+                    componentFeatures.Add(component);
+                NewFeatures.Clear();
+
                 componentFeatures.Lock();
             }
         }
@@ -321,5 +328,6 @@ namespace SlayerKnight
                             component.Draw(transformMatrix);
             }
         }
+        RoomManager FeatureInterface<RoomManager>.ManagerObject { get; set; }
     }
 }

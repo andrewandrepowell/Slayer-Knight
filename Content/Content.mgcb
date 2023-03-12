@@ -151,6 +151,18 @@
 /processorParam:TextureFormat=Color
 /build:knight/knight_run_visual_0.png
 
+#begin rock/rock_mask_0.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,255,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:rock/rock_mask_0.png
+
 #begin snail/snail_dead_visual_0.png
 /importer:TextureImporter
 /processor:TextureProcessor

@@ -38,8 +38,8 @@ namespace Utility
     {
         public Vector2 Position { get; set; }
         public Size Size { get; }
-        public bool Collidable { get; set; } 
-        public bool Static { get; set; }
+        public bool Collidable { get; } 
+        public bool Static { get; }
         public Color[] CollisionMask { get; }
         public List<Vector2> CollisionVertices { get; }
     }
