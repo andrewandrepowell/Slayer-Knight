@@ -23,6 +23,7 @@ namespace SlayerKnight
     {
         public class ComponentList : IList<ComponentInterface>
         {
+            private bool lockState = false;
             private LevelFeature levelFeature;
             private List<ComponentInterface> componentFeatures = new List<ComponentInterface>();
             private void setup(ComponentInterface componentFeature)
@@ -47,6 +48,9 @@ namespace SlayerKnight
                 if (componentFeature is HasSoundInterface soundHolder)
                     levelFeature.optionsManager.Features.Remove(soundHolder.SoundManagerObject);
             }
+            public bool LockState => lockState;
+            public void Lock() => lockState = true;
+            public void Unlock() => lockState = false;
             public ComponentList(LevelFeature levelFeature) => this.levelFeature = levelFeature;
             public ComponentInterface this[int index] { get => componentFeatures[index]; set => throw new NotImplementedException(); }
             public int Count => componentFeatures.Count;
@@ -55,11 +59,15 @@ namespace SlayerKnight
             {
                 if (componentFeatures.Contains(item))
                     throw new Exception("Duplicate components are not allowed.");
+                if (lockState)
+                    throw new Exception("Component list is locked.");
                 setup(item);
                 componentFeatures.Add(item);
             }
             public void Clear()
             {
+                if (lockState)
+                    throw new Exception("Component list is locked.");
                 foreach (var componentFeature in componentFeatures.ToList())
                 {
                     componentFeatures.Remove(componentFeature);
@@ -69,6 +77,8 @@ namespace SlayerKnight
             public bool Contains(ComponentInterface item) => componentFeatures.Contains(item);
             public void CopyTo(ComponentInterface[] array, int arrayIndex)
             {
+                if (lockState)
+                    throw new Exception("Component list is locked.");
                 foreach (var item in array)
                 {
                     if (componentFeatures.Contains(item))
@@ -81,6 +91,8 @@ namespace SlayerKnight
             public int IndexOf(ComponentInterface item) => componentFeatures.IndexOf(item);
             public void Insert(int index, ComponentInterface item)
             {
+                if (lockState)
+                    throw new Exception("Component list is locked.");
                 if (componentFeatures.Contains(item))
                     throw new Exception("Duplicate components are not allowed.");
                 setup(item);
@@ -88,6 +100,8 @@ namespace SlayerKnight
             }
             public bool Remove(ComponentInterface item)
             {
+                if (lockState)
+                    throw new Exception("Component list is locked.");
                 var removed = componentFeatures.Remove(item);
                 if (removed)
                     destroy(item);
@@ -95,6 +109,8 @@ namespace SlayerKnight
             }
             public void RemoveAt(int index)
             {
+                if (lockState)
+                    throw new Exception("Component list is locked.");
                 var item = this[index];
                 componentFeatures.RemoveAt(index);
                 destroy(item);
@@ -107,7 +123,7 @@ namespace SlayerKnight
         private ControlManager controlManager;
         private OptionsManager optionsManager;
         private KeyboardManager keyboardManager;
-        private List<DestroyInterface> destroyFeatures;
+        private List<ComponentInterface> destroyFeatures;
         private string environmentVisualAsset;
         private string environmentMaskAsset;
         private string backgroundVisualAsset;
@@ -117,7 +133,8 @@ namespace SlayerKnight
         private Color environmentStartColor;
         private Color environmentIncludeColor;
         private Color environmentExcludeColor;
-        public IList<ComponentInterface> Features { get; private set; }
+        private ComponentList componentFeatures;
+        public IList<ComponentInterface> Features => componentFeatures;
         public bool Started { get; private set; }
         public string Identifier { get; private set; }
         public OrthographicCamera CameraObject { get; private set; }
@@ -140,11 +157,11 @@ namespace SlayerKnight
             Color environmentExcludeColor,
             Size screenSize)
         {
-            Features = new ComponentList(this);
+            componentFeatures = new ComponentList(this);
             Identifier = roomIdentifier;
             Started = false;
             collisionManager = new CollisionManager();
-            destroyFeatures = new List<DestroyInterface>();
+            destroyFeatures = new List<ComponentInterface>();
             CameraObject = new OrthographicCamera(graphicsDevice: spriteBatch.GraphicsDevice);
             ScreenSize = screenSize;
             this.spriteBatch = spriteBatch;
@@ -172,6 +189,9 @@ namespace SlayerKnight
 
             // Generate features from environment mask.
             {
+                // Make sure the component list is unlocked so that new components can be added.
+                componentFeatures.Unlock();
+
                 // Load the mask as a texture.
                 var maskTexture = contentManager.Load<Texture2D>(environmentMaskAsset);
 
@@ -205,7 +225,7 @@ namespace SlayerKnight
                             position: gridPosition,
                             levelFeature: this);
                         if (componentFeature != null)
-                            Features.Add(componentFeature);
+                            componentFeatures.Add(componentFeature);
 
                         // If the mask has at least one visible pixel--i.e. alpha not equal to 0--then determine grid vertices, 
                         // and create wall feature..
@@ -220,7 +240,7 @@ namespace SlayerKnight
                                 position: gridPosition);
                             if (wallFeature == null)
                                 throw new Exception("Uncreognizable wall component.");
-                            Features.Add(wallFeature);
+                            componentFeatures.Add(wallFeature);
                         }
                     }
 
@@ -228,6 +248,9 @@ namespace SlayerKnight
                 // collision manager has been updated with all the grid features.
                 contentManager.UnloadAsset(environmentMaskAsset);
             }
+
+            // Lock the component list. Components are not allowed to directly add/remove components.
+            componentFeatures.Lock();
 
             // Let the world know the level has started.
             Started = true;
@@ -239,7 +262,9 @@ namespace SlayerKnight
                 throw new Exception("There should never be a case where the level is ended but is not started.");
 
             // Remove all the component features. 
-            Features.Clear();
+            componentFeatures.Unlock();
+            componentFeatures.Clear();
+            componentFeatures.Lock();
 
             // Unload all assets.
             contentManager.Unload();
@@ -250,20 +275,27 @@ namespace SlayerKnight
         public void Update(float timeElapsed)
         {
             // Update the state of each component.
-            foreach (var component in Features)
+            foreach (var component in componentFeatures)
             {
                 // Perform the update.
                 component.Update(timeElapsed);
 
                 // Any destroyed interfaces should be added to the list to get removed later.
                 if (component is DestroyInterface destroy && destroy.Destroyed)
-                    destroyFeatures.Add(destroy);
+                    destroyFeatures.Add(component);
             }
 
-            // Remove any destroyed components.
-            foreach (var destroy in destroyFeatures)
-                Features.Remove(destroy as ComponentInterface);
-            destroyFeatures.Clear();
+            // Perform opertions that involve manipulating the component feature list.
+            {
+                componentFeatures.Unlock();
+
+                // Remove any destroyed components.
+                foreach (var component in destroyFeatures)
+                    componentFeatures.Remove(component);
+                destroyFeatures.Clear();
+
+                componentFeatures.Lock();
+            }
         }
         public void Draw(Matrix? _ = null)
         {

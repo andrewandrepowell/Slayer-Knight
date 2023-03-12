@@ -40,6 +40,7 @@ namespace SlayerKnight.Components
         private float activateDistance;
         private float agressDistance;
         private KnightComponent knightComponent;
+        private List<WallInterface> wallComponents;
         private bool facingRight;
         private bool touchedWall = false;
         public static Color Identifier { get => new Color(r: 45, g: 67, b: 226, alpha: 255); }
@@ -74,10 +75,10 @@ namespace SlayerKnight.Components
             facingRight = random.Next(1) == 0;
             SoundManagerObject = new SoundManager(contentManager);
             {
-                var knightList = levelFeature.Features.OfType<KnightComponent>().ToList();
-                if (knightList.Count != 1)
-                    throw new Exception("There should be 1 knight in the level.");
-                knightComponent = knightList.First();
+
+            }
+            {
+                
             }
             physicsManager = new PhysicsManager(this);
             {
@@ -110,6 +111,7 @@ namespace SlayerKnight.Components
 
         public void Update(float timeElapsed)
         {
+            determineComponents();
             serviceCollisions();
             while (loopTimer.GetNext())
             {
@@ -127,8 +129,8 @@ namespace SlayerKnight.Components
         private bool IsKnightClose(float distance) => (knightComponent.Center - Center).LengthSquared() < (distance * distance);
         private bool IsKnightVisible()
         {
-            foreach (var wall in levelFeature.Features.OfType<WallInterface>())
-                if (wall is not MobWallComponent && wall.IsBetween(Center, knightComponent.Center))
+            foreach (var wall in wallComponents)
+                if (wall.IsBetween(Center, knightComponent.Center))
                     return false;
             return true;
         }
@@ -146,6 +148,20 @@ namespace SlayerKnight.Components
                 var topOfCone = new Vector2(x: -detectionCone.X, y: -detectionCone.Y);
                 var bottomOfCone = new Vector2(x: -detectionCone.X, y: detectionCone.Y);
                 return knightVector.IsBetweenTwoVectors(bottomOfCone, topOfCone);
+            }
+        }
+        private void determineComponents()
+        {
+            if (knightComponent == null)
+            {
+                var knightList = levelFeature.Features.OfType<KnightComponent>().ToList();
+                if (knightList.Count != 1)
+                    throw new Exception("There should be 1 knight in the level.");
+                knightComponent = knightList.First();
+            }
+            if (wallComponents == null)
+            {
+                wallComponents = levelFeature.Features.OfType<WallInterface>().Where(w => w is not MobWallComponent).ToList();
             }
         }
         private void serviceCollisions()

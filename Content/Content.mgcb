@@ -49,6 +49,18 @@
 /processorParam:TextureFormat=Color
 /build:kingdom/kingdom_environment_visual_asset_0.png
 
+#begin kingdom/kingdom_tileset_visual_asset_2.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,255,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:kingdom/kingdom_tileset_visual_asset_2.png
+
 #begin knight/knight_attack_sound_0.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
