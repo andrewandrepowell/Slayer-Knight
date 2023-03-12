@@ -73,12 +73,18 @@ namespace SlayerKnight.Components
             agressDistance = levelFeature.ScreenSize.Width * 0.5f;
             facingRight = random.Next(1) == 0;
             SoundManagerObject = new SoundManager(contentManager);
+            {
+                var knightList = levelFeature.Features.OfType<KnightComponent>().ToList();
+                if (knightList.Count != 1)
+                    throw new Exception("There should be 1 knight in the level.");
+                knightComponent = knightList.First();
+            }
             physicsManager = new PhysicsManager(this);
             {
                 animatorManager = new AnimatorManager(contentManager: contentManager, spriteBatch: spriteBatch);
                 walkVisualAnimation = new AnimatorFeature(walkVisualAsset) { Offset = new Vector2(x: 24, y: 16) };
-                deadVisualAnimation = new AnimatorFeature(deadVisualAsset) { Offset = Vector2.Zero };
-                hideVisualAnimation = new AnimatorFeature(hideVisualAsset) { Offset = Vector2.Zero };
+                deadVisualAnimation = new AnimatorFeature(deadVisualAsset) { Offset = new Vector2(x: 24, y: 16) };
+                hideVisualAnimation = new AnimatorFeature(hideVisualAsset) { Offset = new Vector2(x: 24, y: 16) };
                 animatorManager.Features.Add(walkVisualAnimation);
                 animatorManager.Features.Add(deadVisualAnimation);
                 animatorManager.Features.Add(hideVisualAnimation);
@@ -97,7 +103,7 @@ namespace SlayerKnight.Components
         public void Draw(Matrix? transformMatrix)
         {
             spriteBatch.Begin(transformMatrix: transformMatrix);
-            spriteBatch.Draw(texture: maskTexture, position: Position, color: Color.White);
+            //spriteBatch.Draw(texture: maskTexture, position: Position, color: Color.White);
             spriteBatch.End();
             animatorManager.Draw(transformMatrix: transformMatrix);
         }
@@ -158,10 +164,6 @@ namespace SlayerKnight.Components
             // If too far, deactivate snail, if close and inactive cause the snail to roam.
             if (activateCounter == 0)
             {
-                var knightList = levelFeature.Features.OfType<KnightComponent>().ToList();
-                if (knightList.Count != 1)
-                    throw new Exception("There should be 1 knight in the level.");
-                knightComponent = knightList.First();
                 if (!IsKnightClose(activateDistance))
                     componentState = ComponentState.Inactive;
                 else if (componentState == ComponentState.Inactive)
@@ -174,8 +176,15 @@ namespace SlayerKnight.Components
             {
                 if (IsKnightClose(agressDistance))
                 {
-                    if (IsKnightVisible() && IsFacingKnight())
-                        componentState = ComponentState.Agress;
+                    if (IsKnightVisible())
+                    {
+                        if (IsFacingKnight())
+                            componentState = ComponentState.Agress;
+                    }
+                    else
+                    {
+                        componentState = ComponentState.Roam;
+                    }
                 }
                 else
                 {
@@ -199,10 +208,13 @@ namespace SlayerKnight.Components
                         if (Walled && !touchedWall)
                             facingRight = !facingRight;
 
-                        if (facingRight && rightCounter == 0)
-                            rightCounter = 3;
-                        else if (!facingRight && leftCounter == 0)
-                            leftCounter = 3;
+                        if (animatorManager.CurrentFeature == walkVisualAnimation)
+                        {
+                            if (facingRight && rightCounter == 0)
+                                rightCounter = 3;
+                            else if (!facingRight && leftCounter == 0)
+                                leftCounter = 3;
+                        }
 
                         if (leftCounter > 1)
                             leftAmount = 2.5f;
@@ -224,7 +236,35 @@ namespace SlayerKnight.Components
         {
             if (componentState == ComponentState.Roam)
             {
-                walkVisualAnimation.Play("walk_0");
+                if (animatorManager.CurrentFeature == hideVisualAnimation)
+                {
+                    var animation = animatorManager.CurrentSpriteSheetAnimation;
+                    if (animation.IsComplete)
+                    {
+                        if (animation.Name == "hide_0")
+                        {
+                            hideVisualAnimation.Play("reveal_0");
+                        }
+                        if (animation.Name == "reveal_0")
+                        {
+                            walkVisualAnimation.Play("walk_0");
+                        }
+                    }
+                }
+                else
+                {
+                    walkVisualAnimation.Play("walk_0");
+                }
+            }
+
+            if (componentState == ComponentState.Agress)
+            {
+                if (animatorManager.CurrentFeature != hideVisualAnimation || 
+                    animatorManager.CurrentSpriteSheetAnimation.Name != "hide_0" || 
+                    !animatorManager.CurrentSpriteSheetAnimation.IsComplete)
+                {
+                    hideVisualAnimation.Play("hide_0");
+                }   
             }
 
             if (facingRight)
@@ -246,7 +286,7 @@ namespace SlayerKnight.Components
             if (agressCounter > 0)
                 agressCounter--;
             else
-                agressCounter = 30 * 2;
+                agressCounter = 30 * 1;
 
             if (jumpCounter > 0)
                 jumpCounter--;

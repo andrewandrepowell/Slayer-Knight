@@ -130,7 +130,7 @@ namespace SlayerKnight.Components
             //   not really necessary to update the camera as soon as possible.
             {
                 int pixelsToWidthEdge = levelFeature.ScreenSize.Width / 2 - 100;
-                int pixelsToHeightEdge = levelFeature.ScreenSize.Height / 2 - 75;
+                int pixelsToHeightEdge = levelFeature.ScreenSize.Height / 2 - 25;
                 var positionOnScreen = Position - levelFeature.CameraObject.Position;
                 var cameraPosition = levelFeature.CameraObject.Position;
                 Size lowerThresholds = new Size(width: pixelsToWidthEdge, height: pixelsToHeightEdge);
