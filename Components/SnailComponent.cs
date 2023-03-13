@@ -184,6 +184,7 @@ namespace SlayerKnight.Components
 
             // Only begin the agression once the knight is close enough to the snail
             // and if the snail has visibility of the knight.
+            Console.WriteLine($"{IsKnightClose(agressDistance)}, {IsKnightVisible()}, {IsFacingKnight()}");
             if (agressCounter == 0 && componentState != ComponentState.Inactive)
             {
                 if (IsKnightClose(agressDistance))

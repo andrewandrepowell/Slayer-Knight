@@ -32,7 +32,7 @@ namespace SlayerKnight.Components
                 (wbr, wbl),
                 (wbl, wtl)
             };
-            foreach ((var wvp0, var wvp1) in wvps)
+            foreach ((var wvp0, var wvp1) in wvps) 
                 if (v0.IsBetweenTwoVectors(wvp0, wvp1))
                     return true;
             return false;
