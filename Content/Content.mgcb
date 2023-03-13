@@ -163,6 +163,12 @@
 /processorParam:TextureFormat=Color
 /build:rock/rock_mask_0.png
 
+#begin snail/snail_attack_sound_0.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:snail/snail_attack_sound_0.wav
+
 #begin snail/snail_dead_visual_0.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -186,6 +192,12 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:snail/snail_hide_visual_0.png
+
+#begin snail/snail_jump_sound_0.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:snail/snail_jump_sound_0.wav
 
 #begin snail/snail_mask_0.png
 /importer:TextureImporter

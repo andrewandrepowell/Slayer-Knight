@@ -20,6 +20,8 @@ namespace SlayerKnight.Components
         readonly private static string walkVisualAsset = "snail/snail_walk_visual_0.sf";
         readonly private static string deadVisualAsset = "snail/snail_dead_visual_0.sf";
         readonly private static string hideVisualAsset = "snail/snail_hide_visual_0.sf";
+        readonly private static string jumpSoundAsset = "snail/snail_jump_sound_0";
+        readonly private static string attackSoundAsset = "snail/snail_attack_sound_0";
         readonly private static Random random = new Random();
         readonly private static Vector2 detectionCone = new Vector2(x: 8, y: 4);
         private ContentManager contentManager;
@@ -32,6 +34,8 @@ namespace SlayerKnight.Components
         private AnimatorFeature walkVisualAnimation;
         private AnimatorFeature deadVisualAnimation;
         private AnimatorFeature hideVisualAnimation;
+        private SoundFeature jumpSoundSound;
+        private SoundFeature attackSoundSound;
         private ComponentState componentState = ComponentState.Inactive;
         private AttackState attackState = AttackState.Prepare;
         private int activateCounter = 0;
@@ -78,7 +82,13 @@ namespace SlayerKnight.Components
             activateDistance = Math.Max(levelFeature.ScreenSize.Width, levelFeature.ScreenSize.Height) * 1.25f;
             agressDistance = levelFeature.ScreenSize.Width * 0.5f;
             facingRight = random.Next(1) == 0;
-            SoundManagerObject = new SoundManager(contentManager);
+            {
+                SoundManagerObject = new SoundManager(contentManager);
+                jumpSoundSound = new SoundFeature(jumpSoundAsset) { Volume = 0.01f * 20 };
+                attackSoundSound = new SoundFeature(attackSoundAsset) { Volume = 0.01f * 20 };
+                SoundManagerObject.Features.Add(jumpSoundSound);
+                SoundManagerObject.Features.Add(attackSoundSound);
+            }
             physicsManager = new PhysicsManager(this);
             {
                 animatorManager = new AnimatorManager(contentManager: contentManager, spriteBatch: spriteBatch);
@@ -221,12 +231,18 @@ namespace SlayerKnight.Components
                                 if (Grounded)
                                 {
                                     if (!touchedGround)
+                                    {
                                         attackState = AttackState.Fire;
-                                    else if (jumpCounter == 0 && 
+                                        attackSoundSound.Play();
+                                    }
+                                    else if (jumpCounter == 0 &&
                                         animatorManager.CurrentFeature == hideVisualAnimation &&
                                         animatorManager.CurrentSpriteSheetAnimation.Name == "hide_0" &&
                                         animatorManager.CurrentSpriteSheetAnimation.IsComplete)
+                                    {
                                         jumpCounter = 4;
+                                        jumpSoundSound.Play();
+                                    }
                                 }
                             }
                             break;
