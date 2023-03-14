@@ -194,7 +194,6 @@ namespace SlayerKnight.Components
 
             // Only begin the agression once the knight is close enough to the snail
             // and if the snail has visibility of the knight.
-            Console.WriteLine($"{IsKnightClose(agressDistance)}, {IsKnightVisible()}, {IsFacingKnight()}");
             if (agressCounter == 0 && componentState != ComponentState.Inactive)
             {
                 if (IsKnightClose(agressDistance))
@@ -253,6 +252,7 @@ namespace SlayerKnight.Components
                                     spriteBatch: spriteBatch);
                                 rock.Movement = 4 * Vector2.Normalize(knightComponent.Center - Center);
                                 rock.Position = Center - new Vector2(x: rock.Size.Width / 2, y: rock.Size.Height / 2);
+                                rock.ParentObject = this;
                                 levelFeature.NewFeatures.Add(rock);
                                 recoverCounter = 4 * 30;
                                 attackState = AttackState.Recover;

@@ -52,6 +52,7 @@ namespace SlayerKnight.Components
         private int rightCounter = 0;
         private int dashActiveCounter = 0;
         private int dashCooldownCounter = 0;
+        private int invulnerableCounter = 0;
         private bool attackActive = false;
         private bool attackNextCombo = false;
         private bool facingRight = true;
@@ -292,7 +293,7 @@ namespace SlayerKnight.Components
         }
 
         private void serviceMedia()
-        { 
+        {
             if (attackActive)
             {
                 if (animatorManager.CurrentFeature != attackVisualAnimation)
@@ -382,13 +383,42 @@ namespace SlayerKnight.Components
                 if (animatorManager.CurrentFeature == jumpVisualAnimation)
                     animatorManager.CurrentOffset = jumpLeftOffset;
             } 
+
+            // Flash the knight when invulnerable.
+            if (invulnerableCounter > 0)
+            {
+                var v0 = invulnerableCounter % 30;
+                if (v0 >= 15)
+                {
+                    var v1 = v0 - 15;
+                    animatorManager.CurrentSprite.Alpha = (float)v1 / 15;
+                }
+                else
+                {
+                    var v1 = v0;
+                    animatorManager.CurrentSprite.Alpha = (float)(15 - v1) / 15;
+                }
+            }
+            else
+            {
+                animatorManager.CurrentSprite.Alpha = 1;
+            }
         }
 
         private void serviceCollisions()
         {
             // Service collisions as reported by the physics manager.
             while ((this as PhysicsInterface).GetNext(out var info))
-                ;
+            {
+                // Check to see if the knight should take damage from potential damage inducing object.
+                if (info.Other is DamagingInterface damager && damager.Active && invulnerableCounter == 0)
+                {
+                    // Knight should become invulnerable for a bit to prevent further damage.
+                    invulnerableCounter = 2 * 30;
+
+                    Console.WriteLine($"Took damage!");
+                }
+            }
         }
 
         private void decrementCounters()
@@ -405,13 +435,15 @@ namespace SlayerKnight.Components
                 dashActiveCounter--;
             if (dashCooldownCounter > 0)
                 dashCooldownCounter--;
+            if (invulnerableCounter > 0)
+                invulnerableCounter--;
         }
 
         public void Draw(Matrix? transformMatrix = null)
         {
-            spriteBatch.Begin(transformMatrix: transformMatrix);
+            //spriteBatch.Begin(transformMatrix: transformMatrix);
             //spriteBatch.Draw(texture: maskTexture, position: Position, color: Color.White);
-            spriteBatch.End();
+            //spriteBatch.End();
             animatorManager.Draw(transformMatrix: transformMatrix);
         }
 

@@ -9,7 +9,7 @@ using Utility;
 
 namespace SlayerKnight.Components
 {
-    internal class RockComponent : ComponentInterface, PhysicsInterface, DestroyInterface
+    internal class RockComponent : ComponentInterface, PhysicsInterface, DestroyInterface, DamagingInterface
     {
         readonly private static string maskAsset = "rock/rock_mask_0";
         readonly private static string rockVisualAsset = "kingdom/kingdom_tileset_visual_asset_2.sf";
@@ -39,6 +39,8 @@ namespace SlayerKnight.Components
         public bool Walled { get; set; }
         public Vector2 Velocity { get; set; }
         public float NormalSpeed { get; set; }
+        public object ParentObject { get; set; }
+        public bool Active { get; private set; } = true;
         public void Draw(Matrix? transformMatrix = null) => animatorManager.Draw(transformMatrix: transformMatrix);
         public void Update(float timeElapsed)
         {
@@ -74,6 +76,7 @@ namespace SlayerKnight.Components
         {
             loopTimer.Activated = false;
             PhysicsApplied = false;
+            Active = false;
             Destroyed = true;
         }
         private void serviceDestroy()

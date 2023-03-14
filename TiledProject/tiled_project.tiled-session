@@ -17,11 +17,11 @@
             }
         },
         "kingdom_environment_visual_asset_0.tmx": {
-            "scale": 0.75,
-            "selectedLayer": 7,
+            "scale": 0.5,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 1920,
-                "y": 958.6666666666666
+                "x": 2702,
+                "y": 1468
             }
         },
         "kingdom_tileset_background_asset_0.tsx": {
